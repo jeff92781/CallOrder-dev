@@ -165,6 +165,9 @@ main{padding:20px;max-width:1500px;margin:0 auto;width:100%}
 <body>
 <div id="ov" class="h">Carregando...</div>
 <div id="tw"></div>
+<div id="dev-banner" style="display:none;background:#E24B4A;color:#fff;text-align:center;padding:7px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;letter-spacing:.05em;position:sticky;top:0;z-index:200">
+  ⚠ AMBIENTE DE TESTE — dados isolados da produção
+</div>
 <nav id="main-nav" style="display:none">
   <span class="logo">Call <span>Order</span></span>
   <div class="nav-tabs">
@@ -512,6 +515,7 @@ async function doLogin(){
     el('nav-role').textContent=ME.role;
     if(temSetorRestrito()){el('nav-setor').textContent=SL[meuSetor()]||meuSetor();el('nav-setor').style.display='';}
     el('main-nav').style.display='flex';
+    el('dev-banner').style.display='block';
     if(isAdmin())document.querySelectorAll('.adm-only').forEach(function(e){e.style.display='';});
     var podeNovo=podeCriarPedido();
     el('btn-novo').style.display=podeNovo?'flex':'none';
@@ -524,6 +528,7 @@ function logout(){
   if(_ch)sb.removeChannel(_ch);
   if(_ti)clearInterval(_ti);
   el('main-nav').style.display='none';
+  el('dev-banner').style.display='none';
   el('nav-setor').style.display='none';
   document.querySelectorAll('.adm-only').forEach(function(e){e.style.display='none';});
   allHide();el('screen-login').classList.add('active');
