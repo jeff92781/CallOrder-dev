@@ -379,6 +379,22 @@ main{padding:20px;max-width:1500px;margin:0 auto;width:100%}
     <div class="ma"><button class="bcan" onclick="closeM('m-new-user')">Cancelar</button><button class="bok" onclick="createUser()">Criar</button></div>
   </div>
 </div>
+
+<div class="mb" id="m-ocorrencia">
+  <div class="mo">
+    <div class="mt" id="occ-title">Registrar ocorrência</div>
+    <p id="occ-desc" style="color:var(--muted);font-size:12px;margin-bottom:16px">Descreva o ocorrido.</p>
+    <div class="f">
+      <label class="fl">Motivo *</label>
+      <textarea id="occ-text" style="width:100%;min-height:120px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;resize:vertical"></textarea>
+    </div>
+    <div class="ma">
+      <button class="bcan" onclick="closeOccurrenceModal()">Cancelar</button>
+      <button class="bok" onclick="submitOccurrenceModal()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SUPA_URL = 'https://lpjyrmkgjgehfaosagxl.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwanlybWtnamdlaGZhb3NhZ3hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDgwOTIsImV4cCI6MjA5MTA4NDA5Mn0.c0EweQ387mQI5Fh1auNaCwTNTBLZulRFdg0cjUSvnSU';
@@ -483,8 +499,8 @@ function toast(msg,type,dur){
   setTimeout(function(){e.classList.remove('show');setTimeout(function(){e.remove();},300);},dur);
 }
 function ov(show){el('ov').classList.toggle('h',!show);}
-function openM(id){el(id).classList.add('open');}
-function closeM(id){el(id).classList.remove('open');}
+function openM(id){var n=el(id);if(n)n.classList.add('open');}
+function closeM(id){var n=el(id);if(n)n.classList.remove('open');}
 function closeOccurrenceModal(){
   el('occ-text').value='';
   _occCtx=null;
@@ -502,6 +518,93 @@ async function appendObsPedido(id,linha){
   var res=await sb.from('pedidos').update({obs:novo}).eq('id',id);
   if(res.error)throw res.error;
   if(pedido)pedido.obs=novo;
+}
+
+const SESSION_KEY = 'callorder_user';
+let _refreshTimer=null, _pollTi=null;
+
+function saveSession(user){
+  try{ localStorage.setItem(SESSION_KEY, JSON.stringify(user)); }catch(e){}
+}
+function clearSession(){
+  try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
+}
+function applyLoggedUser(user){
+  ME=user;
+  el('nav-nome').textContent=ME.nome||'—';
+  el('nav-role').textContent=ME.role||'—';
+
+  if(temSetorRestrito()){
+    el('nav-setor').textContent=meuSetor()==='atendimento'?'Atendimento + Faturamento':(SL[meuSetor()]||meuSetor());
+    el('nav-setor').style.display='';
+  }else{
+    el('nav-setor').style.display='none';
+  }
+
+  el('main-nav').style.display='flex';
+  document.querySelectorAll('.adm-only').forEach(function(e){e.style.display = isAdmin() ? '' : 'none';});
+  el('btn-novo').style.display = podeCriarPedido() ? 'flex' : 'none';
+}
+function upsertPedidoLocal(partial){
+  if(!partial || !partial.id)return;
+  var idx=PEDIDOS.findIndex(function(p){return p.id===partial.id;});
+  if(idx>=0){
+    PEDIDOS[idx]=Object.assign({}, PEDIDOS[idx], partial);
+  }
+}
+async function refreshUI(){
+  try{
+    await fetchPedidos();
+    atualizarTelasAtivas();
+  }catch(e){}
+}
+function refreshPedidosSoon(ms){
+  ms = typeof ms === 'number' ? ms : 250;
+  if(_refreshTimer)clearTimeout(_refreshTimer);
+  _refreshTimer=setTimeout(function(){ refreshUI(); }, ms);
+}
+function startPolling(){
+  if(_pollTi)clearInterval(_pollTi);
+  _pollTi=setInterval(function(){
+    if(!ME)return;
+    refreshUI();
+  },3000);
+}
+function stopPolling(){
+  if(_pollTi){clearInterval(_pollTi);_pollTi=null;}
+  if(_refreshTimer){clearTimeout(_refreshTimer);_refreshTimer=null;}
+}
+async function restoreSession(){
+  try{
+    var raw=localStorage.getItem(SESSION_KEY);
+    if(!raw)return;
+    var saved=JSON.parse(raw);
+    if(!saved || !saved.login || !saved.senha)return;
+
+    ov(true);
+    var res=await sb.from('usuarios').select('*')
+      .eq('login', saved.login)
+      .eq('senha', saved.senha)
+      .eq('ativo', true)
+      .single();
+    if(res.error || !res.data){
+      clearSession();
+      return;
+    }
+
+    applyLoggedUser(res.data);
+    allHide();
+    el('screen-painel').classList.add('active');
+    await fetchPedidos();
+    renderPainel();
+    startRealtime();
+    startClock();
+    startPolling();
+  }catch(e){
+    clearSession();
+  }finally{
+    ov(false);
+  }
 }
 async function obterSetorAnterior(pedido){
   try{
@@ -579,6 +682,7 @@ async function submitOccurrenceModal(){
         pendente_desde:null
       }).eq('id',_occCtx.id);
       if(res1.error)throw res1.error;
+      upsertPedidoLocal({id:_occCtx.id,status:'em_andamento',setor_pendente:'',pendente_desde:null});
       toast('Envio cancelado. Pedido voltou para '+(_occCtx.setorLabel||'o setor anterior')+'.','warn');
     }
 
@@ -593,6 +697,7 @@ async function submitOccurrenceModal(){
         setor_entrada_at:agora
       }).eq('id',_occCtx.id);
       if(res2.error)throw res2.error;
+      upsertPedidoLocal({id:_occCtx.id,setor:_occCtx.setorDestino,status:'em_andamento',setor_pendente:'',pendente_desde:null,setor_entrada_at:agora});
       await sb.from('movimentacoes').insert({
         pedido_id:_occCtx.id,
         setor_origem:pedido.setor,
@@ -615,11 +720,12 @@ async function submitOccurrenceModal(){
         pendente_desde:null
       }).eq('id',_occCtx.id);
       if(res3.error)throw res3.error;
+      upsertPedidoLocal({id:_occCtx.id,status:'cancelado',setor_pendente:'',pendente_desde:null});
       toast('Pedido #'+pedido.numero+' removido da tela.','warn');
     }
 
-    await fetchPedidos();
     atualizarTelasAtivas();
+    await refreshUI();
   }catch(e){toast(e.message,'err');}
   finally{
     _occCtx=null;
@@ -694,20 +800,24 @@ async function doLogin(){
   try{
     var res=await sb.from('usuarios').select('*').eq('login',l).eq('senha',p).eq('ativo',true).single();
     if(res.error||!res.data){el('lerr').textContent='Usuário ou senha inválidos.';return;}
-    ME=res.data;
-    el('nav-nome').textContent=ME.nome;
-    el('nav-role').textContent=ME.role;
-    if(temSetorRestrito()){el('nav-setor').textContent=meuSetor()==='atendimento'?'Atendimento + Faturamento':(SL[meuSetor()]||meuSetor());el('nav-setor').style.display='';}
-    el('main-nav').style.display='flex';
-    if(isAdmin())document.querySelectorAll('.adm-only').forEach(function(e){e.style.display='';});
-    var podeNovo=podeCriarPedido();
-    el('btn-novo').style.display=podeNovo?'flex':'none';
-    allHide();go('painel');startRealtime();startClock();
-  }catch(e){el('lerr').textContent=e.message;}
-  finally{ov(false);}
+    applyLoggedUser(res.data);
+    saveSession(res.data);
+    allHide();
+    el('screen-painel').classList.add('active');
+    await fetchPedidos();
+    renderPainel();
+    startRealtime();
+    startClock();
+    startPolling();
+  }catch(e){
+    el('lerr').textContent=e.message;
+  }finally{
+    ov(false);
+  }
 }
 function logout(){
-  ME=null;PEDIDOS=[];MOVS=[];
+  ME=null;PEDIDOS=[];MOVS=[];clearSession();
+  stopPolling();
   if(_ch)sb.removeChannel(_ch);
   if(_ti)clearInterval(_ti);
   el('main-nav').style.display='none';
@@ -799,6 +909,7 @@ function exportarPedidosExcel(){
 async function fetchUsuarios(){var res=await sb.from('usuarios').select('id,nome,login,role,setor,ativo').order('nome');return res.data||[];}
 function allHide(){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});}
 async function go(name){
+  if(ME)startPolling();
   allHide();el('screen-'+name).classList.add('active');
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
   document.querySelectorAll('.tab').forEach(function(t){if((t.getAttribute('onclick')||'').indexOf("'"+name+"'")>=0)t.classList.add('active');});
@@ -948,8 +1059,12 @@ function renderCard(o,setor){
 async function enviar(id,destino){
   ov(true);
   try{
-    var res=await sb.from('pedidos').update({setor_pendente:destino,status:'aguardando',pendente_desde:new Date().toISOString()}).eq('id',id);
+    var agora=new Date().toISOString();
+    var res=await sb.from('pedidos').update({setor_pendente:destino,status:'aguardando',pendente_desde:agora}).eq('id',id);
     if(res.error)throw res.error;
+    upsertPedidoLocal({id:id,setor_pendente:destino,status:'aguardando',pendente_desde:agora});
+    atualizarTelasAtivas();
+    await refreshUI();
     toast('Pedido enviado para '+(SL[destino]||destino)+'. Aguardando confirmação.','move');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
@@ -965,6 +1080,9 @@ async function confirmarRec(id){
     var dest=o.setor_pendente;
     var res=await sb.from('pedidos').update({setor:dest,setor_pendente:'',status:'em_andamento',setor_entrada_at:agora,pendente_desde:null}).eq('id',id);
     if(res.error)throw res.error;
+    upsertPedidoLocal({id:id,setor:dest,setor_pendente:'',status:'em_andamento',setor_entrada_at:agora,pendente_desde:null});
+    atualizarTelasAtivas();
+    await refreshUI();
     await sb.from('movimentacoes').insert({pedido_id:id,setor_origem:o.setor,setor_destino:dest,usuario:ME.login,entrada_at:o.setor_entrada_at,saida_at:agora,tempo_ms:tempoSetor,confirmado_por:ME.login,confirmado_at:agora,tempo_confirmacao_ms:tempoConf});
     await sb.from('confirmacoes').insert({pedido_id:id,setor_origem:o.setor,setor_destino:dest,enviado_at:o.pendente_desde,confirmado_at:agora,tempo_confirmacao_ms:tempoConf,confirmado_por:ME.login});
     toast('Recebimento confirmado em '+(SL[dest]||dest),'ok');
@@ -991,6 +1109,9 @@ async function confirmarNota(){
       num_nota:nota
     }).eq('id',_notaTarget);
     if(res.error)throw res.error;
+    upsertPedidoLocal({id:_notaTarget,setor:'separacao',status:'pronto_balcao',setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,finalizado_at:agora,num_nota:nota});
+    atualizarTelasAtivas();
+    await refreshUI();
     await sb.from('movimentacoes').insert({
       pedido_id:_notaTarget,
       setor_origem:o.setor,
@@ -1018,6 +1139,9 @@ async function chamarBalcao(id){
       pendente_desde:agora
     }).eq('id',id);
     if(res.error)throw res.error;
+    upsertPedidoLocal({id:id,status:'balcao_chamado',pendente_desde:agora});
+    atualizarTelasAtivas();
+    await refreshUI();
     toast('Pedido #'+pedido.numero+' chamado para o balcão.','ok');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
@@ -1034,6 +1158,7 @@ async function createOrder(){
     var agora=new Date().toISOString();
     var res=await sb.from('pedidos').insert({numero:num,setor:'atendimento',setor_pendente:'',status:'em_andamento',criado_por:ME.login,entrada_at:agora,setor_entrada_at:agora,obs:el('no-obs').value,nome_cliente:cli,prioridade:prio,num_nota:''});
     if(res.error)throw res.error;
+    await refreshUI();
     toast('Pedido #'+num+' criado — '+cli,'ok');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
@@ -1260,8 +1385,9 @@ if(window.location.search.indexOf('tv=1')>=0){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
   el('screen-tv-pub').style.display='block';
   iniciarTVPublica();
+}else{
+  restoreSession();
 }
-
 
 el('panel-date').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
 el('tv-clock').textContent=fmtClock(new Date());
