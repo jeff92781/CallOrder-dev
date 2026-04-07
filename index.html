@@ -588,19 +588,23 @@ async function autenticarUsuario(login,senha){
 
   var res=await sb.from('usuarios')
     .select('*')
-    .ilike('login',loginNorm)
-    .eq('senha',senhaNorm)
+        .eq('senha',senhaNorm)
     .eq('ativo',true)
-    .maybeSingle();
+    .limit(20);
 
   if(res.error){
     return {ok:false,mensagem:'Erro ao validar login: '+res.error.message};
   }
-  if(!res.data){
+ 
+  var usuario=(res.data||[]).find(function(u){
+    return String(u.login||'').trim().toLowerCase()===loginNorm;
+  });
+
+  if(!usuario){
     return {ok:false,mensagem:'Usuário ou senha inválidos.'};
   }
-  return {ok:true,usuario:res.data};
-}  
+   return {ok:true,usuario:usuario};
+}
 async function restoreSession(){
   try{
     var raw=localStorage.getItem(SESSION_KEY);
