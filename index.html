@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Call Order TESTE</title>
+<title>Call Order</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -410,7 +410,7 @@ const ALERT_MS = 5*60*1000;
 const JANELA_NARRACAO_BALCAO_MS = 90*1000;
 let ME=null, PEDIDOS=[], MOVS=[], _ti=null, _notaTarget=null, _ch=null;
 let REPORT_DATE_START='', REPORT_DATE_END='', REPORT_PEDIDOS_EXPORT=[];
-let _tvPub=[], _tvAudioReady=false, _tvLastSnapshot='';
+let _tvPub=[], _tvAudioReady=false, _tvLastSnapshot={};
 let _tvSpeakQueue=[], _tvSpeaking=false;
 let _occCtx=null, _audioCtx=null;
 const el = id => document.getElementById(id);
@@ -1339,6 +1339,54 @@ function tocarAlertaTV() {
     setTimeout(function(){ctx.close();}, 450);
   } catch(e) {}
 }
+
+function criarSnapshotTV(lista) {
+  var snap = {};
+  (lista||[]).forEach(function(o){
+    snap[o.id] = {
+      status: o.status || '',
+      setor: o.setor || '',
+      setor_pendente: o.setor_pendente || ''
+    };
+  });
+  return snap;
+}
+
+function notificarMovimentacoesTV(listaAtual) {
+  if (!_tvLastSnapshot || !Object.keys(_tvLastSnapshot).length) {
+    _tvLastSnapshot = criarSnapshotTV(listaAtual);
+    return;
+  }
+
+  (listaAtual||[]).forEach(function(o){
+    var prev = _tvLastSnapshot[o.id];
+    if (!prev) return;
+
+    var houveMudanca = prev.status !== (o.status||'') || prev.setor !== (o.setor||'') || prev.setor_pendente !== (o.setor_pendente||'');
+    if (!houveMudanca) return;
+
+    var msg = '';
+    if (o.status === 'aguardando' && o.setor_pendente) {
+      msg = '🔄 Pedido #' + o.numero + ' enviado para ' + (SL[o.setor_pendente] || o.setor_pendente) + '.';
+    } else if (prev.status === 'aguardando' && o.status === 'em_andamento') {
+      msg = '✅ Pedido #' + o.numero + ' confirmado em ' + (SL[o.setor] || o.setor) + '.';
+    } else if (o.status === 'pronto_balcao') {
+      msg = '🧾 Pedido #' + o.numero + ' faturado e pronto para balcão.';
+    } else if (o.status === 'balcao_chamado') {
+      msg = '🔔 Pedido #' + o.numero + ' chamado no balcão.';
+    } else if (prev.setor !== o.setor && o.setor) {
+      msg = '➡️ Pedido #' + o.numero + ' movido para ' + (SL[o.setor] || o.setor) + '.';
+    } else {
+      msg = '📌 Pedido #' + o.numero + ' atualizado.';
+    }
+
+    toast(msg, 'move', 6500);
+    tocarAlertaTV();
+  });
+
+  _tvLastSnapshot = criarSnapshotTV(listaAtual);
+}
+
 
 function anunciarTVPublica(listaAtual) {
   listaAtual.forEach(function(o) {
