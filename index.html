@@ -581,6 +581,26 @@ function stopPolling(){
   if(_pollTi){clearInterval(_pollTi);_pollTi=null;}
   if(_refreshTimer){clearTimeout(_refreshTimer);_refreshTimer=null;}
 }
+async function autenticarUsuario(login,senha){
+  var loginNorm=(login||'').trim().toLowerCase();
+  var senhaNorm=String(senha||'');
+  if(!loginNorm||!senhaNorm)return {ok:false,mensagem:'Preencha usuário e senha.'};
+
+  var res=await sb.from('usuarios')
+    .select('*')
+    .ilike('login',loginNorm)
+    .eq('senha',senhaNorm)
+    .eq('ativo',true)
+    .maybeSingle();
+
+  if(res.error){
+    return {ok:false,mensagem:'Erro ao validar login: '+res.error.message};
+  }
+  if(!res.data){
+    return {ok:false,mensagem:'Usuário ou senha inválidos.'};
+  }
+  return {ok:true,usuario:res.data};
+}  
 async function restoreSession(){
   try{
     var raw=localStorage.getItem(SESSION_KEY);
@@ -589,17 +609,13 @@ async function restoreSession(){
     if(!saved || !saved.login || !saved.senha)return;
 
     ov(true);
-    var res=await sb.from('usuarios').select('*')
-      .eq('login', saved.login)
-      .eq('senha', saved.senha)
-      .eq('ativo', true)
-      .single();
-    if(res.error || !res.data){
+    var auth=await autenticarUsuario(saved.login,saved.senha);
+    if(!auth.ok || !auth.usuario){
       clearSession();
       return;
     }
 
-    applyLoggedUser(res.data);
+    applyLoggedUser(auth.usuario);
     allHide();
     el('screen-painel').classList.add('active');
     await fetchPedidos();
@@ -805,10 +821,10 @@ async function doLogin(){
   if(!l||!p){el('lerr').textContent='Preencha usuário e senha.';return;}
   ov(true);
   try{
-    var res=await sb.from('usuarios').select('*').eq('login',l).eq('senha',p).eq('ativo',true).single();
-    if(res.error||!res.data){el('lerr').textContent='Usuário ou senha inválidos.';return;}
-    applyLoggedUser(res.data);
-    saveSession(res.data);
+    var auth=await autenticarUsuario(l,p);
+    if(!auth.ok||!auth.usuario){el('lerr').textContent=auth.mensagem;return;}
+    applyLoggedUser(auth.usuario);
+    saveSession(auth.usuario);
     allHide();
     el('screen-painel').classList.add('active');
     await fetchPedidos();
