@@ -135,12 +135,6 @@ main{padding:20px;max-width:1500px;margin:0 auto;width:100%}
 .tv-fl{font-size:12px;color:var(--muted)}
 .tv-fv{font-size:20px;font-weight:600;color:var(--atend)}
 .tv-row-warn td{background:rgba(239,159,39,.04)}
-.tvp-alerts{position:fixed;top:20px;right:20px;z-index:99998;display:flex;flex-direction:column;gap:10px;max-width:420px;pointer-events:none}
-.tvp-alert{border-radius:10px;padding:12px 14px;border:1px solid var(--border2);background:rgba(24,24,28,.92);color:var(--text);font-size:13px;box-shadow:0 10px 28px rgba(0,0,0,.35);transform:translateX(120%);opacity:0;transition:all .28s ease}
-.tvp-alert.show{transform:translateX(0);opacity:1}
-.tvp-alert.info{border-color:rgba(133,183,235,.55)}
-.tvp-alert.ok{border-color:rgba(93,202,165,.55);color:var(--atend)}
-.tvp-alert.warn{border-color:rgba(239,159,39,.55);color:var(--warn)}
 .tv-row-danger td{background:rgba(226,75,74,.05)}
 .rt{font-family:var(--font-head);font-size:20px;font-weight:700;margin-bottom:20px}
 .kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:28px}
@@ -331,7 +325,6 @@ main{padding:20px;max-width:1500px;margin:0 auto;width:100%}
 </div>
 
 <div id="screen-tv-pub" style="display:none;background:#07070a;min-height:100vh;padding:24px;font-family:var(--font-mono)">
-  <div class="tvp-alerts" id="tvp-alerts"></div>
   <div style="display:flex;align-items:center;margin-bottom:24px;gap:16px">
     <span style="font-family:var(--font-head);font-size:22px;font-weight:800;color:var(--atend)">Call Order</span>
     <span style="color:var(--muted);font-size:13px">Acompanhamento em tempo real</span>
@@ -581,30 +574,6 @@ function stopPolling(){
   if(_pollTi){clearInterval(_pollTi);_pollTi=null;}
   if(_refreshTimer){clearTimeout(_refreshTimer);_refreshTimer=null;}
 }
-async function autenticarUsuario(login,senha){
-  var loginNorm=(login||'').trim().toLowerCase();
-  var senhaNorm=String(senha||'');
-  if(!loginNorm||!senhaNorm)return {ok:false,mensagem:'Preencha usuário e senha.'};
-
-  var res=await sb.from('usuarios')
-    .select('*')
-        .eq('senha',senhaNorm)
-    .eq('ativo',true)
-    .limit(20);
-
-  if(res.error){
-    return {ok:false,mensagem:'Erro ao validar login: '+res.error.message};
-  }
- 
-  var usuario=(res.data||[]).find(function(u){
-    return String(u.login||'').trim().toLowerCase()===loginNorm;
-  });
-
-  if(!usuario){
-    return {ok:false,mensagem:'Usuário ou senha inválidos.'};
-  }
-   return {ok:true,usuario:usuario};
-}
 async function restoreSession(){
   try{
     var raw=localStorage.getItem(SESSION_KEY);
@@ -613,13 +582,17 @@ async function restoreSession(){
     if(!saved || !saved.login || !saved.senha)return;
 
     ov(true);
-    var auth=await autenticarUsuario(saved.login,saved.senha);
-    if(!auth.ok || !auth.usuario){
+    var res=await sb.from('usuarios').select('*')
+      .eq('login', saved.login)
+      .eq('senha', saved.senha)
+      .eq('ativo', true)
+      .single();
+    if(res.error || !res.data){
       clearSession();
       return;
     }
 
-    applyLoggedUser(auth.usuario);
+    applyLoggedUser(res.data);
     allHide();
     el('screen-painel').classList.add('active');
     await fetchPedidos();
@@ -825,10 +798,10 @@ async function doLogin(){
   if(!l||!p){el('lerr').textContent='Preencha usuário e senha.';return;}
   ov(true);
   try{
-    var auth=await autenticarUsuario(l,p);
-    if(!auth.ok||!auth.usuario){el('lerr').textContent=auth.mensagem;return;}
-    applyLoggedUser(auth.usuario);
-    saveSession(auth.usuario);
+    var res=await sb.from('usuarios').select('*').eq('login',l).eq('senha',p).eq('ativo',true).single();
+    if(res.error||!res.data){el('lerr').textContent='Usuário ou senha inválidos.';return;}
+    applyLoggedUser(res.data);
+    saveSession(res.data);
     allHide();
     el('screen-painel').classList.add('active');
     await fetchPedidos();
@@ -1367,19 +1340,6 @@ function tocarAlertaTV() {
   } catch(e) {}
 }
 
-function avisoVisualTV(msg, tipo, dur) {
-  var wrap = el('tvp-alerts');
-  if (!wrap) { avisoVisualTV(msg, 'info', 6500); return; }
-  var item = document.createElement('div');
-  item.className = 'tvp-alert ' + (tipo || 'info');
-  item.textContent = msg;
-  wrap.prepend(item);
-  requestAnimationFrame(function(){ item.classList.add('show'); });
-  setTimeout(function(){
-    item.classList.remove('show');
-    setTimeout(function(){ if (item.parentNode) item.remove(); }, 280);
-  }, dur || 6500);
-}
 function anunciarTVPublica(listaAtual) {
   listaAtual.forEach(function(o) {
     if (o.status !== 'balcao_chamado') return;
@@ -1390,8 +1350,10 @@ function anunciarTVPublica(listaAtual) {
     if (sessionStorage.getItem(memoria)) return;
     sessionStorage.setItem(memoria, '1');
     
-    avisoVisualTV('🔔 Chamada no balcão: '+(o.nome_cliente || 'cliente')+' · Pedido #'+o.numero,'ok',8500);
-    tocarAlertaTV();   
+    toast('🔔 Chamada no balcão: '+(o.nome_cliente || 'cliente')+' · Pedido #'+o.numero,'ok',8500);
+    tocarAlertaTV();
+    enfileirarChamadaTV('Por favor, ' + (o.nome_cliente || 'cliente') + ', dirija-se ao balcão para retirada do seu pedido ' + o.numero + '.');
+  });
 }
 
 async function iniciarTVPublica(){
