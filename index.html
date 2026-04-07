@@ -135,6 +135,12 @@ main{padding:20px;max-width:1500px;margin:0 auto;width:100%}
 .tv-fl{font-size:12px;color:var(--muted)}
 .tv-fv{font-size:20px;font-weight:600;color:var(--atend)}
 .tv-row-warn td{background:rgba(239,159,39,.04)}
+.tvp-alerts{position:fixed;top:20px;right:20px;z-index:99998;display:flex;flex-direction:column;gap:10px;max-width:420px;pointer-events:none}
+.tvp-alert{border-radius:10px;padding:12px 14px;border:1px solid var(--border2);background:rgba(24,24,28,.92);color:var(--text);font-size:13px;box-shadow:0 10px 28px rgba(0,0,0,.35);transform:translateX(120%);opacity:0;transition:all .28s ease}
+.tvp-alert.show{transform:translateX(0);opacity:1}
+.tvp-alert.info{border-color:rgba(133,183,235,.55)}
+.tvp-alert.ok{border-color:rgba(93,202,165,.55);color:var(--atend)}
+.tvp-alert.warn{border-color:rgba(239,159,39,.55);color:var(--warn)}
 .tv-row-danger td{background:rgba(226,75,74,.05)}
 .rt{font-family:var(--font-head);font-size:20px;font-weight:700;margin-bottom:20px}
 .kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:28px}
@@ -325,6 +331,7 @@ main{padding:20px;max-width:1500px;margin:0 auto;width:100%}
 </div>
 
 <div id="screen-tv-pub" style="display:none;background:#07070a;min-height:100vh;padding:24px;font-family:var(--font-mono)">
+  <div class="tvp-alerts" id="tvp-alerts"></div>
   <div style="display:flex;align-items:center;margin-bottom:24px;gap:16px">
     <span style="font-family:var(--font-head);font-size:22px;font-weight:800;color:var(--atend)">Call Order</span>
     <span style="color:var(--muted);font-size:13px">Acompanhamento em tempo real</span>
@@ -410,7 +417,7 @@ const ALERT_MS = 5*60*1000;
 const JANELA_NARRACAO_BALCAO_MS = 90*1000;
 let ME=null, PEDIDOS=[], MOVS=[], _ti=null, _notaTarget=null, _ch=null;
 let REPORT_DATE_START='', REPORT_DATE_END='', REPORT_PEDIDOS_EXPORT=[];
-let _tvPub=[], _tvAudioReady=false, _tvLastSnapshot={};
+let _tvPub=[], _tvAudioReady=false, _tvLastSnapshot='';
 let _tvSpeakQueue=[], _tvSpeaking=false;
 let _occCtx=null, _audioCtx=null;
 const el = id => document.getElementById(id);
@@ -1340,54 +1347,19 @@ function tocarAlertaTV() {
   } catch(e) {}
 }
 
-function criarSnapshotTV(lista) {
-  var snap = {};
-  (lista||[]).forEach(function(o){
-    snap[o.id] = {
-      status: o.status || '',
-      setor: o.setor || '',
-      setor_pendente: o.setor_pendente || ''
-    };
-  });
-  return snap;
+function avisoVisualTV(msg, tipo, dur) {
+  var wrap = el('tvp-alerts');
+  if (!wrap) { avisoVisualTV(msg, 'info', 6500); return; }
+  var item = document.createElement('div');
+  item.className = 'tvp-alert ' + (tipo || 'info');
+  item.textContent = msg;
+  wrap.prepend(item);
+  requestAnimationFrame(function(){ item.classList.add('show'); });
+  setTimeout(function(){
+    item.classList.remove('show');
+    setTimeout(function(){ if (item.parentNode) item.remove(); }, 280);
+  }, dur || 6500);
 }
-
-function notificarMovimentacoesTV(listaAtual) {
-  if (!_tvLastSnapshot || !Object.keys(_tvLastSnapshot).length) {
-    _tvLastSnapshot = criarSnapshotTV(listaAtual);
-    return;
-  }
-
-  (listaAtual||[]).forEach(function(o){
-    var prev = _tvLastSnapshot[o.id];
-    if (!prev) return;
-
-    var houveMudanca = prev.status !== (o.status||'') || prev.setor !== (o.setor||'') || prev.setor_pendente !== (o.setor_pendente||'');
-    if (!houveMudanca) return;
-
-    var msg = '';
-    if (o.status === 'aguardando' && o.setor_pendente) {
-      msg = '🔄 Pedido #' + o.numero + ' enviado para ' + (SL[o.setor_pendente] || o.setor_pendente) + '.';
-    } else if (prev.status === 'aguardando' && o.status === 'em_andamento') {
-      msg = '✅ Pedido #' + o.numero + ' confirmado em ' + (SL[o.setor] || o.setor) + '.';
-    } else if (o.status === 'pronto_balcao') {
-      msg = '🧾 Pedido #' + o.numero + ' faturado e pronto para balcão.';
-    } else if (o.status === 'balcao_chamado') {
-      msg = '🔔 Pedido #' + o.numero + ' chamado no balcão.';
-    } else if (prev.setor !== o.setor && o.setor) {
-      msg = '➡️ Pedido #' + o.numero + ' movido para ' + (SL[o.setor] || o.setor) + '.';
-    } else {
-      msg = '📌 Pedido #' + o.numero + ' atualizado.';
-    }
-
-    toast(msg, 'move', 6500);
-    tocarAlertaTV();
-  });
-
-  _tvLastSnapshot = criarSnapshotTV(listaAtual);
-}
-
-
 function anunciarTVPublica(listaAtual) {
   listaAtual.forEach(function(o) {
     if (o.status !== 'balcao_chamado') return;
@@ -1398,10 +1370,8 @@ function anunciarTVPublica(listaAtual) {
     if (sessionStorage.getItem(memoria)) return;
     sessionStorage.setItem(memoria, '1');
     
-    toast('🔔 Chamada no balcão: '+(o.nome_cliente || 'cliente')+' · Pedido #'+o.numero,'ok',8500);
-    tocarAlertaTV();
-    enfileirarChamadaTV('Por favor, ' + (o.nome_cliente || 'cliente') + ', dirija-se ao balcão para retirada do seu pedido ' + o.numero + '.');
-  });
+    avisoVisualTV('🔔 Chamada no balcão: '+(o.nome_cliente || 'cliente')+' · Pedido #'+o.numero,'ok',8500);
+    tocarAlertaTV();   
 }
 
 async function iniciarTVPublica(){
