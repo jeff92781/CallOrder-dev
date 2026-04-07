@@ -407,7 +407,7 @@ const SC = {atendimento:'tag-at',estoque:'tag-es',corte:'tag-co',separacao:'tag-
 const SD = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1'};
 const BC = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1'};
 const ALERT_MS = 5*60*1000;
-const BALCAO_TV_MS = 5*60*1000;
+const JANELA_NARRACAO_BALCAO_MS = 90*1000;
 let ME=null, PEDIDOS=[], MOVS=[], _ti=null, _notaTarget=null, _ch=null;
 let REPORT_DATE_START='', REPORT_DATE_END='', REPORT_PEDIDOS_EXPORT=[];
 let _tvPub=[], _tvAudioReady=false, _tvLastSnapshot='';
@@ -772,7 +772,7 @@ function testarVoz() {
   _vozNome  = el('cfg-voz') ? el('cfg-voz').value : _vozNome;
   _vozRate  = el('cfg-rate') ? parseFloat(el('cfg-rate').value) : _vozRate;
   _vozPitch = el('cfg-pitch') ? parseFloat(el('cfg-pitch').value) : _vozPitch;
-  narrar('Pedido 59000, por favor comparecer ao balcão para retirada. Obrigado.');
+  narrar('Por favor, cliente teste, dirija-se ao balcão para retirada do seu pedido 59000.');
 }
 
 function salvarConfig() {
@@ -945,15 +945,13 @@ function isOperacionalVisivel(o){
   return o.status!=='finalizado' && o.status!=='cancelado' && o.status!=='balcao_chamado';
 }
 function isTVVisivel(o){
-  if(o.status==='cancelado' || o.status==='finalizado')return false;
-  if(o.status==='balcao_chamado'){
-    return !!o.pendente_desde && (now()-tsMs(o.pendente_desde)<=BALCAO_TV_MS);
-  }
+  if(o.status==='cancelado' || o.status==='finalizado' || o.status==='balcao_chamado')return false; 
   return true;
 }
 function getTempoTotalPedido(o){
-  var fim=o.finalizado_at?tsMs(o.finalizado_at):now();
-  return Math.max(0,fim-tsMs(o.entrada_at));
+  var congelar=o.finalizado_at && (o.status==='pronto_balcao' || o.status==='balcao_chamado' || o.status==='finalizado');
+  var fim=congelar?tsMs(o.finalizado_at):now();
+    return Math.max(0,fim-tsMs(o.entrada_at));
 }
 function getStatusTextoTV(o){
   if(o.status==='aguardando')return 'Aguard. confirmação';
@@ -985,7 +983,6 @@ function renderTransCard(o){
   var dest=o.setor_pendente||'',origem=o.setor||'';
   var canC=podeConfirmarDestino(dest);
   var canR=podeAtuarNoSetor(origem);
-  var canO=podeRegistrarOcorrenciaTransito(origem,dest);
   var prio=o.prioridade||'normal',pC=prio==='idoso'?'prio-idoso':prio==='gestante'?'prio-gestante':'';
   var sC=alerta?'cd':elapsed>3*60000?'cw':'';
   var acoes='';
@@ -997,21 +994,19 @@ function renderTransCard(o){
   if(canR){
     acoes+='<button class="bret" onclick="openReturnTransit(\''+o.id+'\')">← Retornar</button>';
   }
-  if(canO){
-    acoes+='<button class="boc" onclick="openOccurrence(\''+o.id+'\',\''+((SL[origem]||origem)+' → '+(SL[dest]||dest)).replace(/'/g,"&#39;")+'\')">Ocorrência</button>';
-  }
-  if(podeExcluirPedido()){
+   if(podeExcluirPedido()){
     acoes+='<button class="bexc" onclick="openDeletePedido(\''+o.id+'\')">Excluir</button>';
   }
   return '<div class="card transito '+pC+' '+sC+'"><div class="tlbl"><span class="dp"></span>'+(alerta?'Aguardando há ':'Aguard. confirmação há ')+fmtT(elapsed)+'</div><div class="card-top"><span class="card-num">#'+o.numero+'</span>'+prioBadge(prio)+'</div>'+(o.nome_cliente?'<div class="card-cli">'+o.nome_cliente+'</div>':'')+'<div class="card-meta">De: '+(SL[origem]||origem)+' → '+(SL[dest]||dest)+'</div><div class="ca">'+acoes+'</div></div>';
 }
 function renderCard(o,setor){
-  var totalMs=getTempoTotalPedido(o),setorMs=Math.max(0,now()-tsMs(o.setor_entrada_at));
+  var totalMs=getTempoTotalPedido(o);
+  var congelarTempo=o.finalizado_at && (o.status==='pronto_balcao' || o.status==='balcao_chamado' || o.status==='finalizado');
+  var setorMs=congelarTempo?Math.max(0,tsMs(o.finalizado_at)-tsMs(o.setor_entrada_at)):Math.max(0,now()-tsMs(o.setor_entrada_at));
   var tC=totalMs>45*60000?'danger':totalMs>25*60000?'warn':'';
   var prio=o.prioridade||'normal',pC=prio==='idoso'?'prio-idoso':prio==='gestante'?'prio-gestante':'';
   var hora=tsMs(o.entrada_at)?new Date(tsMs(o.entrada_at)).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'--';
   var canAct=podeAtuarNoSetor(setor);
-  var canOcc=podeRegistrarOcorrenciaNoSetor(setor);
   var acoes=[];
 
   if(o.status==='pronto_balcao' && setor==='separacao'){
@@ -1029,13 +1024,11 @@ function renderCard(o,setor){
     acoes.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">→ Faturamento</button>');
   }
 
-  if(canAct && setor!=='atendimento'){
+  var etapaPosFaturamento=(o.status==='pronto_balcao' || o.status==='balcao_chamado');
+  if(canAct && setor!=='atendimento' && !etapaPosFaturamento){
     acoes.push('<button class="bret" onclick="openReturnActive(\''+o.id+'\')">← Retornar</button>');
   }
-  if(canOcc){
-    acoes.push('<button class="boc" onclick="openOccurrence(\''+o.id+'\',\''+(SL[setor]||setor).replace(/'/g,"&#39;")+'\')">Ocorrência</button>');
-  }
-  if(podeExcluirPedido()){
+     if(podeExcluirPedido() && !etapaPosFaturamento){
     acoes.push('<button class="bexc" onclick="openDeletePedido(\''+o.id+'\')">Excluir</button>');
   }
 
@@ -1167,7 +1160,7 @@ function renderTV(){
   var active=PEDIDOS.filter(isTVVisivel);
   el('tv-body').innerHTML=active.sort(function(a,b){return tsMs(b.entrada_at)-tsMs(a.entrada_at);}).map(function(o){
     var totalMs=getTempoTotalPedido(o);
-    var setorMs=(o.status==='aguardando' || o.status==='balcao_chamado') ? Math.max(0,now()-tsMs(o.pendente_desde)) : Math.max(0,now()-tsMs(o.setor_entrada_at));
+     var setorMs=o.status==='aguardando' ? Math.max(0,now()-tsMs(o.pendente_desde)) : (o.finalizado_at && (o.status==='pronto_balcao' || o.status==='balcao_chamado' || o.status==='finalizado') ? Math.max(0,tsMs(o.finalizado_at)-tsMs(o.setor_entrada_at)) : Math.max(0,now()-tsMs(o.setor_entrada_at)));
     var rC=totalMs>45*60000?'tv-row-danger':totalMs>25*60000?'tv-row-warn':'';
     var tColor=totalMs>45*60000?'var(--danger)':totalMs>25*60000?'var(--warn)':'var(--text)';
     var sl=o.status==='aguardando'
@@ -1331,13 +1324,13 @@ function anunciarTVPublica(listaAtual) {
   listaAtual.forEach(function(o) {
     if (o.status !== 'balcao_chamado') return;
     if (!o.pendente_desde) return;
-    if (now()-tsMs(o.pendente_desde) > BALCAO_TV_MS) return;
+     if (now()-tsMs(o.pendente_desde) > JANELA_NARRACAO_BALCAO_MS) return;
 
     var memoria = 'tv_call_' + o.id + '_' + (o.pendente_desde || '');
     if (sessionStorage.getItem(memoria)) return;
     sessionStorage.setItem(memoria, '1');
 
-    enfileirarChamadaTV('Pedido ' + o.numero + ', por favor comparecer ao balcão para retirada. Obrigado.');
+    enfileirarChamadaTV('Por favor, ' + (o.nome_cliente || 'cliente') + ', dirija-se ao balcão para retirada do seu pedido ' + o.numero + '.');
   });
 }
 
@@ -1367,7 +1360,7 @@ function renderTVPub(){
   if(!el('tvp-body'))return;
   el('tvp-body').innerHTML=active.sort(function(a,b){return tsMs(b.entrada_at)-tsMs(a.entrada_at);}).map(function(o){
     var totalMs=getTempoTotalPedido(o);
-    var setorMs=(o.status==='aguardando' || o.status==='balcao_chamado') ? Math.max(0,now()-tsMs(o.pendente_desde)) : Math.max(0,now()-tsMs(o.setor_entrada_at));
+   var setorMs=o.status==='aguardando' ? Math.max(0,now()-tsMs(o.pendente_desde)) : (o.finalizado_at && (o.status==='pronto_balcao' || o.status==='balcao_chamado' || o.status==='finalizado') ? Math.max(0,tsMs(o.finalizado_at)-tsMs(o.setor_entrada_at)) : Math.max(0,now()-tsMs(o.setor_entrada_at)));
     var rC=totalMs>45*60000?'tv-row-danger':totalMs>25*60000?'tv-row-warn':'';
     var tColor=totalMs>45*60000?'var(--danger)':totalMs>25*60000?'var(--warn)':'var(--text)';
     var sl=o.status==='aguardando'
