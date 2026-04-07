@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Call Order</title>
+<title>Call Order TESTE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAAnUlEQVR4nO3WwQ2AIAyFYcbg4N2pnM2Ty7iMK3gzsUhfX6EkJBpOpvwfiR5IqXhyXtyrrPXpYqlvXRoR9ZcxOWCZ286jtrDRUrcYGgDTFoYGlPccYNlvmfkG4M5rX5+lT2JAr/cHRB2ehgPKehMAz67Pg7+otgQjpFaAStMAm+YAR5oAfGkr4E7T3+AHooD5bxUjgPCr44jLb9z1/QZ6ue7lOijDnAAAAABJRU5ErkJggg==">
-<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAEUklEQVR4nO3dy62iRxCAUcKYhfcTlWPzysk4Gacwlq6EEdMvbsFf/TitL4DuqoPEAonb7fLz48cf+lDXb/ODJ32aupdtYfikT0rdso1UTvpc9FLZXh5O+iz07dDRG0JHb4geRUNHb4geRaNH0ehRNHoUjR5Fo0fR6FE0gBSKHkWjR9EAUih6FA0ghaJH0QD6vz//+Tte+isu7nQ9b0FzOKbjAH0UzYGYTtGT4uYQSZsDSkezPaM9AaUrOUfSboDSWZzGaB896RSOZbQDoHQBJxtaG1D64jFaFVD6sjFaGFD6jhlaGFD6dhlqAkq/BD1rG0q/AT1LG5oaUPrm5il9F+sBSt/ZbKVvZCVA6duas/S9rAEofU8zl76d2QGlb2j+0nc0L6D03axS+qZmBJS+ldqq0u8ws6FZAC26jEWvDdB0C1j9/msD2mnuO71lDUBbjnvLR80IaO8p7/26UwDlPnD7N2YC2nuyh7x0W0DpaA55bxqgLad54KtzAO03x2PfvhugdB+nPT8B0E7jM4R9AKWbOHMOVwPaY2qmcW8HQOkOTh7I8oDSBRw+k0sBLT0pkykG0BStO5nrAK07I/NptCqg9H0b0VcADfXvXz/vGdFjFwFacTSPXQNoxUEBNBRAtdYDdM2Fn7oM0HKzAmgogGpdAWitiRS7EtBaEwOo36MegJ4CqB9AjVYCdMFVi12sZ62hfRzQQh+mWksD+vTcAOoHUKNlAF22uaeu/wK01ugA6gRQO4A6AdQOoE4AtQOoE0DtAGqVqGeV0QHUCqBuALUCqBtArQDqNu9voi/eVrFcQEtMD6BWAHUDqNqTHoCKAVQNoJEAqjaPnpmnB1A1gEYCqBpAIwFUbqovQDNPD6ByAA0GUDmABgOoHECD5f9f2JzNBmjaAOpEUjuAOgHUDqBOALUDqBM97QDqBFA7gDoB1A6gVvR0A6gVQN0AagVQN4Ba0dMNoFYAdQOoFUDdAKpGz0gAVQNoJICqATQSQNXoGQmgagCNBFA1gEYCqBw9gwFUDqDBACoH0GAAlaNnMIDKATQYQOUAGgygQvSMB1AhgMYDqBBA4wFUiJ7xACoE0HgAFQJoPICeo+elAHoOoJcC6DmAXgoghQJIoQBSKIAUCiCFAkihAFIogBQKIIUCSKEAUiiAFAoghQJIoQBSKIAUCiCFAkihAFIogBQKIIUCSKFu/530S2jRbl8n/R5aNIAUCiCFAkihAFIogBQKIIW63U/6VbRct8eTfhstF0AKBZBC3Z5O+oW0UM96ANJLFQAxpMHKegDSYFVADKlbSw9A6tYBxJAa9fUApEZDgBhSsVE9DOn3XtMDkJ56GRBDuvcdPQzpq+/rYUhRPQyd3Hv0MHRm79TD0Gm9Xw9D5/QpPRht38fpMLRx1+nBaLMS6GC0R8l0Hk/6LPRS2V4qJ30u6pZtZPikT0r3si289aRPc+Ou3+YvsFviKHQ70LYAAAAASUVORK5CYII=">
-<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQ2FsbCBPcmRlciIsInNob3J0X25hbWUiOiJDYWxsIE9yZGVyIiwiaWNvbnMiOlt7InNyYyI6ImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxpVkJPUncwS0dnb0FBQUFOU1VoRVVnQUFBTUFBQUFEQUNBSUFBQURkdnZ0UUFBQUVVa2xFUVZSNG5PM2R5NjJpUnhDQVVjS1loZmNUbFdQenlzazRHYWN3bHE2RUVkTXZic0ZmL1RpdEw0RHVxb1BFQW9uYjdmTHo0OGNmK2xEWGIvT0RKMzJhdXBkdFlmaWtUMHJkc28xVVR2cGM5RkxaWGg1TytpejA3ZERSRzBKSGI0Z2VSVU5IYjRnZVJhTkgwZWhSTkhvVWpSNUZvMGZSNkZFMGdCU0tIa1dqUjlFQVVpaDZGQTBnaGFKSDBRRDZ2ei8vK1R0ZStpc3U3blE5YjBGek9LYmpBSDBVellHWVR0R1Q0dVlRU1pzRFNrZXpQYU05QWFVck9VZlNib0RTV1p6R2FCODk2UlNPWmJRRG9IUUJKeHRhRzFENjRqRmFGVkQ2c2pGYUdGRDZqaGxhR0ZENmRobGFGVkQ2VWpGYUdGRDZMaG1xQWtxL0JEMXJHMHEvQVQxTEc1b2FVUHJtNWlsOUYrc0JTdC9aYktWdlpDVkE2ZHVhcy9TOXJBRW9mVTh6bDc2ZDJRR2xiMmorMG5jMEw2RDAzYXhTK3FabUJKUytsZHFxMHU4d3M2RlpBQzI2akVXdkRkQjBDMWo5L21zRDJtbnVPNzFsRFVCYmpudkxSODBJYU84cDcvMjZVd0RsUG5EN04yWUMybnV5aDd4MFcwRHBhQTU1YnhxZ0xhZDU0S3R6QU8wM3gyUGZ2aHVnZEIrblBUOEIwRTdqTTRSOUFLV2JPSE1PVndQYVkycW1jVzhIUU9rT1RoN0k0b0RTQlJ3K2swc0JMVDBwa3lrRzBCU3RPNW5yQUswN0kvTnB0Q3FnOUgwYjBWY0FEZlh2WHovdkdkRmpGd0ZhY1RTUFhRTm94VUVCTkJSQXRkWURkTTJGbjdvTTBIS3pBbWdvZ0dwZEFXaXRpUlM3RXRCYUV3T28zNk1lZ0o0Q3FCOUFqVllDZE1GVmkxMnNaNjJoZlJ6UVFoK21Xa3NEK3ZUY0FPb0hVS05sQUYyMnVhZXUvd0swMXVnQTZnUlFPNEE2QWRRT29FNEF0UU9vRTBEdEFHcVZxR2VWMFFIVUNxQnVBTFVDcUJ0QXJRRHFOdTl2b2kvZVZyRmNRRXRNRDZCV0FIVURxTnFUSG9DS0FWUU5vSkVBcWphUG5wbW5CMUExZ0VZQ3FCcEFJd0ZVYnFvdlFETlBENkJ5QUEwR1VEbUFCZ09vSEVDRDVmOWYySnpOQm1qYUFPcEVVanVBT2dIVURxQk9BTFVEcUJNOTdRRHFCRkE3Z0RvQjFBNmdWdlIwQTZnVlFOMEFhZ1ZRTjRCYTBkTU5vRllBZFFPb0ZVRGRBS3BHejBnQVZRTm9KSUNxQVRRU1FOWG9HUW1nYWdDTkJGQTFnRVlDcUJ3OWd3RlVEcURCQUNvSDBHQUFsYU5uTUlES0FUUVlRT1VBR2d5Z1F2U01CMUFoZ01ZRHFCQkE0d0ZVaUo3eEFDb0UwSGdBRlFKb1BJQ2VvK2VsQUhvT29KY0M2RG1BWGdvZ2hRSklvUUJTS0lBVUNpQ0ZBa2loQUZJb2dCUUtJSVVDU0tFQVVpaUFGQW9naFFKSW9RQlNLSUFVQ2lDRkFraWhBRklvZ0JRS0lJVUNTS0Z1LzUzMFMyalJibDhuL1I1YU5JQVVDaUNGQWtpaEFGSW9nQlFLSUlXNjNVLzZWYlJjdDhlVGZoc3RGMEFLQlpCQzNaNU8rb1cwVU05NkFOSkxGUUF4cE1IS2VnRFNZRlZBREtsYlN3OUE2dFlCeEpBYTlmVUFwRVpEZ0JoU3NWRTlET24zWHRNRGtKNTZHUkJEdXZjZFBRenBxKy9yWVVoUlBReWQzSHYwTUhSbTc5VEQwR205WHc5RDUvUXBQUmh0MzhmcE1MUngxK25CYUxNUzZHQzBSOGswSGsvNkxQUlMyVjRxSjMwdTZwWnRaUGlrVDByM3NpMjg5YVJQYytPdTMrWXZzRnZpS0hRNzBMWUFBQUFBU1VWT1JLNUNZSUk9Iiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyJ9XSwidGhlbWVfY29sb3IiOiIjMGYwZjExIiwiYmFja2dyb3VuZF9jb2xvciI6IiMwZjBmMTEiLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSJ9">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAEUklEQVR4nO3dy62iRxCAUcKYhfcTlWPzysk4Gacwlq6EEdMvbsFf/TitL4DuqoPEAonb7fLz48cf+lDXb/ODJ32aupdtYfikT0rdso1UTvpc9FLZXh5O+iz07dDRG0JHb4geRUNHb4geRaNH0ehRNHoUjR5Fo0fR6FE0gBSKHkWjR9EAUih6FA0ghaJH0QD6vz//+Tte+isu7nQ9b0FzOKbjAH0UzYGYTtGT4uYQSZsDSkezPaM9AaUrOUfSboDSWZzGaB896RSOZbQDoHQBJxtaG1D64jFaFVD6sjFaGFD6jhlaGFD6dhlaFVD6UjFaGFD6LhmqAkq/BD1rG0q/AT1LG5oaUPrm5il9F+sBSt/ZbKVvZCVA6duas/S9rAEofU8zl76d2QGlb2j+0nc0L6D03axS+qZmBJS+ldqq0u8ws6FZAC26jEWvDdB0C1j9/msD2mnuO71lDUBbjnvLR80IaO8p7/26UwDlPnD7N2YC2nuyh7x0W0DpaA55bxqgLad54KtzAO03x2PfvhugdB+nPT8B0E7jM4R9AKWbOHMOVwPaY2qmcW8HQOkOTh7I8oDSBRw+k0sBLT0pkykG0BStO5nrAK07I/NptCqg9H0b0VcADfXvXz/vGdFjFwFacTSPXQNoxUEBNBRAtdYDdM2Fn7oM0HKzAmgogGpdAWitiRS7EtBaEwOo36MegJ4CqB9AjVYCdMFVi12sZ62hfRzQQh+mWksD+vTcAOoHUKNlAF22uaeu/wK01ugA6gRQO4A6AdQOoE4AtQOoE0DtAGqVqGeV0QHUCqBuALUCqBtArQDqNu9voi/eVrFcQEtMD6BWAHUDqNqTHoCKAVQNoJEAqjaPnpmnB1A1gEYCqBpAIwFUbqovQDNPD6ByAA0GUDmABgOoHECD5f9f2JzNBmjaAOpEUjuAOgHUDqBOALUDqBM97QDqBFA7gDoB1A6gVvR0A6gVQN0AagVQN4Ba0dMNoFYAdQOoFUDdAKpGz0gAVQNoJICqATQSQNXoGQmgagCNBFA1gEYCqBw9gwFUDqDBACoH0GAAlaNnMIDKATQYQOUAGgygQvSMB1AhgMYDqBBA4wFUiJ7xACoE0HgAFQJoPICeo+elAHoOoJcC6DmAXgoghQJIoQBSKIAUCiCFAkihAFIogBQKIIUCSKEAUiiAFAoghQJIoQBSKIAUCiCFAkihAFIogBQKIIUCSKFu/530S2jRbl8n/R5aNIAUCiCFAkihAFIogBQKIIW63U/6VbRct8eTfhstF0AKBZBC3Z5O+oW0UM96ANJLFQAxpMHKegDSYFVADKlbSw9A6tYBxJAa9fUApEZDgBhSsVE9DOn3XtMDkJ56GRBDuvcdPQzpq+/rYUhRPQyd3Hv0MHRm79TD0Gm9Xw9D5/QpPRht38fpMLRx1+nBaLMS6GC0R8l0Hk/6LPRS2V4qJ30u6pZtZPikT0r3si289aRPc+Ou3+YvsFviKHQ70LYAAAAASUVORK5CYII=">
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiQ2FsbCBPcmRlciIsInNob3J0X25hbWUiOiJDYWxsIE9yZGVyIiwiaWNvbnMiOlt7InNyYyI6ImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxpVkJPUncwS0dnb0FBQUFOU1VoRVVnQUFBTUFBQUFEQUNBSUFBQURkdnZ0UUFBQUVVa2xFUVZSNG5PM2R5NjJpUnhDQVVjS1loZmNUbFdQenlzazRHYWN3bHE2RUVkTXZic0ZmL1RpdEw0RHVxb1BFQW9uYjdmTHo0OGNmK2xEWGIvT0RKMzJhdXBkdFlmaWtUMHJkc28xVVR2cGM5RkxaWGg1TytpejA3ZERSRzBKSGI0Z2VSVU5IYjRnZVJhTkgwZWhSTkhvVWpSNUZvMGZSNkZFMGdCU0tIa1dqUjlFQVVpaDZGQTBnaGFKSDBRRDZ2ei8vK1R0ZStpc3U3blE5YjBGek9LYmpBSDBVellHWVR0R1Q0dVlRU1pzRFNrZXpQYU05QWFVck9VZlNib0RTV1p6R2FCODk2UlNPWmJRRG9IUUJKeHRhRzFENjRqRmFGVkQ2c2pGYUdGRDZqaGxhR0ZENmRobGFGVkQ2VWpGYUdGRDZMaG1xQWtxL0JEMXJHMHEvQVQxTEc1b2FVUHJtNWlsOUYrc0JTdC9aYktWdlpDVkE2ZHVhcy9TOXJBRW9mVTh6bDc2ZDJRR2xiMmorMG5jMEw2RDAzYXhTK3FabUJKUytsZHFxMHU4d3M2RlpBQzI2akVXdkRkQjBDMWo5L21zRDJtbnVPNzFsRFVCYmpudkxSODBJYU84cDcvMjZVd0RsUG5EN04yWUMybnV5aDd4MFcwRHBhQTU1YnhxZ0xhZDU0S3R6QU8wM3gyUGZ2aHVnZEIrblBUOEIwRTdqTTRSOUFLV2JPSE1PVndQYVkycW1jVzhIUU9rT1RoN0k4b0RTQlJ3K2swc0JMVDBwa3lrRzBCU3RPNW5yQUswN0kvTnB0Q3FnOUgwYjBWY0FEZlh2WHovdkdkRmpGd0ZhY1RTUFhRTm94VUVCTkJSQXRkWURkTTJGbjdvTTBIS3pBbWdvZ0dwZEFXaXRpUlM3RXRCYUV3T28zNk1lZ0o0Q3FCOUFqVllDZE1GVmkxMnNaNjJoZlJ6UVFoK21Xa3NEK3ZUY0FPb0hVS05sQUYyMnVhZXUvd0swMXVnQTZnUlFPNEE2QWRRT29FNEF0UU9vRTBEdEFHcVZxR2VWMFFIVUNxQnVBTFVDcUJ0QXJRRHFOdTl2b2kvZVZyRmNRRXRNRDZCV0FIVURxTnFUSG9DS0FWUU5vSkVBcWphUG5wbW5CMUExZ0VZQ3FCcEFJd0ZVYnFvdlFETlBENkJ5QUEwR1VEbUFCZ09vSEVDRDVmOWYySnpOQm1qYUFPcEVVanVBT2dIVURxQk9BTFVEcUJNOTdRRHFCRkE3Z0RvQjFBNmdWdlIwQTZnVlFOMEFhZ1ZRTjRCYTBkTU5vRllBZFFPb0ZVRGRBS3BHejBnQVZRTm9KSUNxQVRRU1FOWG9HUW1nYWdDTkJGQTFnRVlDcUJ3OWd3RlVEcURCQUNvSDBHQUFsYU5uTUlES0FUUVlRT1VBR2d5Z1F2U01CMUFoZ01ZRHFCQkE0d0ZVaUo3eEFDb0UwSGdBRlFKb1BJQ2VvK2VsQUhvT29KY0M2RG1BWGdvZ2hRSklvUUJTS0lBVUNpQ0ZBa2loQUZJb2dCUUtJSVVDU0tFQVVpaUFGQW9naFFKSW9RQlNLSUFVQ2lDRkFraWhBRklvZ0JRS0lJVUNTS0Z1LzUzMFMyalJibDhuL1I1YU5JQVVDaUNGQWtpaEFGSW9nQlFLSUlXNjNVLzZWYlJjdDhlVGZoc3RGMEFLQlpCQzNaNU8rb1cwVU05NkFOSkxGUUF4cE1IS2VnRFNZRlZBREtsYlN3OUE2dFlCeEpBYTlmVUFwRVpEZ0JoU3NWRTlET24zWHRNRGtKNTZHUkJEdXZjZFBRenBxKy9yWVVoUlBReWQzSHYwTUhSbTc5VEQwR205WHc5RDUvUXBQUmh0MzhmcE1MUngxK25CYUxNUzZHQzBSOGwwSGsvNkxQUlMyVjRxSjMwdTZwWnRaUGlrVDByM3NpMjg5YVJQYytPdTMrWXZzRnZpS0hRNzBMWUFBQUFBU1VWT1JLNUNZSUk9Iiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyJ9XSwidGhlbWVfY29sb3IiOiIjMGYwZjExIiwiYmFja2dyb3VuZF9jb2xvciI6IiMwZjBmMTEiLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSJ9">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -176,8 +176,6 @@ main{padding:20px;max-width:1500px;margin:0 auto;width:100%}
 .tag-fa{background:var(--fat-dim);color:var(--fat)}
 .tag-rd{background:var(--ready-dim);color:var(--ready)}
 .tag-do{background:var(--done-dim);color:rgba(240,239,232,.6)}
-/* ── MUDANÇA: tempos atualizados via CSS transition suave ── */
-.tv-tim,.tv{transition:color .3s}
 </style>
 </head>
 <body>
@@ -191,6 +189,7 @@ main{padding:20px;max-width:1500px;margin:0 auto;width:100%}
     <button class="tab" onclick="go('relatorios')">Relatórios</button>
     <button class="tab adm-only" onclick="go('usuarios')" style="display:none">Usuários</button>
     <button class="tab" onclick="go('senha')">Minha Senha</button>
+    <button class="tab" onclick="go('ag-retira')">Ag. Retira</button>
     <button class="tab adm-only" onclick="go('config')" style="display:none">Configurações</button>
   </div>
   <div class="nav-right">
@@ -293,6 +292,37 @@ main{padding:20px;max-width:1500px;margin:0 auto;width:100%}
       <div class="lerr" id="s-err"></div>
     </div>
   </main>
+
+</div>
+<div class="screen" id="screen-ag-retira">
+  <main>
+    <div class="uh">
+      <span class="utit">Aguardando Retirada</span>
+      <span style="color:var(--muted);font-size:12px">Pedidos encaminhados pela Separação para retirada posterior</span>
+    </div>
+    <div class="sc" style="max-width:none;margin-bottom:20px;padding:16px 18px">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+        <div style="color:var(--muted);font-size:12px">
+          Após 15 dias corridos sem retirada, o pedido ficará sinalizado para alerta.
+        </div>
+        <div id="ag-retira-summary" style="color:var(--text);font-size:12px"></div>
+      </div>
+    </div>
+    <table class="utbl">
+      <thead>
+        <tr>
+          <th>Pedido</th>
+          <th>Cliente</th>
+          <th>NF</th>
+          <th>Desde</th>
+          <th>Tempo parado</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="ag-retira-body"></tbody>
+    </table>
+  </main>
 </div>
 <div class="screen" id="screen-config">
   <main>
@@ -317,6 +347,11 @@ main{padding:20px;max-width:1500px;margin:0 auto;width:100%}
           <span id="cfg-pitch-val" style="font-size:12px;width:36px">1.00</span>
         </div>
       </div>
+      <div class="f">
+        <label class="fl">Grupo de e-mails para alerta de 15 dias</label>
+        <textarea id="cfg-alert-emails" placeholder="exemplo@empresa.com.br, exp@empresa.com.br" style="min-height:88px"></textarea>
+      </div>
+      <div style="color:var(--muted);font-size:11px;margin-top:-6px;margin-bottom:10px">Separe os e-mails por vírgula. O sistema vai deixar os pedidos sinalizados aqui. Para envio automático real após 15 dias, ainda será necessário um backend/automação de e-mail.</div>
       <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
         <button class="bok" onclick="testarVoz()">▶ Testar voz</button>
         <button class="bok" style="background:var(--bg3);color:var(--text);border:1px solid var(--border2)" onclick="salvarConfig()">Salvar configuração</button>
@@ -328,7 +363,7 @@ main{padding:20px;max-width:1500px;margin:0 auto;width:100%}
 
 <div id="screen-tv-pub" style="display:none;background:#07070a;min-height:100vh;padding:24px;font-family:var(--font-mono)">
   <div style="display:flex;align-items:center;margin-bottom:24px;gap:16px">
-    <span style="font-family:var(--font-head);font-size:22px;font-weight:800;color:var(--atend)">Call Order Teste</span>
+    <span style="font-family:var(--font-head);font-size:22px;font-weight:800;color:var(--atend)">Call Order</span>
     <span style="color:var(--muted);font-size:13px">Acompanhamento em tempo real</span>
     <div style="font-size:18px;font-weight:500;margin-left:auto" id="tvp-clock">--:--:--</div>
   </div>
@@ -409,110 +444,19 @@ const SC = {atendimento:'tag-at',estoque:'tag-es',corte:'tag-co',separacao:'tag-
 const SD = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1'};
 const BC = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1'};
 const ALERT_MS = 5*60*1000;
-const JANELA_NARRACAO_BALCAO_MS = 90*1000;
+const BALCAO_TV_MS = 5*60*1000;
+const AG_RETIRA_MS = 15*24*60*60*1000;
+const ALERT_EMAILS_KEY = 'callorder_alert_emails';
 let ME=null, PEDIDOS=[], MOVS=[], _ti=null, _notaTarget=null, _ch=null;
 let REPORT_DATE_START='', REPORT_DATE_END='', REPORT_PEDIDOS_EXPORT=[];
-let _tvPub=[], _tvAudioReady=false;
+let _tvPub=[], _tvAudioReady=false, _tvLastSnapshot='';
 let _tvSpeakQueue=[], _tvSpeaking=false;
 let _occCtx=null, _audioCtx=null;
 const el = id => document.getElementById(id);
 const now = () => Date.now();
 const tsMs = ts => ts ? new Date(ts).getTime() : 0;
-
-// ══════════════════════════════════════════════
-// MUDANÇA 1: Sistema de render com debounce + snapshot
-// Em vez de reconstruir innerHTML a cada segundo,
-// só re-renderiza quando os dados realmente mudam.
-// ══════════════════════════════════════════════
-let _renderRAF = null;
-let _lastPainelSnap = '';
-let _lastTVSnap = '';
-let _lastTVPubSnap = '';
-let _dirty = { painel: false, tv: false, tvpub: false };
-
-function buildSnapshot(pedidos) {
-  // Snapshot leve: só dados que afetam a renderização
-  return pedidos.map(function(o) {
-    return o.id + '|' + o.status + '|' + o.setor + '|' + (o.setor_pendente||'') + '|' + (o.num_nota||'');
-  }).join(';');
-}
-
-function markDirty(which) {
-  if (which) _dirty[which] = true;
-  else { _dirty.painel = true; _dirty.tv = true; _dirty.tvpub = true; }
-}
-
-function scheduleRender() {
-  if (_renderRAF) return;
-  _renderRAF = requestAnimationFrame(function() {
-    _renderRAF = null;
-    var ativa = telaAtiva();
-    if (ativa === 'screen-painel' && _dirty.painel) {
-      renderPainel();
-      _dirty.painel = false;
-    }
-    if (ativa === 'screen-tv' && _dirty.tv) {
-      renderTV();
-      _dirty.tv = false;
-    }
-    if (_dirty.tvpub) {
-      renderTVPub();
-      _dirty.tvpub = false;
-    }
-  });
-}
-
-function dataChanged() {
-  var snap = buildSnapshot(PEDIDOS);
-  var changed = snap !== _lastPainelSnap;
-  if (changed) {
-    _lastPainelSnap = snap;
-    markDirty();
-  }
-  return changed;
-}
-
-// ══════════════════════════════════════════════
-// MUDANÇA 2: Atualização de tempos SEM re-render
-// Apenas atualiza os textos dos timers já no DOM.
-// ══════════════════════════════════════════════
-function updateTimersInPlace() {
-  // Atualiza apenas spans de tempo no painel e TV sem reconstruir o DOM
-  document.querySelectorAll('[data-timer-entry]').forEach(function(span) {
-    var entryAt = parseInt(span.getAttribute('data-timer-entry'));
-    var freezeAt = span.getAttribute('data-timer-freeze');
-    var fim = freezeAt ? parseInt(freezeAt) : now();
-    var ms = Math.max(0, fim - entryAt);
-    var txt = fmtT(ms);
-    if (span.textContent !== txt) span.textContent = txt;
-    // Atualizar classes de alerta
-    var tC = ms > 45*60000 ? 'danger' : ms > 25*60000 ? 'warn' : '';
-    span.className = span.className.replace(/\b(warn|danger)\b/g, '').trim();
-    if (tC) span.classList.add(tC);
-  });
-
-  document.querySelectorAll('[data-timer-entry-ts]').forEach(function(span) {
-    var entryAt = parseInt(span.getAttribute('data-timer-entry-ts'));
-    var freezeAt = span.getAttribute('data-timer-freeze-ts');
-    var fim = freezeAt ? parseInt(freezeAt) : now();
-    var ms = Math.max(0, fim - entryAt);
-    var txt = fmtTs(ms);
-    if (span.textContent !== txt) span.textContent = txt;
-    var tColor = ms > 45*60000 ? 'var(--danger)' : ms > 25*60000 ? 'var(--warn)' : 'var(--text)';
-    if (span.style.color !== tColor) span.style.color = tColor;
-  });
-
-  // Atualiza tempos de trânsito
-  document.querySelectorAll('[data-transit-since]').forEach(function(span) {
-    var since = parseInt(span.getAttribute('data-transit-since'));
-    var elapsed = now() - since;
-    var prefix = elapsed > ALERT_MS ? 'Aguardando há ' : 'Aguard. confirmação há ';
-    span.textContent = prefix + fmtT(elapsed);
-  });
-}
-
-function fmtT(ms){var s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);if(h>0)return h+'h '+(m%60)+'m';if(m>0)return m+'m '+(s%60)+'s';return s+'s';}
-function fmtTs(ms){var s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);if(h>0)return String(h).padStart(2,'0')+':'+String(m%60).padStart(2,'0')+'h';return String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+function fmtT(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);if(h>0)return h+'h '+( m%60)+'m';if(m>0)return m+'m '+(s%60)+'s';return s+'s';}
+function fmtTs(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);if(h>0)return String(h).padStart(2,'0')+':'+String(m%60).padStart(2,'0')+'h';return String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
 function fmtClock(d){return d.toLocaleTimeString('pt-BR');}
 function fmtDateInput(d){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -560,13 +504,12 @@ function telaAtiva(){
   var ativa=document.querySelector('.screen.active');
   return ativa ? ativa.id : '';
 }
-
-// ── MUDANÇA: atualizarTelasAtivas agora usa debounce ──
 function atualizarTelasAtivas(){
-  markDirty();
-  scheduleRender();
+  var ativa=telaAtiva();
+  if(ativa==='screen-painel')renderPainel();
+  if(ativa==='screen-tv')renderTV();
+  if(ativa==='screen-ag-retira')renderAgRetira();
 }
-
 function playNotificationBeep(){
   try{
     var AudioCtx=window.AudioContext||window.webkitAudioContext;
@@ -649,14 +592,10 @@ function upsertPedidoLocal(partial){
     PEDIDOS[idx]=Object.assign({}, PEDIDOS[idx], partial);
   }
 }
-
-// ── MUDANÇA 3: refreshUI com snapshot check ──
 async function refreshUI(){
   try{
     await fetchPedidos();
-    if (dataChanged()) {
-      scheduleRender();
-    }
+    atualizarTelasAtivas();
   }catch(e){}
 }
 function refreshPedidosSoon(ms){
@@ -664,14 +603,12 @@ function refreshPedidosSoon(ms){
   if(_refreshTimer)clearTimeout(_refreshTimer);
   _refreshTimer=setTimeout(function(){ refreshUI(); }, ms);
 }
-
-// ── MUDANÇA 4: Polling de 8s em vez de 3s (realtime já cobre o instantâneo) ──
 function startPolling(){
   if(_pollTi)clearInterval(_pollTi);
   _pollTi=setInterval(function(){
     if(!ME)return;
     refreshUI();
-  },8000);
+  },3000);
 }
 function stopPolling(){
   if(_pollTi){clearInterval(_pollTi);_pollTi=null;}
@@ -699,7 +636,6 @@ async function restoreSession(){
     allHide();
     el('screen-painel').classList.add('active');
     await fetchPedidos();
-    _lastPainelSnap = buildSnapshot(PEDIDOS);
     renderPainel();
     startRealtime();
     startClock();
@@ -828,10 +764,8 @@ async function submitOccurrenceModal(){
       toast('Pedido #'+pedido.numero+' removido da tela.','warn');
     }
 
-    // ── MUDANÇA: só marca dirty + schedule em vez de render direto ──
-    _lastPainelSnap = '';  // Forçar re-render
     atualizarTelasAtivas();
-    refreshPedidosSoon(500);
+    await refreshUI();
   }catch(e){toast(e.message,'err');}
   finally{
     _occCtx=null;
@@ -865,7 +799,7 @@ function carregarVozes() {
   var sel = el('cfg-voz');
   if(!sel) return;
   var vozes = window.speechSynthesis.getVoices();
-  sel.innerHTML = vozes.map(function(v){
+  sel.innerHTML = vozes.map(function(v,i){
     var sel2 = v.name===_vozNome ? ' selected' : '';
     return '<option value="'+v.name+'"'+sel2+'>'+v.name+' ('+v.lang+')</option>';
   }).join('');
@@ -878,7 +812,15 @@ function testarVoz() {
   _vozNome  = el('cfg-voz') ? el('cfg-voz').value : _vozNome;
   _vozRate  = el('cfg-rate') ? parseFloat(el('cfg-rate').value) : _vozRate;
   _vozPitch = el('cfg-pitch') ? parseFloat(el('cfg-pitch').value) : _vozPitch;
-  narrar('Por favor, cliente teste, dirija-se ao balcão para retirada do seu pedido 59000.');
+  narrar('Pedido 59000, por favor comparecer ao balcão para retirada. Obrigado.');
+}
+
+function carregarConfigCampos(){
+  if(el('cfg-rate'))el('cfg-rate').value=_vozRate;
+  if(el('cfg-rate-val'))el('cfg-rate-val').textContent=parseFloat(_vozRate).toFixed(2);
+  if(el('cfg-pitch'))el('cfg-pitch').value=_vozPitch;
+  if(el('cfg-pitch-val'))el('cfg-pitch-val').textContent=parseFloat(_vozPitch).toFixed(2);
+  if(el('cfg-alert-emails'))el('cfg-alert-emails').value=localStorage.getItem(ALERT_EMAILS_KEY)||'';
 }
 
 function salvarConfig() {
@@ -888,9 +830,10 @@ function salvarConfig() {
   localStorage.setItem('pf_voz',   _vozNome);
   localStorage.setItem('pf_rate',  _vozRate);
   localStorage.setItem('pf_pitch', _vozPitch);
+  if(el('cfg-alert-emails'))localStorage.setItem(ALERT_EMAILS_KEY, el('cfg-alert-emails').value.trim());
   el('cfg-msg').textContent = 'Configuração salva!';
   setTimeout(function(){el('cfg-msg').textContent='';}, 2500);
-  toast('Voz configurada: '+_vozNome,'ok');
+  toast('Configurações salvas com sucesso.','ok');
 }
 
 if(window.speechSynthesis) {
@@ -911,7 +854,6 @@ async function doLogin(){
     allHide();
     el('screen-painel').classList.add('active');
     await fetchPedidos();
-    _lastPainelSnap = buildSnapshot(PEDIDOS);
     renderPainel();
     startRealtime();
     startClock();
@@ -947,14 +889,12 @@ function startRealtime(){
       }
     }
     else if(payload.eventType==='DELETE'){PEDIDOS=PEDIDOS.filter(function(p){return p.id!==payload.old.id;});}
-    // ── MUDANÇA: marca dirty + invalida snapshot em vez de render direto ──
-    _lastPainelSnap = '';
     atualizarTelasAtivas();
   }).subscribe();
 }
 async function fetchPedidos(){
   var hoje=new Date();hoje.setHours(0,0,0,0);
-  var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado').order('entrada_at',{ascending:false});
+  var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.agu_retirada').order('entrada_at',{ascending:false});
   PEDIDOS=res.data||[];
 }
 async function fetchMovs(){
@@ -1022,8 +962,8 @@ async function go(name){
   allHide();el('screen-'+name).classList.add('active');
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
   document.querySelectorAll('.tab').forEach(function(t){if((t.getAttribute('onclick')||'').indexOf("'"+name+"'")>=0)t.classList.add('active');});
-  if(name==='painel'){ov(true);await fetchPedidos();ov(false);_lastPainelSnap='';renderPainel();}
-  if(name==='tv'){ov(true);await fetchPedidos();ov(false);_lastTVSnap='';renderTV();}
+  if(name==='painel'){ov(true);await fetchPedidos();ov(false);renderPainel();}
+  if(name==='tv'){ov(true);await fetchPedidos();ov(false);renderTV();}
   if(name==='relatorios'){
     if(!REPORT_DATE_START||!REPORT_DATE_END){
       var hoje=fmtDateInput(new Date());
@@ -1035,22 +975,15 @@ async function go(name){
     ov(true);await Promise.all([fetchPedidosRelatorio(REPORT_DATE_START,REPORT_DATE_END),fetchMovsRelatorio(REPORT_DATE_START,REPORT_DATE_END)]);ov(false);renderRelatorios();
   }
   if(name==='usuarios'){ov(true);var u=await fetchUsuarios();ov(false);renderUsers(u);}
-  if(name==='config'){setTimeout(carregarVozes,100);}
+  if(name==='ag-retira'){ov(true);await fetchPedidos();ov(false);renderAgRetira();}
+  if(name==='config'){setTimeout(function(){carregarVozes();carregarConfigCampos();},100);}
 }
-
-// ── MUDANÇA 5: Clock SÓ atualiza texto do relógio + timers in-place ──
-// NÃO reconstrói o DOM inteiro a cada segundo.
 function startClock(){
   if(_ti)clearInterval(_ti);
   _ti=setInterval(function(){
-    var clk = fmtClock(new Date());
-    if(el('tv-clock')) el('tv-clock').textContent=clk;
-    if(el('tvp-clock')) el('tvp-clock').textContent=clk;
-
-    // Atualiza apenas os textos de tempo sem rebuild
-    updateTimersInPlace();
-
-    // Alertas de 10min (raro, não causa render)
+    el('tv-clock').textContent=fmtClock(new Date());
+    atualizarTelasAtivas();
+    if(telaAtiva()==='screen-ag-retira')renderAgRetira();
     PEDIDOS.forEach(function(o){
       if(o.status!=='aguardando'||!o.pendente_desde)return;
       var ms=now()-tsMs(o.pendente_desde);
@@ -1060,20 +993,23 @@ function startClock(){
   },1000);
 }
 function isOperacionalVisivel(o){
-  return o.status!=='finalizado' && o.status!=='cancelado' && o.status!=='balcao_chamado';
+  return o.status!=='finalizado' && o.status!=='cancelado' && o.status!=='balcao_chamado' && o.status!=='agu_retirada';
 }
 function isTVVisivel(o){
-  if(o.status==='cancelado' || o.status==='finalizado' || o.status==='balcao_chamado')return false;
+  if(o.status==='cancelado' || o.status==='finalizado' || o.status==='agu_retirada')return false;
+  if(o.status==='balcao_chamado'){
+    return !!o.pendente_desde && (now()-tsMs(o.pendente_desde)<=BALCAO_TV_MS);
+  }
   return true;
 }
 function getTempoTotalPedido(o){
-  var congelar=o.finalizado_at && (o.status==='pronto_balcao' || o.status==='balcao_chamado' || o.status==='finalizado');
-  var fim=congelar?tsMs(o.finalizado_at):now();
-    return Math.max(0,fim-tsMs(o.entrada_at));
+  var fim=o.finalizado_at?tsMs(o.finalizado_at):now();
+  return Math.max(0,fim-tsMs(o.entrada_at));
 }
 function getStatusTextoTV(o){
   if(o.status==='aguardando')return 'Aguard. confirmação';
   if(o.status==='pronto_balcao')return 'Pronto p/ balcão';
+  if(o.status==='agu_retirada')return 'Aguardando retirada';
   if(o.status==='balcao_chamado')return 'Chamado no balcão';
   return 'Em andamento';
 }
@@ -1081,22 +1017,6 @@ function getSetorClassTV(o){
   if(o.status==='pronto_balcao' || o.status==='balcao_chamado')return 'tag-rd';
   return SC[o.setor]||'tag-do';
 }
-
-// ── Helpers de tempo com data-attributes para atualização in-place ──
-function calcSetorMs(o) {
-  var congelar = o.finalizado_at && (o.status==='pronto_balcao' || o.status==='balcao_chamado' || o.status==='finalizado');
-  var entry = tsMs(o.setor_entrada_at);
-  var freeze = congelar ? tsMs(o.finalizado_at) : null;
-  return { entry: entry, freeze: freeze };
-}
-
-function calcTotalMs(o) {
-  var congelar = o.finalizado_at && (o.status==='pronto_balcao' || o.status==='balcao_chamado' || o.status==='finalizado');
-  var entry = tsMs(o.entrada_at);
-  var freeze = congelar ? tsMs(o.finalizado_at) : null;
-  return { entry: entry, freeze: freeze };
-}
-
 function renderPainel(){
   el('panel-date').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
   if(temSetorRestrito()){
@@ -1117,6 +1037,7 @@ function renderTransCard(o){
   var dest=o.setor_pendente||'',origem=o.setor||'';
   var canC=podeConfirmarDestino(dest);
   var canR=podeAtuarNoSetor(origem);
+  var canO=podeRegistrarOcorrenciaTransito(origem,dest);
   var prio=o.prioridade||'normal',pC=prio==='idoso'?'prio-idoso':prio==='gestante'?'prio-gestante':'';
   var sC=alerta?'cd':elapsed>3*60000?'cw':'';
   var acoes='';
@@ -1128,21 +1049,21 @@ function renderTransCard(o){
   if(canR){
     acoes+='<button class="bret" onclick="openReturnTransit(\''+o.id+'\')">← Retornar</button>';
   }
-   if(podeExcluirPedido()){
+  if(canO){
+    acoes+='<button class="boc" onclick="openOccurrence(\''+o.id+'\',\''+((SL[origem]||origem)+' → '+(SL[dest]||dest)).replace(/'/g,"&#39;")+'\')">Ocorrência</button>';
+  }
+  if(podeExcluirPedido()){
     acoes+='<button class="bexc" onclick="openDeletePedido(\''+o.id+'\')">Excluir</button>';
   }
-  // ── MUDANÇA: data-transit-since para atualização in-place ──
-  return '<div class="card transito '+pC+' '+sC+'"><div class="tlbl"><span class="dp"></span><span data-transit-since="'+tsMs(o.pendente_desde)+'">'+(alerta?'Aguardando há ':'Aguard. confirmação há ')+fmtT(elapsed)+'</span></div><div class="card-top"><span class="card-num">#'+o.numero+'</span>'+prioBadge(prio)+'</div>'+(o.nome_cliente?'<div class="card-cli">'+o.nome_cliente+'</div>':'')+'<div class="card-meta">De: '+(SL[origem]||origem)+' → '+(SL[dest]||dest)+'</div><div class="ca">'+acoes+'</div></div>';
+  return '<div class="card transito '+pC+' '+sC+'"><div class="tlbl"><span class="dp"></span>'+(alerta?'Aguardando há ':'Aguard. confirmação há ')+fmtT(elapsed)+'</div><div class="card-top"><span class="card-num">#'+o.numero+'</span>'+prioBadge(prio)+'</div>'+(o.nome_cliente?'<div class="card-cli">'+o.nome_cliente+'</div>':'')+'<div class="card-meta">De: '+(SL[origem]||origem)+' → '+(SL[dest]||dest)+'</div><div class="ca">'+acoes+'</div></div>';
 }
 function renderCard(o,setor){
-  var t = calcTotalMs(o);
-  var s = calcSetorMs(o);
-  var totalMs = Math.max(0, (t.freeze || now()) - t.entry);
-  var setorMs = Math.max(0, (s.freeze || now()) - s.entry);
+  var totalMs=getTempoTotalPedido(o),setorMs=Math.max(0,now()-tsMs(o.setor_entrada_at));
   var tC=totalMs>45*60000?'danger':totalMs>25*60000?'warn':'';
   var prio=o.prioridade||'normal',pC=prio==='idoso'?'prio-idoso':prio==='gestante'?'prio-gestante':'';
   var hora=tsMs(o.entrada_at)?new Date(tsMs(o.entrada_at)).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'--';
   var canAct=podeAtuarNoSetor(setor);
+  var canOcc=podeRegistrarOcorrenciaNoSetor(setor);
   var acoes=[];
 
   if(o.status==='pronto_balcao' && setor==='separacao'){
@@ -1160,34 +1081,115 @@ function renderCard(o,setor){
     acoes.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">→ Faturamento</button>');
   }
 
-  var etapaPosFaturamento=(o.status==='pronto_balcao' || o.status==='balcao_chamado');
-  if(canAct && setor!=='atendimento' && !etapaPosFaturamento){
+  if(canAct && setor!=='atendimento'){
     acoes.push('<button class="bret" onclick="openReturnActive(\''+o.id+'\')">← Retornar</button>');
   }
-     if(podeExcluirPedido() && !etapaPosFaturamento){
+  if(canOcc){
+    acoes.push('<button class="boc" onclick="openOccurrence(\''+o.id+'\',\''+(SL[setor]||setor).replace(/'/g,"&#39;")+'\')">Ocorrência</button>');
+  }
+  if(podeExcluirPedido()){
     acoes.push('<button class="bexc" onclick="openDeletePedido(\''+o.id+'\')">Excluir</button>');
   }
 
-  var prontoHtml=o.status==='pronto_balcao'
-    ? '<div class="ready-chip"><span class="ready-dot"></span>Pronto para chamar no balcão</div>'
-    : '';
+  var prontoHtml='';
+  if(o.status==='pronto_balcao')prontoHtml='<div class="ready-chip"><span class="ready-dot"></span>Pronto para chamar no balcão</div>';
+  if(o.status==='agu_retirada')prontoHtml='<div class="ready-chip"><span class="ready-dot"></span>Aguardando retirada futura</div>';
 
-  // ── MUDANÇA: data-timer-entry para atualização in-place dos tempos ──
-  var setorFreezeAttr = s.freeze ? ' data-timer-freeze="'+s.freeze+'"' : '';
-  var totalFreezeAttr = t.freeze ? ' data-timer-freeze="'+t.freeze+'"' : '';
-
-  return '<div class="card '+pC+' '+(o.status==='pronto_balcao'?'balcao-ready':'')+'">' +
+  return '<div class="card '+pC+' '+((o.status==='pronto_balcao' || o.status==='agu_retirada')?'balcao-ready':'')+'">' +
     '<div class="card-top"><span class="card-num">#'+o.numero+'</span>'+prioBadge(prio)+'</div>' +
     (o.nome_cliente?'<div class="card-cli">'+o.nome_cliente+'</div>':'') +
     '<div class="card-meta">Entrada: '+hora+' · Por: '+o.criado_por+'</div>' +
     prontoHtml +
     (o.num_nota?'<div class="card-nota">NF: '+o.num_nota+'</div>':'') +
     '<div class="ct">' +
-      '<div class="ti"><span class="tl">Neste setor</span><span class="tv '+tC+'" data-timer-entry="'+s.entry+'"'+setorFreezeAttr+'>'+fmtT(setorMs)+'</span></div>' +
-      '<div class="ti"><span class="tl">Total</span><span class="tv '+tC+'" data-timer-entry="'+t.entry+'"'+totalFreezeAttr+'>'+fmtT(totalMs)+'</span></div>' +
+      '<div class="ti"><span class="tl">Neste setor</span><span class="tv '+tC+'">'+fmtT(setorMs)+'</span></div>' +
+      '<div class="ti"><span class="tl">Total</span><span class="tv '+tC+'">'+fmtT(totalMs)+'</span></div>' +
     '</div>' +
     (acoes.length?'<div class="ca">'+acoes.join('')+'</div>':'') +
   '</div>';
+}
+function podeGerirAgRetira(){
+  return !!ME && (isAdmin() || isSetorGlobal() || meuSetor()==='separacao');
+}
+function getAgRetiraItens(){
+  return PEDIDOS.filter(function(o){return o.status==='agu_retirada';}).sort(function(a,b){return tsMs(a.pendente_desde)-tsMs(b.pendente_desde);});
+}
+function getAgRetiraMs(o){
+  return Math.max(0, now()-tsMs(o.pendente_desde||o.setor_entrada_at||o.finalizado_at||o.entrada_at));
+}
+function isAgRetiraVencido(o){
+  return getAgRetiraMs(o) >= AG_RETIRA_MS;
+}
+function renderAgRetira(){
+  var itens=getAgRetiraItens();
+  var vencidos=itens.filter(isAgRetiraVencido);
+  if(el('ag-retira-summary')){
+    var emails=(localStorage.getItem(ALERT_EMAILS_KEY)||'').trim();
+    el('ag-retira-summary').textContent=itens.length+' pedido(s) alojado(s) · '+vencidos.length+' vencido(s)'+(emails?' · grupo configurado':' · sem grupo de e-mail');
+  }
+  if(!el('ag-retira-body'))return;
+  if(!itens.length){
+    el('ag-retira-body').innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted)">Nenhum pedido aguardando retirada no momento.</td></tr>';
+    return;
+  }
+  var podeAcionar=podeGerirAgRetira();
+  el('ag-retira-body').innerHTML=itens.map(function(o){
+    var ms=getAgRetiraMs(o);
+    var vencido=isAgRetiraVencido(o);
+    var status=vencido?'<span class="boff">+15 dias</span>':'<span class="bon">Dentro do prazo</span>';
+    var acoes='';
+    if(podeAcionar){
+      acoes += '<button class="bcall" onclick="chamarBalcaoAgRetira(&#39;'+o.id+'&#39;)">Chamar balcão</button> ';
+      acoes += '<button class="bcan" onclick="cancelarAgRetira(&#39;'+o.id+'&#39;)">Cancelar</button>';
+    } else {
+      acoes = '<span style="color:var(--muted);font-size:11px">Somente Separação/Admin</span>';
+    }
+    return '<tr'+(vencido?' style="background:rgba(226,75,74,.06)"':'')+'><td style="font-family:var(--font-head);font-size:16px;font-weight:700">#'+o.numero+'</td><td>'+(o.nome_cliente||'—')+'</td><td>'+(o.num_nota||'—')+'</td><td>'+(o.pendente_desde?new Date(o.pendente_desde).toLocaleString('pt-BR'):'—')+'</td><td>'+fmtT(ms)+'</td><td>'+status+'</td><td>'+acoes+'</td></tr>';
+  }).join('');
+}
+async function encaminharAgRetira(id){
+  ov(true);
+  try{
+    var pedido=getPedidoById(id);
+    if(!pedido)throw new Error('Pedido não encontrado.');
+    var agora=new Date().toISOString();
+    var res=await sb.from('pedidos').update({status:'agu_retirada',pendente_desde:agora}).eq('id',id);
+    if(res.error)throw res.error;
+    await appendObsPedido(id, buildOccurrenceLine('AG. RETIRA', 'Separação', 'Pedido enviado para o ambiente aguardando retirada.'));
+    upsertPedidoLocal({id:id,status:'agu_retirada',pendente_desde:agora});
+    await refreshUI();
+    toast('Pedido #'+pedido.numero+' enviado para Ag. Retira.','move');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
+}
+async function chamarBalcaoAgRetira(id){
+  ov(true);
+  try{
+    var pedido=getPedidoById(id);
+    if(!pedido)throw new Error('Pedido não encontrado.');
+    var agora=new Date().toISOString();
+    var res=await sb.from('pedidos').update({status:'balcao_chamado',pendente_desde:agora}).eq('id',id);
+    if(res.error)throw res.error;
+    await appendObsPedido(id, buildOccurrenceLine('RETORNO AG. RETIRA', 'Separação', 'Cliente retornou e o pedido foi chamado novamente no balcão.'));
+    upsertPedidoLocal({id:id,status:'balcao_chamado',pendente_desde:agora});
+    await refreshUI();
+    toast('Pedido #'+pedido.numero+' chamado no balcão a partir do Ag. Retira.','ok');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
+}
+async function cancelarAgRetira(id){
+  ov(true);
+  try{
+    var pedido=getPedidoById(id);
+    if(!pedido)throw new Error('Pedido não encontrado.');
+    var res=await sb.from('pedidos').update({status:'pronto_balcao',pendente_desde:null}).eq('id',id);
+    if(res.error)throw res.error;
+    await appendObsPedido(id, buildOccurrenceLine('CANCELA AG. RETIRA', 'Separação', 'Pedido removido do ambiente aguardando retirada e devolvido para pronto balcão.'));
+    upsertPedidoLocal({id:id,status:'pronto_balcao',pendente_desde:null});
+    await refreshUI();
+    toast('Pedido #'+pedido.numero+' voltou para pronto balcão.','warn');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
 }
 async function enviar(id,destino){
   ov(true);
@@ -1196,9 +1198,8 @@ async function enviar(id,destino){
     var res=await sb.from('pedidos').update({setor_pendente:destino,status:'aguardando',pendente_desde:agora}).eq('id',id);
     if(res.error)throw res.error;
     upsertPedidoLocal({id:id,setor_pendente:destino,status:'aguardando',pendente_desde:agora});
-    _lastPainelSnap='';
     atualizarTelasAtivas();
-    refreshPedidosSoon(500);
+    await refreshUI();
     toast('Pedido enviado para '+(SL[destino]||destino)+'. Aguardando confirmação.','move');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
@@ -1215,14 +1216,10 @@ async function confirmarRec(id){
     var res=await sb.from('pedidos').update({setor:dest,setor_pendente:'',status:'em_andamento',setor_entrada_at:agora,pendente_desde:null}).eq('id',id);
     if(res.error)throw res.error;
     upsertPedidoLocal({id:id,setor:dest,setor_pendente:'',status:'em_andamento',setor_entrada_at:agora,pendente_desde:null});
-    _lastPainelSnap='';
     atualizarTelasAtivas();
-    // ── MUDANÇA: inserts de movimentação/confirmação em paralelo ──
-    Promise.all([
-      sb.from('movimentacoes').insert({pedido_id:id,setor_origem:o.setor,setor_destino:dest,usuario:ME.login,entrada_at:o.setor_entrada_at,saida_at:agora,tempo_ms:tempoSetor,confirmado_por:ME.login,confirmado_at:agora,tempo_confirmacao_ms:tempoConf}),
-      sb.from('confirmacoes').insert({pedido_id:id,setor_origem:o.setor,setor_destino:dest,enviado_at:o.pendente_desde,confirmado_at:agora,tempo_confirmacao_ms:tempoConf,confirmado_por:ME.login})
-    ]);
-    refreshPedidosSoon(500);
+    await refreshUI();
+    await sb.from('movimentacoes').insert({pedido_id:id,setor_origem:o.setor,setor_destino:dest,usuario:ME.login,entrada_at:o.setor_entrada_at,saida_at:agora,tempo_ms:tempoSetor,confirmado_por:ME.login,confirmado_at:agora,tempo_confirmacao_ms:tempoConf});
+    await sb.from('confirmacoes').insert({pedido_id:id,setor_origem:o.setor,setor_destino:dest,enviado_at:o.pendente_desde,confirmado_at:agora,tempo_confirmacao_ms:tempoConf,confirmado_por:ME.login});
     toast('Recebimento confirmado em '+(SL[dest]||dest),'ok');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
@@ -1248,9 +1245,9 @@ async function confirmarNota(){
     }).eq('id',_notaTarget);
     if(res.error)throw res.error;
     upsertPedidoLocal({id:_notaTarget,setor:'separacao',status:'pronto_balcao',setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,finalizado_at:agora,num_nota:nota});
-    _lastPainelSnap='';
     atualizarTelasAtivas();
-    sb.from('movimentacoes').insert({
+    await refreshUI();
+    await sb.from('movimentacoes').insert({
       pedido_id:_notaTarget,
       setor_origem:o.setor,
       setor_destino:'separacao',
@@ -1262,7 +1259,6 @@ async function confirmarNota(){
       confirmado_at:agora,
       tempo_confirmacao_ms:0
     });
-    refreshPedidosSoon(500);
     toast('Faturado! Pedido voltou para a Separação para chamar balcão.','move');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);_notaTarget=null;}
@@ -1279,9 +1275,8 @@ async function chamarBalcao(id){
     }).eq('id',id);
     if(res.error)throw res.error;
     upsertPedidoLocal({id:id,status:'balcao_chamado',pendente_desde:agora});
-    _lastPainelSnap='';
     atualizarTelasAtivas();
-    refreshPedidosSoon(500);
+    await refreshUI();
     toast('Pedido #'+pedido.numero+' chamado para o balcão.','ok');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
@@ -1303,51 +1298,25 @@ async function createOrder(){
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
 }
-
-// ── MUDANÇA 6: renderTV unificado (usado por TV logada e TV pública) ──
-function buildTVRows(pedidos) {
-  var active = pedidos.filter(isTVVisivel);
-  active.sort(function(a,b){return tsMs(b.entrada_at)-tsMs(a.entrada_at);});
-
-  var html = active.map(function(o){
-    var t = calcTotalMs(o);
-    var totalMs = Math.max(0, (t.freeze||now()) - t.entry);
-    var sEntry, sFreeze;
-    if (o.status==='aguardando') {
-      sEntry = tsMs(o.pendente_desde); sFreeze = null;
-    } else {
-      var s = calcSetorMs(o);
-      sEntry = s.entry; sFreeze = s.freeze;
-    }
-    var setorMs = Math.max(0, (sFreeze||now()) - sEntry);
-
+function renderTV(){
+  var active=PEDIDOS.filter(isTVVisivel);
+  el('tv-body').innerHTML=active.sort(function(a,b){return tsMs(b.entrada_at)-tsMs(a.entrada_at);}).map(function(o){
+    var totalMs=getTempoTotalPedido(o);
+    var setorMs=(o.status==='aguardando' || o.status==='balcao_chamado') ? Math.max(0,now()-tsMs(o.pendente_desde)) : Math.max(0,now()-tsMs(o.setor_entrada_at));
     var rC=totalMs>45*60000?'tv-row-danger':totalMs>25*60000?'tv-row-warn':'';
     var tColor=totalMs>45*60000?'var(--danger)':totalMs>25*60000?'var(--warn)':'var(--text)';
     var sl=o.status==='aguardando'
       ? '<span class="tv-set '+(SC[o.setor]||'tag-do')+'">'+(SL[o.setor]||o.setor)+'</span> <span style="font-size:11px;color:var(--corte)">→ '+(SL[o.setor_pendente]||o.setor_pendente||'')+'</span>'
       : '<span class="tv-set '+getSetorClassTV(o)+'">'+(o.status==='pronto_balcao' || o.status==='balcao_chamado' ? 'Balcão' : (SL[o.setor]||o.setor))+'</span>';
-
-    var sFreezeAttr = sFreeze ? ' data-timer-freeze-ts="'+sFreeze+'"' : '';
-    var tFreezeAttr = t.freeze ? ' data-timer-freeze-ts="'+t.freeze+'"' : '';
-
-    return '<tr class="'+rC+'"><td><span class="tv-num">#'+o.numero+'</span></td><td style="font-size:13px">'+(o.nome_cliente||'—')+'</td><td>'+sl+'</td><td><span class="tv-tim" data-timer-entry-ts="'+sEntry+'"'+sFreezeAttr+'>'+fmtTs(setorMs)+'</span></td><td><span class="tv-tim" style="color:'+tColor+'" data-timer-entry-ts="'+t.entry+'"'+tFreezeAttr+'>'+fmtTs(totalMs)+'</span></td><td><span style="font-size:12px;color:var(--muted)">'+getStatusTextoTV(o)+'</span></td></tr>';
+    return '<tr class="'+rC+'"><td><span class="tv-num">#'+o.numero+'</span></td><td style="font-size:13px">'+(o.nome_cliente||'—')+'</td><td>'+sl+'</td><td><span class="tv-tim">'+fmtTs(setorMs)+'</span></td><td><span class="tv-tim" style="color:'+tColor+'">'+fmtTs(totalMs)+'</span></td><td><span style="font-size:12px;color:var(--muted)">'+getStatusTextoTV(o)+'</span></td></tr>';
   }).join('');
-
-  var done=pedidos.filter(function(o){return o.status!=='cancelado' && !!o.finalizado_at;});
+  var done=PEDIDOS.filter(function(o){return o.status!=='cancelado' && !!o.finalizado_at;});
   var avgMs=done.length?done.reduce(function(s,o){return s+(tsMs(o.finalizado_at)-tsMs(o.entrada_at));},0)/done.length:0;
-
-  return { html: html, avgMs: avgMs, doneCount: done.length, activeCount: active.length };
+  el('tv-avg').textContent=done.length?fmtTs(avgMs):'--:--';
+  el('tv-done').textContent=done.length;
+  el('tv-active').textContent=active.length;
+  el('tv-clock').textContent=fmtClock(new Date());
 }
-
-function renderTV(){
-  var r = buildTVRows(PEDIDOS);
-  el('tv-body').innerHTML = r.html;
-  el('tv-avg').textContent = r.doneCount ? fmtTs(r.avgMs) : '--:--';
-  el('tv-done').textContent = r.doneCount;
-  el('tv-active').textContent = r.activeCount;
-  el('tv-clock').textContent = fmtClock(new Date());
-}
-
 function renderRelatorios(){
   var all=(PEDIDOS||[]).filter(function(o){return o.status!=='cancelado';});
   var done=all.filter(function(o){return !!o.finalizado_at;});
@@ -1365,6 +1334,7 @@ function renderRelatorios(){
     {l:'Em andamento',v:active.filter(function(o){return o.status==='em_andamento';}).length,s:'agora'},
     {l:'Aguard. confirmação',v:active.filter(function(o){return o.status==='aguardando';}).length,s:'agora'},
     {l:'Prontos p/ balcão',v:active.filter(function(o){return o.status==='pronto_balcao' || o.status==='balcao_chamado';}).length,s:'após faturar'},
+    {l:'Ag. Retira',v:active.filter(function(o){return o.status==='agu_retirada';}).length,s:'armazenados'},
     {l:'Tempo médio',v:avg?fmtT(avg):'--',s:'até o faturamento'},
     {l:'Mais rápido',v:minT?fmtT(minT):'--',s:''},
     {l:'Mais lento',v:maxT?fmtT(maxT):'--',s:''}
@@ -1493,77 +1463,59 @@ function enfileirarChamadaTV(texto) {
   processarFilaTV();
 }
 
-function tocarAlertaTV() {
-  try {
-    if (!window.AudioContext && !window.webkitAudioContext) return;
-    var Ctx = window.AudioContext || window.webkitAudioContext;
-    var ctx = new Ctx();
-    var osc = ctx.createOscillator();
-    var gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
-    gain.gain.setValueAtTime(0.001, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.36);
-    setTimeout(function(){ctx.close();}, 450);
-  } catch(e) {}
-}
-
 function anunciarTVPublica(listaAtual) {
   listaAtual.forEach(function(o) {
     if (o.status !== 'balcao_chamado') return;
     if (!o.pendente_desde) return;
-     if (now()-tsMs(o.pendente_desde) > JANELA_NARRACAO_BALCAO_MS) return;
+    if (now()-tsMs(o.pendente_desde) > BALCAO_TV_MS) return;
 
     var memoria = 'tv_call_' + o.id + '_' + (o.pendente_desde || '');
     if (sessionStorage.getItem(memoria)) return;
     sessionStorage.setItem(memoria, '1');
 
-    toast('🔔 Chamada no balcão: '+(o.nome_cliente || 'cliente')+' · Pedido #'+o.numero,'ok',8500);
-    tocarAlertaTV();
-    enfileirarChamadaTV('Por favor, ' + (o.nome_cliente || 'cliente') + ', dirija-se ao balcão para retirada do seu pedido ' + o.numero + '.');
+    enfileirarChamadaTV('Pedido ' + o.numero + ', por favor comparecer ao balcão para retirada. Obrigado.');
   });
 }
 
-// ── MUDANÇA 7: TV Pública com polling de 5s e snapshot ──
 async function iniciarTVPublica(){
   renderTVAudioUnlock();
 
   setInterval(function(){
     if(el('tvp-clock')) el('tvp-clock').textContent=fmtClock(new Date());
-    updateTimersInPlace();
+    renderTVPub();
   },1000);
 
   async function carregarTVPublica(){
     try{
       var hoje=new Date();hoje.setHours(0,0,0,0);
-      var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado').order('entrada_at',{ascending:false});
+      var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.agu_retirada').order('entrada_at',{ascending:false});
       _tvPub=res.data||[];
-      var snap = buildSnapshot(_tvPub);
-      if (snap !== _lastTVPubSnap) {
-        _lastTVPubSnap = snap;
-        renderTVPub();
-      }
+      renderTVPub();
       anunciarTVPublica(_tvPub);
     }catch(e){}
   }
 
   await carregarTVPublica();
-  setInterval(carregarTVPublica, 5000);
+  setInterval(carregarTVPublica,3000);
 }
-
-// ── MUDANÇA: renderTVPub reutiliza buildTVRows ──
 function renderTVPub(){
+  var active=_tvPub.filter(isTVVisivel);
   if(!el('tvp-body'))return;
-  var r = buildTVRows(_tvPub);
-  el('tvp-body').innerHTML = r.html;
-  if(el('tvp-avg'))el('tvp-avg').textContent=r.doneCount?fmtTs(r.avgMs):'--:--';
-  if(el('tvp-done'))el('tvp-done').textContent=r.doneCount;
-  if(el('tvp-active'))el('tvp-active').textContent=r.activeCount;
+  el('tvp-body').innerHTML=active.sort(function(a,b){return tsMs(b.entrada_at)-tsMs(a.entrada_at);}).map(function(o){
+    var totalMs=getTempoTotalPedido(o);
+    var setorMs=(o.status==='aguardando' || o.status==='balcao_chamado') ? Math.max(0,now()-tsMs(o.pendente_desde)) : Math.max(0,now()-tsMs(o.setor_entrada_at));
+    var rC=totalMs>45*60000?'tv-row-danger':totalMs>25*60000?'tv-row-warn':'';
+    var tColor=totalMs>45*60000?'var(--danger)':totalMs>25*60000?'var(--warn)':'var(--text)';
+    var sl=o.status==='aguardando'
+      ? '<span class="tv-set '+(SC[o.setor]||'tag-do')+'">'+(SL[o.setor]||o.setor)+'</span> <span style="font-size:11px;color:var(--corte)">→ '+(SL[o.setor_pendente]||o.setor_pendente||'')+'</span>'
+      : '<span class="tv-set '+getSetorClassTV(o)+'">'+(o.status==='pronto_balcao' || o.status==='balcao_chamado' ? 'Balcão' : (SL[o.setor]||o.setor))+'</span>';
+    return '<tr class="'+rC+'"><td><span class="tv-num">#'+o.numero+'</span></td><td style="font-size:13px">'+(o.nome_cliente||'—')+'</td><td>'+sl+'</td><td><span class="tv-tim">'+fmtTs(setorMs)+'</span></td><td><span class="tv-tim" style="color:'+tColor+'">'+fmtTs(totalMs)+'</span></td><td><span style="font-size:12px;color:var(--muted)">'+getStatusTextoTV(o)+'</span></td></tr>';
+  }).join('');
+  var done=_tvPub.filter(function(o){return o.status!=='cancelado' && !!o.finalizado_at;});
+  var avgMs=done.length?done.reduce(function(s,o){return s+(tsMs(o.finalizado_at)-tsMs(o.entrada_at));},0)/done.length:0;
+  if(el('tvp-avg'))el('tvp-avg').textContent=done.length?fmtTs(avgMs):'--:--';
+  if(el('tvp-done'))el('tvp-done').textContent=done.length;
+  if(el('tvp-active'))el('tvp-active').textContent=active.length;
 }
 if(window.location.search.indexOf('tv=1')>=0){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
