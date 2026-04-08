@@ -397,6 +397,7 @@ main{padding:24px;max-width:1500px;margin:0 auto;width:100%;position:relative;z-
     <div class="ph">
       <span class="pt">Aguardando Retirada</span>
       <span style="color:var(--muted);font-size:12px" id="agr-count"></span>
+      <button class="btnn" id="btn-agr-manual" style="display:none" onclick="openM('m-agr-manual')">+ Inserir Nota</button>
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
       <table class="utbl" id="agr-table">
@@ -485,6 +486,18 @@ main{padding:24px;max-width:1500px;margin:0 auto;width:100%;position:relative;z-
   </div>
 </div>
 
+
+<div class="mb" id="m-agr-manual">
+  <div class="mo">
+    <div class="mt">Inserir nota em Ag. Retira</div>
+    <p style="color:var(--muted);font-size:12px;margin-bottom:16px">Insira notas que já estavam aguardando retirada antes do sistema. A data informada será usada para calcular os dias.</p>
+    <div class="f"><label class="fl">Número do Pedido *</label><input type="text" id="agr-m-num" placeholder="Ex: 00123"/></div>
+    <div class="f"><label class="fl">Nome do Cliente *</label><input type="text" id="agr-m-cli" placeholder="Nome completo"/></div>
+    <div class="f"><label class="fl">Número da Nota Fiscal *</label><input type="text" id="agr-m-nf" placeholder="Ex: 51200"/></div>
+    <div class="f"><label class="fl">Data do Faturamento *</label><input type="date" id="agr-m-data"/></div>
+    <div class="ma"><button class="bcan" onclick="closeM('m-agr-manual')">Cancelar</button><button class="bok" onclick="inserirAgRetiraManual()">Inserir</button></div>
+  </div>
+</div>
 <div class="mb" id="m-ocorrencia">
   <div class="mo">
     <div class="mt" id="occ-title">Registrar ocorrência</div>
@@ -1457,7 +1470,8 @@ function buildTVRows(pedidos) {
     return '<tr class="'+rC+'"><td><span class="tv-num">#'+o.numero+'</span></td><td style="font-size:13px">'+(o.nome_cliente||'—')+'</td><td>'+sl+'</td><td><span class="tv-tim" data-timer-entry-ts="'+sEntry+'"'+sFreezeAttr+'>'+fmtTs(setorMs)+'</span></td><td><span class="tv-tim" style="color:'+tColor+'" data-timer-entry-ts="'+t.entry+'"'+tFreezeAttr+'>'+fmtTs(totalMs)+'</span></td><td><span style="font-size:12px;color:var(--muted)">'+getStatusTextoTV(o)+'</span></td></tr>';
   }).join('');
 
-  var done=pedidos.filter(function(o){return o.status!=='cancelado' && !!o.finalizado_at;});
+  var hoje=new Date();hoje.setHours(0,0,0,0);var hojeMs=hoje.getTime();
+  var done=pedidos.filter(function(o){return o.status!=='cancelado' && !!o.finalizado_at && tsMs(o.finalizado_at)>=hojeMs;});
   var avgMs=done.length?done.reduce(function(s,o){return s+(tsMs(o.finalizado_at)-tsMs(o.entrada_at));},0)/done.length:0;
 
   return { html: html, avgMs: avgMs, doneCount: done.length, activeCount: active.length };
@@ -1705,8 +1719,8 @@ el('tv-clock').textContent=fmtClock(new Date());
 // ══════════════════════════════════════════════
 // AG. RETIRA + OCORRÊNCIAS
 // ══════════════════════════════════════════════
-var AGR_15_DAYS_MS = 10 * 1000;
-var OCC_48H_MS = 10 * 1000;
+var AGR_15_DAYS_MS = 30 * 1000;
+var OCC_48H_MS = 30 * 1000;
 var _agrAlertDismissed = {};
 
 async function enviarAgRetira(id) {
@@ -1842,9 +1856,50 @@ async function logOcorrencia(pedido_id, numero, nome_cliente, num_nota, tipo, de
   } catch(e) { console.warn('Erro ao registrar ocorrência:', e); }
 }
 
+
+// ── Inserir Ag. Retira manual (notas antigas) ──
+async function inserirAgRetiraManual() {
+  var num = (el('agr-m-num').value || '').trim();
+  var cli = (el('agr-m-cli').value || '').trim();
+  var nf = (el('agr-m-nf').value || '').trim();
+  var data = (el('agr-m-data').value || '').trim();
+  if (!num || !cli || !nf || !data) { toast('Preencha todos os campos.', 'err'); return; }
+  closeM('m-agr-manual');
+  ov(true);
+  try {
+    var dataFat = new Date(data + 'T12:00:00').toISOString();
+    var agora = new Date().toISOString();
+    var res = await sb.from('pedidos').insert({
+      numero: num,
+      nome_cliente: cli,
+      num_nota: nf,
+      setor: 'separacao',
+      setor_pendente: '',
+      status: 'ag_retira',
+      criado_por: ME.login,
+      entrada_at: dataFat,
+      setor_entrada_at: dataFat,
+      finalizado_at: dataFat,
+      pendente_desde: dataFat,
+      prioridade: 'normal',
+      obs: '[' + new Date().toLocaleString('pt-BR') + '] INSERÇÃO MANUAL · ' + ME.login + ' — Nota inserida manualmente no sistema com data de faturamento ' + data
+    });
+    if (res.error) throw res.error;
+    await refreshUI();
+    renderAgRetira();
+    toast('Nota #' + num + ' (NF: ' + nf + ') inserida em Ag. Retira.', 'ok');
+    el('agr-m-num').value = '';
+    el('agr-m-cli').value = '';
+    el('agr-m-nf').value = '';
+    el('agr-m-data').value = '';
+  } catch(e) { toast(e.message, 'err'); }
+  finally { ov(false); }
+}
+
 function renderAgRetira() {
   var items = PEDIDOS.filter(function(o) { return o.status === 'ag_retira'; });
   renderAgRetiraBadge();
+  if(el('btn-agr-manual'))el('btn-agr-manual').style.display=(isAdmin()||meuSetor()==='atendimento')?'flex':'none';
   if (el('agr-count')) el('agr-count').textContent = items.length + ' pedido(s)';
   if (el('agr-empty')) el('agr-empty').style.display = items.length ? 'none' : 'block';
   if (!el('agr-tbody')) return;
