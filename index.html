@@ -193,21 +193,27 @@ main{padding:20px;max-width:1500px;margin:0 auto;width:100%}
 .agr-actions{display:flex;gap:6px;flex-wrap:wrap}
 .alert-retira{position:fixed;bottom:24px;right:340px;background:var(--bg2);border:1px solid rgba(226,75,74,.6);border-radius:8px;padding:10px 16px;font-size:12px;color:var(--danger);cursor:pointer;z-index:9998;animation:agr-blink 1.2s infinite;display:none}
 .alert-retira:hover{background:rgba(226,75,74,.12)}
+
+/* ── Ocorrências ── */
+.occ-card{background:var(--bg2);border:1px solid rgba(239,159,39,.4);border-radius:var(--radius);padding:16px;position:relative}
+.occ-card.occ-expiring{border-color:rgba(226,75,74,.6);background:rgba(226,75,74,.06)}
+.occ-timer{font-size:10px;color:var(--warn);margin-top:2px}
+.occ-card.occ-expiring .occ-timer{color:var(--danger)}
+
 </style>
 </head>
 <body>
 <div id="ov" class="h">Carregando...</div>
 <div id="tw"></div>
 <nav id="main-nav" style="display:none">
-  <span class="logo">Call <span>Order</span></span>
+  <span class="logo" onclick="go('painel')" style="cursor:pointer">Call <span>Order</span></span>
   <div class="nav-tabs">
-    <button class="tab active" onclick="go('painel')">Painel</button>
-    <button class="tab" onclick="go('tv')">Tela TV</button>
     <button class="tab" onclick="go('relatorios')">Relatórios</button>
     <button class="tab adm-only" onclick="go('usuarios')" style="display:none">Usuários</button>
     <button class="tab" onclick="go('senha')">Minha Senha</button>
     <button class="tab adm-only" onclick="go('config')" style="display:none">Configurações</button>
     <button class="tab" onclick="go('agretira')" id="tab-agretira">Ag. Retira <span id="agretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <button class="tab" onclick="go('ocorrencias')" id="tab-ocorrencias">Ocorrências <span id="ocorrencias-badge" style="display:none;background:rgba(239,159,39,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
   </div>
   <div class="nav-right">
     <span id="nav-nome">—</span>
@@ -354,6 +360,17 @@ main{padding:20px;max-width:1500px;margin:0 auto;width:100%}
   </main>
 </div>
 
+
+<div class="screen" id="screen-ocorrencias">
+  <main>
+    <div class="ph">
+      <span class="pt">Ocorrências</span>
+      <span style="color:var(--muted);font-size:12px" id="occ-count"></span>
+    </div>
+    <div class="agr-grid" id="occ-grid"></div>
+    <div id="occ-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhuma ocorrência no momento.</div>
+  </main>
+</div>
 <div id="alert-retira-box" class="alert-retira" onclick="go('agretira')">
   ⚠ Pedido(s) com 15+ dias em Ag. Retira
 </div>
@@ -435,7 +452,7 @@ const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 const SETORES = ['atendimento','estoque','corte','separacao','faturamento'];
 const PROXIMO_SETOR = {atendimento:'estoque',estoque:'corte',corte:'separacao',separacao:'faturamento'};
 const RETORNO_PADRAO = {estoque:'atendimento',corte:'estoque',separacao:'corte',faturamento:'separacao'};
-const SL = {atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',separacao:'Separação',faturamento:'Faturamento',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira'};
+const SL = {atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',separacao:'Separação',faturamento:'Faturamento',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira',em_ocorrencia:'Ocorrência'};
 const SC = {atendimento:'tag-at',estoque:'tag-es',corte:'tag-co',separacao:'tag-se',faturamento:'tag-fa',pronto_balcao:'tag-rd',balcao_chamado:'tag-rd',finalizado:'tag-do'};
 const SD = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1'};
 const BC = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1'};
@@ -702,7 +719,7 @@ function startPolling(){
   _pollTi=setInterval(function(){
     if(!ME)return;
     refreshUI();
-  },8000);
+  },4000);
 }
 function stopPolling(){
   if(_pollTi){clearInterval(_pollTi);_pollTi=null;}
@@ -985,7 +1002,7 @@ function startRealtime(){
 }
 async function fetchPedidos(){
   var hoje=new Date();hoje.setHours(0,0,0,0);
-  var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira').order('entrada_at',{ascending:false});
+  var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia').order('entrada_at',{ascending:false});
   PEDIDOS=res.data||[];
 }
 async function fetchMovs(){
@@ -1068,6 +1085,7 @@ async function go(name){
   if(name==='usuarios'){ov(true);var u=await fetchUsuarios();ov(false);renderUsers(u);}
   if(name==='config'){setTimeout(carregarVozes,100);}
   if(name==='agretira'){ov(true);await fetchPedidos();ov(false);renderAgRetira();}
+  if(name==='ocorrencias'){ov(true);await fetchPedidos();ov(false);renderOcorrencias();}
 }
 
 // ── MUDANÇA 5: Clock SÓ atualiza texto do relógio + timers in-place ──
@@ -1084,6 +1102,8 @@ function startClock(){
 
     // Check Ag. Retira 15-day alerts
     checkAgRetiraAlerts();
+    checkOcorrencias48h();
+    renderOcorrenciasBadge();
 
     // Alertas de 10min (raro, não causa render)
     PEDIDOS.forEach(function(o){
@@ -1095,10 +1115,10 @@ function startClock(){
   },1000);
 }
 function isOperacionalVisivel(o){
-  return o.status!=='finalizado' && o.status!=='cancelado' && o.status!=='balcao_chamado' && o.status!=='ag_retira';
+  return o.status!=='finalizado' && o.status!=='cancelado' && o.status!=='balcao_chamado' && o.status!=='ag_retira' && o.status!=='em_ocorrencia';
 }
 function isTVVisivel(o){
-  if(o.status==='cancelado' || o.status==='finalizado' || o.status==='balcao_chamado' || o.status==='ag_retira')return false;
+  if(o.status==='cancelado' || o.status==='finalizado' || o.status==='balcao_chamado' || o.status==='ag_retira' || o.status==='em_ocorrencia')return false;
   return true;
 }
 function getTempoTotalPedido(o){
@@ -1320,7 +1340,8 @@ async function chamarBalcao(id){
     _lastPainelSnap='';
     atualizarTelasAtivas();
     refreshPedidosSoon(500);
-    toast('Pedido #'+pedido.numero+' chamado para o balcão.','ok');
+    // Toast silencioso (narração será feita pela TV)
+    var _e=document.createElement('div');_e.className='toast t-ok';_e.textContent='Pedido #'+pedido.numero+' chamado para o balcão.';el('tw').appendChild(_e);requestAnimationFrame(function(){requestAnimationFrame(function(){_e.classList.add('show');});});setTimeout(function(){_e.classList.remove('show');setTimeout(function(){_e.remove();},300);},3500);
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
 }
@@ -1579,7 +1600,7 @@ async function iniciarTVPublica(){
   async function carregarTVPublica(){
     try{
       var hoje=new Date();hoje.setHours(0,0,0,0);
-      var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira').order('entrada_at',{ascending:false});
+      var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia').order('entrada_at',{ascending:false});
       _tvPub=res.data||[];
       var snap = buildSnapshot(_tvPub);
       if (snap !== _lastTVPubSnap) {
@@ -1616,10 +1637,12 @@ el('tv-clock').textContent=fmtClock(new Date());
 
 
 // ══════════════════════════════════════════════
-// AG. RETIRA - Sistema de aguardando retirada
 // ══════════════════════════════════════════════
-var AGR_15_DAYS_MS = 30 * 1000;
-var _agrAlertShown = {};
+// AG. RETIRA + OCORRÊNCIAS
+// ══════════════════════════════════════════════
+var AGR_15_DAYS_MS = 15 * 24 * 60 * 60 * 1000;
+var OCC_48H_MS = 48 * 60 * 60 * 1000;
+var _agrAlertDismissed = {};
 
 async function enviarAgRetira(id) {
   ov(true);
@@ -1649,7 +1672,6 @@ async function agRetiraChamarBalcao(id) {
     var pedido = getPedidoById(id);
     if (!pedido) throw new Error('Pedido não encontrado.');
     var agora = new Date().toISOString();
-    // Volta para separação como pronto_balcao e chama balcão
     var res = await sb.from('pedidos').update({
       status: 'balcao_chamado',
       setor: 'separacao',
@@ -1662,7 +1684,7 @@ async function agRetiraChamarBalcao(id) {
     _lastPainelSnap = '';
     atualizarTelasAtivas();
     refreshPedidosSoon(500);
-    toast('Cliente chamado no balcão! Pedido #' + pedido.numero, 'ok');
+    var _e2=document.createElement('div');_e2.className='toast t-ok';_e2.textContent='Cliente chamado no balcão! Pedido #'+pedido.numero;el('tw').appendChild(_e2);requestAnimationFrame(function(){requestAnimationFrame(function(){_e2.classList.add('show');});});setTimeout(function(){_e2.classList.remove('show');setTimeout(function(){_e2.remove();},300);},3500);
   } catch(e) { toast(e.message, 'err'); }
   finally { ov(false); }
 }
@@ -1670,23 +1692,72 @@ async function agRetiraChamarBalcao(id) {
 async function agRetiraCancelar(id) {
   _occCtx = {modo: 'exclusao', id: id, setorLabel: 'Ag. Retira'};
   el('occ-title').textContent = 'Cancelar pedido em Ag. Retira';
-  el('occ-desc').textContent = 'Informe o motivo do cancelamento deste pedido que estava aguardando retirada.';
+  el('occ-desc').textContent = 'Informe o motivo do cancelamento.';
   el('occ-text').value = '';
   openM('m-ocorrencia');
 }
 
+// ── Enviar para aba Ocorrências ──
+async function enviarParaOcorrencias(id) {
+  ov(true);
+  try {
+    var pedido = getPedidoById(id);
+    if (!pedido) throw new Error('Pedido não encontrado.');
+    var agora = new Date().toISOString();
+    var res = await sb.from('pedidos').update({
+      status: 'em_ocorrencia',
+      pendente_desde: agora
+    }).eq('id', id);
+    if (res.error) throw res.error;
+    upsertPedidoLocal({id: id, status: 'em_ocorrencia', pendente_desde: agora});
+    var linha = buildOccurrenceLine('OCORRÊNCIA', 'Ag. Retira', 'Pedido enviado para ocorrências após prazo expirado.');
+    await appendObsPedido(id, linha);
+    // Dismiss alert for this order
+    _agrAlertDismissed[id] = true;
+    _lastPainelSnap = '';
+    atualizarTelasAtivas();
+    refreshPedidosSoon(500);
+    toast('Pedido #' + pedido.numero + ' enviado para Ocorrências.', 'warn');
+  } catch(e) { toast(e.message, 'err'); }
+  finally { ov(false); }
+}
+
+// ── Retornar de Ocorrências para Ag. Retira ──
+async function occRetornarAgRetira(id) {
+  ov(true);
+  try {
+    var pedido = getPedidoById(id);
+    if (!pedido) throw new Error('Pedido não encontrado.');
+    var agora = new Date().toISOString();
+    var res = await sb.from('pedidos').update({
+      status: 'ag_retira',
+      pendente_desde: agora
+    }).eq('id', id);
+    if (res.error) throw res.error;
+    upsertPedidoLocal({id: id, status: 'ag_retira', pendente_desde: agora});
+    var linha = buildOccurrenceLine('RETORNO', 'Ocorrências', 'Pedido retornado para Ag. Retira.');
+    await appendObsPedido(id, linha);
+    _lastPainelSnap = '';
+    atualizarTelasAtivas();
+    refreshPedidosSoon(500);
+    toast('Pedido #' + pedido.numero + ' retornado para Ag. Retira.', 'ok');
+  } catch(e) { toast(e.message, 'err'); }
+  finally { ov(false); }
+}
+
+// ── Cancelar em Ocorrências ──
+async function occCancelar(id) {
+  _occCtx = {modo: 'exclusao', id: id, setorLabel: 'Ocorrências'};
+  el('occ-title').textContent = 'Cancelar pedido em Ocorrências';
+  el('occ-desc').textContent = 'Informe o motivo do cancelamento.';
+  el('occ-text').value = '';
+  openM('m-ocorrencia');
+}
+
+// ── Render Ag. Retira ──
 function renderAgRetira() {
   var items = PEDIDOS.filter(function(o) { return o.status === 'ag_retira'; });
-  // Update badge
-  var badge = el('agretira-badge');
-  if (badge) {
-    if (items.length > 0) {
-      badge.textContent = items.length;
-      badge.style.display = 'inline';
-    } else {
-      badge.style.display = 'none';
-    }
-  }
+  renderAgRetiraBadge();
   if (el('agr-count')) el('agr-count').textContent = items.length + ' pedido(s)';
   if (el('agr-empty')) el('agr-empty').style.display = items.length ? 'none' : 'block';
   if (!el('agr-grid')) return;
@@ -1698,50 +1769,105 @@ function renderAgRetira() {
     var expired = diasMs >= AGR_15_DAYS_MS;
     var dataEntrada = o.pendente_desde ? new Date(o.pendente_desde).toLocaleDateString('pt-BR') : '—';
 
-    return '<div class="agr-card' + (expired ? ' agr-expired' : '') + '">' +
-      (expired ? '<div class="agr-dot-alert"></div>' : '') +
-      '<div class="agr-info" style="padding-left:' + (expired ? '14px' : '0') + '">' +
+    var btnOcc = expired ? '<button class="bmv" style="border-color:rgba(239,159,39,.5);color:var(--warn)" onclick="enviarParaOcorrencias(\'' + o.id + '\')">Ocorrências</button>' : '';
+
+    return '<div class="agr-card">' +
+      '<div class="agr-info">' +
         '<span class="agr-num">#' + o.numero + '</span>' +
         '<span class="agr-cli">' + (o.nome_cliente || '—') + '</span>' +
         '<span class="agr-nf">NF: ' + (o.num_nota || '—') + '</span>' +
-        '<span class="agr-days">Entrada: ' + dataEntrada + ' · ' + dias + ' dia(s) aguardando</span>' +
+        '<span class="agr-days">Entrada: ' + dataEntrada + ' · ' + dias + ' dia(s) aguardando' + (expired ? ' ⚠ PRAZO EXPIRADO' : '') + '</span>' +
       '</div>' +
       '<div class="agr-actions">' +
         '<button class="bcall" onclick="agRetiraChamarBalcao(\'' + o.id + '\')" style="animation:none;font-weight:500">Chamar balcão</button>' +
+        btnOcc +
         '<button class="bexc" onclick="agRetiraCancelar(\'' + o.id + '\')">Cancelar</button>' +
       '</div>' +
     '</div>';
   }).join('');
 }
 
+// ── Render Ocorrências ──
+function renderOcorrencias() {
+  var items = PEDIDOS.filter(function(o) { return o.status === 'em_ocorrencia'; });
+  renderOcorrenciasBadge();
+  if (el('occ-count')) el('occ-count').textContent = items.length + ' pedido(s)';
+  if (el('occ-empty')) el('occ-empty').style.display = items.length ? 'none' : 'block';
+  if (!el('occ-grid')) return;
+
+  el('occ-grid').innerHTML = items.map(function(o) {
+    var entrou = tsMs(o.pendente_desde);
+    var tempoMs = now() - entrou;
+    var horas = Math.floor(tempoMs / (60*60*1000));
+    var restanteMs = Math.max(0, OCC_48H_MS - tempoMs);
+    var restanteH = Math.floor(restanteMs / (60*60*1000));
+    var restanteM = Math.floor((restanteMs % (60*60*1000)) / (60*1000));
+    var quaseExpirando = restanteMs < 6*60*60*1000;
+    var dataEntrada = o.pendente_desde ? new Date(o.pendente_desde).toLocaleString('pt-BR') : '—';
+
+    return '<div class="occ-card' + (quaseExpirando ? ' occ-expiring' : '') + '">' +
+      '<div class="agr-info">' +
+        '<span class="agr-num">#' + o.numero + '</span>' +
+        '<span class="agr-cli">' + (o.nome_cliente || '—') + '</span>' +
+        '<span class="agr-nf">NF: ' + (o.num_nota || '—') + '</span>' +
+        '<span class="agr-days">Entrada em ocorrência: ' + dataEntrada + '</span>' +
+        '<span class="occ-timer">Tempo restante: ' + restanteH + 'h ' + restanteM + 'm (máx 48h)</span>' +
+      '</div>' +
+      '<div class="agr-actions">' +
+        '<button class="bmv" style="border-color:rgba(239,159,39,.5);color:var(--warn)" onclick="occRetornarAgRetira(\'' + o.id + '\')">← Retornar Ag. Retira</button>' +
+        '<button class="bexc" onclick="occCancelar(\'' + o.id + '\')">Cancelar</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderOcorrenciasBadge() {
+  var items = PEDIDOS.filter(function(o) { return o.status === 'em_ocorrencia'; });
+  var badge = el('ocorrencias-badge');
+  if (badge) {
+    if (items.length > 0) {
+      badge.textContent = items.length;
+      badge.style.display = 'inline';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+}
+
+// ── Auto-cancel ocorrências after 48h ──
+function checkOcorrencias48h() {
+  PEDIDOS.forEach(function(o) {
+    if (o.status !== 'em_ocorrencia') return;
+    if (!o.pendente_desde) return;
+    var tempoMs = now() - tsMs(o.pendente_desde);
+    if (tempoMs >= OCC_48H_MS) {
+      var k = 'occ48_' + o.id;
+      if (!sessionStorage.getItem(k)) {
+        sessionStorage.setItem(k, '1');
+        toast('Pedido #' + o.numero + ' excedeu 48h em Ocorrências!', 'err', 8000);
+      }
+    }
+  });
+}
+
+// ── Alertas Ag. Retira (15 dias) - msg piscante com NF ──
 function checkAgRetiraAlerts() {
   var items = PEDIDOS.filter(function(o) { return o.status === 'ag_retira'; });
   var expired = items.filter(function(o) {
-    return o.pendente_desde && (now() - tsMs(o.pendente_desde)) >= AGR_15_DAYS_MS;
+    return o.pendente_desde && (now() - tsMs(o.pendente_desde)) >= AGR_15_DAYS_MS && !_agrAlertDismissed[o.id];
   });
 
   var alertBox = el('alert-retira-box');
   if (!alertBox) return;
 
-  // Show alert for atendimento, admin, separação
   var podeVer = isAdmin() || meuSetor() === 'todos' || meuSetor() === 'atendimento' || meuSetor() === 'separacao';
   if (expired.length > 0 && podeVer) {
+    var nfs = expired.map(function(o) { return 'NF: ' + (o.num_nota || o.numero); }).join(' | ');
     alertBox.style.display = 'block';
-    alertBox.textContent = '⚠ ' + expired.length + ' pedido(s) com 15+ dias em Ag. Retira';
-    // Toast alert once per session per order
-    expired.forEach(function(o) {
-      var k = 'agr15_' + o.id;
-      if (!sessionStorage.getItem(k)) {
-        sessionStorage.setItem(k, '1');
-        toast('Pedido #' + o.numero + ' está há 15+ dias em Ag. Retira!', 'err', 8000);
-      }
-    });
+    alertBox.innerHTML = '⚠ ' + expired.length + ' pedido(s) com prazo expirado — ' + nfs + '<br><span style="font-size:10px;color:var(--muted)">Clique para verificar</span>';
   } else {
     alertBox.style.display = 'none';
   }
-
-  // Update badge count always
-  renderAgRetiraBadge();
 }
 
 function renderAgRetiraBadge() {
