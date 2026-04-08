@@ -427,19 +427,19 @@ main{padding:24px;max-width:1500px;margin:0 auto;width:100%;position:relative;z-
 <div id="alert-retira-box" class="alert-retira" onclick="go('agretira')">
   ⚠ Pedido(s) com 15+ dias em Ag. Retira
 </div>
-<div id="screen-tv-pub" style="display:none;background:#0b1121;min-height:100vh;padding:28px;font-family:var(--font-mono);color:#e8edf5">
+<div id="screen-tv-pub" style="display:none;background:#0b1121;min-height:100vh;padding:28px;font-family:var(--font-mono);color:#ffffff">
   <div style="display:flex;align-items:center;margin-bottom:28px;gap:16px">
-    <span style="font-family:var(--font-head);font-size:24px;font-weight:800;background:linear-gradient(135deg,#22d3a7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Call Order</span>
-    <span style="color:rgba(232,237,245,0.4);font-size:13px">Acompanhamento em tempo real</span>
-    <div style="font-size:18px;font-weight:500;margin-left:auto;color:#e8edf5" id="tvp-clock">--:--:--</div>
+    <span style="font-family:var(--font-head);font-size:28px;font-weight:800;background:linear-gradient(135deg,#22d3a7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Call Order</span>
+    <span style="color:rgba(255,255,255,0.5);font-size:15px;font-weight:500">Acompanhamento em tempo real</span>
+    <div style="font-size:22px;font-weight:600;margin-left:auto;color:#ffffff" id="tvp-clock">--:--:--</div>
   </div>
-  <div style="background:#111827;border:1px solid rgba(99,179,237,0.08);border-radius:16px;overflow:hidden">
-  <table class="tv-tbl"><thead><tr><th>Pedido</th><th>Cliente</th><th>Setor</th><th>Tempo no Setor</th><th>Tempo Total</th><th>Status</th></tr></thead><tbody id="tvp-body"></tbody></table>
+  <div style="background:#111827;border:1px solid rgba(99,179,237,0.1);border-radius:16px;overflow:hidden">
+  <table class="tv-tbl" style="color:#ffffff"><thead><tr style="border-bottom:1px solid rgba(99,179,237,0.12)"><th style="color:rgba(255,255,255,0.6);font-size:13px;padding:14px 18px">Pedido</th><th style="color:rgba(255,255,255,0.6);font-size:13px;padding:14px 18px">Cliente</th><th style="color:rgba(255,255,255,0.6);font-size:13px;padding:14px 18px">Setor</th><th style="color:rgba(255,255,255,0.6);font-size:13px;padding:14px 18px">Tempo no Setor</th><th style="color:rgba(255,255,255,0.6);font-size:13px;padding:14px 18px">Tempo Total</th><th style="color:rgba(255,255,255,0.6);font-size:13px;padding:14px 18px">Status</th></tr></thead><tbody id="tvp-body" style="color:#ffffff"></tbody></table>
   </div>
-  <div class="tv-foot" style="margin-top:28px;background:#111827;border-color:rgba(99,179,237,0.08);border-radius:16px">
-    <div><div class="tv-fl">Tempo médio do dia</div><div class="tv-fv" id="tvp-avg" style="color:#22d3a7">--:--</div></div>
-    <div><div class="tv-fl">Concluídos hoje</div><div class="tv-fv" id="tvp-done" style="color:#22d3a7">0</div></div>
-    <div><div class="tv-fl">Em andamento</div><div class="tv-fv" id="tvp-active" style="color:#22d3a7">0</div></div>
+  <div class="tv-foot" style="margin-top:28px;background:#111827;border:1px solid rgba(99,179,237,0.1);border-radius:16px">
+    <div><div style="font-size:14px;color:rgba(255,255,255,0.55);font-weight:500">Tempo médio do dia</div><div style="font-size:24px;font-weight:700;color:#22d3a7" id="tvp-avg">--:--</div></div>
+    <div><div style="font-size:14px;color:rgba(255,255,255,0.55);font-weight:500">Concluídos hoje</div><div style="font-size:24px;font-weight:700;color:#22d3a7" id="tvp-done">0</div></div>
+    <div><div style="font-size:14px;color:rgba(255,255,255,0.55);font-weight:500">Em andamento</div><div style="font-size:24px;font-weight:700;color:#22d3a7" id="tvp-active">0</div></div>
   </div>
 </div>
 <div class="mb" id="m-new-order">
@@ -1705,8 +1705,8 @@ el('tv-clock').textContent=fmtClock(new Date());
 // ══════════════════════════════════════════════
 // AG. RETIRA + OCORRÊNCIAS
 // ══════════════════════════════════════════════
-var AGR_15_DAYS_MS = 30 * 1000;
-var OCC_48H_MS = 30 * 1000;
+var AGR_15_DAYS_MS = 10 * 1000;
+var OCC_48H_MS = 10 * 1000;
 var _agrAlertDismissed = {};
 
 async function enviarAgRetira(id) {
