@@ -176,11 +176,27 @@ main{padding:20px;max-width:1500px;margin:0 auto;width:100%}
 .tag-fa{background:var(--fat-dim);color:var(--fat)}
 .tag-rd{background:var(--ready-dim);color:var(--ready)}
 .tag-do{background:var(--done-dim);color:rgba(240,239,232,.6)}
+
+#ag-retira-alert-host{position:fixed;right:20px;bottom:20px;z-index:10001;pointer-events:none}
+.ag-retira-popup{width:320px;max-width:calc(100vw - 32px);background:rgba(20,20,24,.96);border:1px solid rgba(226,75,74,.45);border-radius:14px;box-shadow:0 16px 40px rgba(0,0,0,.38);padding:14px 16px;pointer-events:auto;cursor:pointer;animation:agmsn 1.15s infinite}
+.ag-retira-popup:hover{transform:translateY(-1px)}
+.ag-retira-popup-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.ag-retira-popup-dot{width:11px;height:11px;border-radius:50%;background:#ff5d5d;box-shadow:0 0 0 0 rgba(255,93,93,.55);animation:agdot 1s infinite}
+.ag-retira-popup-title{font-family:var(--font-head);font-size:15px;font-weight:700;color:#ffb0b0}
+.ag-retira-popup-msg{font-size:12px;line-height:1.5;color:var(--text)}
+.ag-retira-popup-sub{font-size:11px;color:var(--muted);margin-top:6px}
+@keyframes agmsn{0%,100%{box-shadow:0 0 0 0 rgba(226,75,74,.08)}50%{box-shadow:0 0 0 6px rgba(226,75,74,.16)}}
+@keyframes agdot{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(255,93,93,.6)}50%{opacity:.38;box-shadow:0 0 0 7px rgba(255,93,93,0)}}
+.nf-alert-wrap{display:inline-flex;align-items:center;gap:8px}
+.nf-alert-dot{width:10px;height:10px;border-radius:50%;background:#ff5d5d;box-shadow:0 0 0 0 rgba(255,93,93,.55);animation:agdot 1s infinite;flex-shrink:0}
+tr.ag-retira-focus{outline:1px solid rgba(255,93,93,.55);box-shadow:inset 0 0 0 9999px rgba(255,93,93,.06)}
+
 </style>
 </head>
 <body>
 <div id="ov" class="h">Carregando...</div>
 <div id="tw"></div>
+<div id="ag-retira-alert-host"></div>
 <nav id="main-nav" style="display:none">
   <span class="logo">Call <span>Order</span></span>
   <div class="nav-tabs">
@@ -354,8 +370,7 @@ main{padding:20px;max-width:1500px;margin:0 auto;width:100%}
       <div style="color:var(--muted);font-size:11px;margin-top:-6px;margin-bottom:10px">Separe os e-mails por vírgula. O sistema vai deixar os pedidos sinalizados aqui. Para envio automático real após 15 dias, ainda será necessário um backend/automação de e-mail.</div>
       <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
         <button class="bok" onclick="testarVoz()">▶ Testar voz</button>
-        <button class="bok" style="background:var(--bg3);color:var(--text);border:1px solid var(--border2)" onclick="salvarConfig()">Salvar voz</button>
-        <button class="bok" onclick="salvarEmailsAlerta()">Salvar grupo de e-mails</button>
+        <button class="bok" style="background:var(--bg3);color:var(--text);border:1px solid var(--border2)" onclick="salvarConfig()">Salvar configuração</button>
       </div>
       <div id="cfg-msg" style="margin-top:12px;font-size:12px;color:var(--atend);min-height:16px"></div>
     </div>
@@ -446,13 +461,14 @@ const SD = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#
 const BC = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1'};
 const ALERT_MS = 5*60*1000;
 const BALCAO_TV_MS = 5*60*1000;
-const AG_RETIRA_MS = 15*24*60*60*1000;
-let ALERT_EMAILS_CACHE = '';
+const AG_RETIRA_MS = 30*1000;
+const ALERT_EMAILS_KEY = 'callorder_alert_emails';
 let ME=null, PEDIDOS=[], MOVS=[], _ti=null, _notaTarget=null, _ch=null;
 let REPORT_DATE_START='', REPORT_DATE_END='', REPORT_PEDIDOS_EXPORT=[];
 let _tvPub=[], _tvAudioReady=false, _tvLastSnapshot='';
 let _tvSpeakQueue=[], _tvSpeaking=false;
 let _occCtx=null, _audioCtx=null;
+let _agRetiraFocusId=null;
 const el = id => document.getElementById(id);
 const now = () => Date.now();
 const tsMs = ts => ts ? new Date(ts).getTime() : 0;
@@ -510,6 +526,7 @@ function atualizarTelasAtivas(){
   if(ativa==='screen-painel')renderPainel();
   if(ativa==='screen-tv')renderTV();
   if(ativa==='screen-ag-retira')renderAgRetira();
+  renderAgRetiraPopup();
 }
 function playNotificationBeep(){
   try{
@@ -821,17 +838,7 @@ function carregarConfigCampos(){
   if(el('cfg-rate-val'))el('cfg-rate-val').textContent=parseFloat(_vozRate).toFixed(2);
   if(el('cfg-pitch'))el('cfg-pitch').value=_vozPitch;
   if(el('cfg-pitch-val'))el('cfg-pitch-val').textContent=parseFloat(_vozPitch).toFixed(2);
-  if(el('cfg-alert-emails'))el('cfg-alert-emails').value=ALERT_EMAILS_CACHE||'';
-}
-
-async function carregarEmailsAlertaConfig(){
-  try{
-    var res=await sb.from('configuracoes_sistema').select('id,alert_emails').eq('id',1).single();
-    if(!res.error && res.data){
-      ALERT_EMAILS_CACHE=(res.data.alert_emails||'').trim();
-    }
-  }catch(e){}
-  if(el('cfg-alert-emails'))el('cfg-alert-emails').value=ALERT_EMAILS_CACHE||'';
+  if(el('cfg-alert-emails'))el('cfg-alert-emails').value=localStorage.getItem(ALERT_EMAILS_KEY)||'';
 }
 
 function salvarConfig() {
@@ -841,33 +848,16 @@ function salvarConfig() {
   localStorage.setItem('pf_voz',   _vozNome);
   localStorage.setItem('pf_rate',  _vozRate);
   localStorage.setItem('pf_pitch', _vozPitch);
-  el('cfg-msg').textContent = 'Voz salva com sucesso!';
+  if(el('cfg-alert-emails'))localStorage.setItem(ALERT_EMAILS_KEY, el('cfg-alert-emails').value.trim());
+  el('cfg-msg').textContent = 'Configuração salva!';
   setTimeout(function(){el('cfg-msg').textContent='';}, 2500);
-  toast('Configuração de voz salva.','ok');
-}
-
-async function salvarEmailsAlerta(){
-  var emails=(el('cfg-alert-emails')?el('cfg-alert-emails').value:'').trim();
-  ov(true);
-  try{
-    var res=await sb.from('configuracoes_sistema').upsert({id:1,alert_emails:emails,updated_at:new Date().toISOString()});
-    if(res.error)throw res.error;
-    ALERT_EMAILS_CACHE=emails;
-    el('cfg-msg').textContent = 'Grupo de e-mails salvo com sucesso!';
-    setTimeout(function(){el('cfg-msg').textContent='';}, 2500);
-    toast('Grupo de e-mails salvo.','ok');
-    atualizarTelasAtivas();
-  }catch(e){
-    el('cfg-msg').textContent = 'Erro ao salvar o grupo de e-mails.';
-    toast(e.message || 'Erro ao salvar grupo de e-mails.','err');
-  }finally{ov(false);}
+  toast('Configurações salvas com sucesso.','ok');
 }
 
 if(window.speechSynthesis) {
   window.speechSynthesis.onvoiceschanged = function(){ carregarVozes(); };
   setTimeout(carregarVozes, 300);
 }
-carregarEmailsAlertaConfig();
 
 async function doLogin(){
   var l=el('lu').value.trim(),p=el('lp').value;
@@ -1004,7 +994,7 @@ async function go(name){
   }
   if(name==='usuarios'){ov(true);var u=await fetchUsuarios();ov(false);renderUsers(u);}
   if(name==='ag-retira'){ov(true);await fetchPedidos();ov(false);renderAgRetira();}
-  if(name==='config'){setTimeout(function(){carregarVozes();carregarConfigCampos();carregarEmailsAlertaConfig();},100);}
+  if(name==='config'){setTimeout(function(){carregarVozes();carregarConfigCampos();},100);}
 }
 function startClock(){
   if(_ti)clearInterval(_ti);
@@ -1148,11 +1138,42 @@ function getAgRetiraMs(o){
 function isAgRetiraVencido(o){
   return getAgRetiraMs(o) >= AG_RETIRA_MS;
 }
+
+function podeVerAlertaAgRetira(){
+  return !!ME && (isAdmin() || meuSetor()==='atendimento' || meuSetor()==='separacao');
+}
+function getAgRetiraVencidos(){
+  return getAgRetiraItens().filter(isAgRetiraVencido);
+}
+function openAgRetiraFromAlert(id){
+  _agRetiraFocusId=id||null;
+  go('ag-retira');
+}
+function renderAgRetiraPopup(){
+  var host=el('ag-retira-alert-host');
+  if(!host)return;
+  if(!podeVerAlertaAgRetira()){
+    host.innerHTML='';
+    return;
+  }
+  var vencidos=getAgRetiraVencidos();
+  if(!vencidos.length){
+    host.innerHTML='';
+    return;
+  }
+  var primeiro=vencidos[0];
+  var dias=Math.floor(getAgRetiraMs(primeiro)/(24*60*60*1000));
+  var titulo=vencidos.length===1?'NF vencida no Ag. Retira':'Notas vencidas no Ag. Retira';
+  var msg=vencidos.length===1
+    ? 'NF '+(primeiro.num_nota||'—')+' do pedido #'+primeiro.numero+' está há '+dias+' dia(s) no Ag. Retira. Clique para abrir.'
+    : vencidos.length+' nota(s) passaram de 15 dias no Ag. Retira. Primeira NF: '+(primeiro.num_nota||'—')+'. Clique para abrir.';
+  host.innerHTML='<div class="ag-retira-popup" onclick="openAgRetiraFromAlert(\''+primeiro.id+'\')"><div class="ag-retira-popup-top"><span class="ag-retira-popup-dot"></span><span class="ag-retira-popup-title">'+titulo+'</span></div><div class="ag-retira-popup-msg">'+msg+'</div><div class="ag-retira-popup-sub">Abrir ambiente Ag. Retira</div></div>';
+}
 function renderAgRetira(){
   var itens=getAgRetiraItens();
   var vencidos=itens.filter(isAgRetiraVencido);
   if(el('ag-retira-summary')){
-    var emails=(ALERT_EMAILS_CACHE||'').trim();
+    var emails=(localStorage.getItem(ALERT_EMAILS_KEY)||'').trim();
     el('ag-retira-summary').textContent=itens.length+' pedido(s) alojado(s) · '+vencidos.length+' vencido(s)'+(emails?' · grupo configurado':' · sem grupo de e-mail');
   }
   if(!el('ag-retira-body'))return;
@@ -1164,16 +1185,25 @@ function renderAgRetira(){
   el('ag-retira-body').innerHTML=itens.map(function(o){
     var ms=getAgRetiraMs(o);
     var vencido=isAgRetiraVencido(o);
+    var focus=_agRetiraFocusId && _agRetiraFocusId===o.id;
     var status=vencido?'<span class="boff">+15 dias</span>':'<span class="bon">Dentro do prazo</span>';
     var acoes='';
+    var nfHtml=vencido?'<span class="nf-alert-wrap"><span class="nf-alert-dot"></span><span>'+(o.num_nota||'—')+'</span></span>':(o.num_nota||'—');
     if(podeAcionar){
       acoes += '<button class="bcall" onclick="chamarBalcaoAgRetira(&#39;'+o.id+'&#39;)">Chamar balcão</button> ';
       acoes += '<button class="bcan" onclick="cancelarAgRetira(&#39;'+o.id+'&#39;)">Cancelar</button>';
     } else {
       acoes = '<span style="color:var(--muted);font-size:11px">Somente Separação/Admin</span>';
     }
-    return '<tr'+(vencido?' style="background:rgba(226,75,74,.06)"':'')+'><td style="font-family:var(--font-head);font-size:16px;font-weight:700">#'+o.numero+'</td><td>'+(o.nome_cliente||'—')+'</td><td>'+(o.num_nota||'—')+'</td><td>'+(o.pendente_desde?new Date(o.pendente_desde).toLocaleString('pt-BR'):'—')+'</td><td>'+fmtT(ms)+'</td><td>'+status+'</td><td>'+acoes+'</td></tr>';
+    return '<tr id="ag-retira-row-'+o.id+'" class="'+(focus?'ag-retira-focus':'')+'"'+(vencido?' style="background:rgba(226,75,74,.06)"':'')+'><td style="font-family:var(--font-head);font-size:16px;font-weight:700">#'+o.numero+'</td><td>'+(o.nome_cliente||'—')+'</td><td>'+nfHtml+'</td><td>'+(o.pendente_desde?new Date(o.pendente_desde).toLocaleString('pt-BR'):'—')+'</td><td>'+fmtT(ms)+'</td><td>'+status+'</td><td>'+acoes+'</td></tr>';
   }).join('');
+  if(_agRetiraFocusId){
+    setTimeout(function(){
+      var row=el('ag-retira-row-'+_agRetiraFocusId);
+      if(row && row.scrollIntoView)row.scrollIntoView({behavior:'smooth',block:'center'});
+      _agRetiraFocusId=null;
+    },120);
+  }
 }
 async function encaminharAgRetira(id){
   ov(true);
