@@ -227,6 +227,14 @@ main{padding:24px;max-width:1500px;margin:0 auto;width:100%;position:relative;z-
 .occ-card.occ-expiring{border-color:rgba(239,68,68,.5);background:rgba(239,68,68,.04)}
 .occ-timer{font-size:10px;color:var(--warn);margin-top:3px}
 .occ-card.occ-expiring .occ-timer{color:var(--danger)}
+
+/* ── Status dots ── */
+.dot-status{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot-green{background:#22d3a7;box-shadow:0 0 6px rgba(34,211,167,0.4)}
+.dot-yellow{background:#f59e0b;box-shadow:0 0 6px rgba(245,158,11,0.4)}
+.dot-red{background:#ef4444;box-shadow:0 0 6px rgba(239,68,68,0.4);animation:agr-blink 1.2s infinite}
+.utbl .act-btns{display:flex;gap:5px;flex-wrap:wrap}
+.utbl .act-btns button{padding:5px 10px;font-size:10px;border-radius:8px}
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
@@ -390,7 +398,12 @@ main{padding:24px;max-width:1500px;margin:0 auto;width:100%;position:relative;z-
       <span class="pt">Aguardando Retirada</span>
       <span style="color:var(--muted);font-size:12px" id="agr-count"></span>
     </div>
-    <div class="agr-grid" id="agr-grid"></div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
+      <table class="utbl" id="agr-table">
+        <thead><tr><th style="width:30px"></th><th>Pedido</th><th>Cliente</th><th>Nota Fiscal</th><th>Entrada</th><th>Dias</th><th>Ações</th></tr></thead>
+        <tbody id="agr-tbody"></tbody>
+      </table>
+    </div>
     <div id="agr-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhum pedido aguardando retirada no momento.</div>
   </main>
 </div>
@@ -402,24 +415,31 @@ main{padding:24px;max-width:1500px;margin:0 auto;width:100%;position:relative;z-
       <span class="pt">Ocorrências</span>
       <span style="color:var(--muted);font-size:12px" id="occ-count"></span>
     </div>
-    <div class="agr-grid" id="occ-grid"></div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
+      <table class="utbl" id="occ-table">
+        <thead><tr><th style="width:30px"></th><th>Pedido</th><th>Cliente</th><th>Nota Fiscal</th><th>Entrada</th><th>Tempo Restante</th><th>Ações</th></tr></thead>
+        <tbody id="occ-tbody"></tbody>
+      </table>
+    </div>
     <div id="occ-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhuma ocorrência no momento.</div>
   </main>
 </div>
 <div id="alert-retira-box" class="alert-retira" onclick="go('agretira')">
   ⚠ Pedido(s) com 15+ dias em Ag. Retira
 </div>
-<div id="screen-tv-pub" style="display:none;background:#07070a;min-height:100vh;padding:24px;font-family:var(--font-mono)">
-  <div style="display:flex;align-items:center;margin-bottom:24px;gap:16px">
-    <span style="font-family:var(--font-head);font-size:22px;font-weight:800;color:var(--atend)">Call Order</span>
-    <span style="color:var(--muted);font-size:13px">Acompanhamento em tempo real</span>
-    <div style="font-size:18px;font-weight:500;margin-left:auto" id="tvp-clock">--:--:--</div>
+<div id="screen-tv-pub" style="display:none;background:#0b1121;min-height:100vh;padding:28px;font-family:var(--font-mono);color:#e8edf5">
+  <div style="display:flex;align-items:center;margin-bottom:28px;gap:16px">
+    <span style="font-family:var(--font-head);font-size:24px;font-weight:800;background:linear-gradient(135deg,#22d3a7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Call Order</span>
+    <span style="color:rgba(232,237,245,0.4);font-size:13px">Acompanhamento em tempo real</span>
+    <div style="font-size:18px;font-weight:500;margin-left:auto;color:#e8edf5" id="tvp-clock">--:--:--</div>
   </div>
+  <div style="background:#111827;border:1px solid rgba(99,179,237,0.08);border-radius:16px;overflow:hidden">
   <table class="tv-tbl"><thead><tr><th>Pedido</th><th>Cliente</th><th>Setor</th><th>Tempo no Setor</th><th>Tempo Total</th><th>Status</th></tr></thead><tbody id="tvp-body"></tbody></table>
-  <div class="tv-foot" style="margin-top:28px">
-    <div><div class="tv-fl">Tempo médio do dia</div><div class="tv-fv" id="tvp-avg">--:--</div></div>
-    <div><div class="tv-fl">Concluídos hoje</div><div class="tv-fv" id="tvp-done">0</div></div>
-    <div><div class="tv-fl">Em andamento</div><div class="tv-fv" id="tvp-active">0</div></div>
+  </div>
+  <div class="tv-foot" style="margin-top:28px;background:#111827;border-color:rgba(99,179,237,0.08);border-radius:16px">
+    <div><div class="tv-fl">Tempo médio do dia</div><div class="tv-fv" id="tvp-avg" style="color:#22d3a7">--:--</div></div>
+    <div><div class="tv-fl">Concluídos hoje</div><div class="tv-fv" id="tvp-done" style="color:#22d3a7">0</div></div>
+    <div><div class="tv-fl">Em andamento</div><div class="tv-fv" id="tvp-active" style="color:#22d3a7">0</div></div>
   </div>
 </div>
 <div class="mb" id="m-new-order">
@@ -1762,6 +1782,7 @@ async function enviarParaOcorrencias(id) {
     _lastPainelSnap = '';
     atualizarTelasAtivas();
     refreshPedidosSoon(500);
+    await logOcorrencia(id, pedido.numero, pedido.nome_cliente, pedido.num_nota, 'PRAZO_EXPIRADO', 'Pedido enviado para ocorrências após prazo expirado.');
     toast('Pedido #' + pedido.numero + ' enviado para Ocorrências.', 'warn');
   } catch(e) { toast(e.message, 'err'); }
   finally { ov(false); }
@@ -1769,6 +1790,7 @@ async function enviarParaOcorrencias(id) {
 
 // ── Retornar de Ocorrências para Ag. Retira ──
 async function occRetornarAgRetira(id) {
+  if(!isAdmin()){toast('Apenas administradores podem executar esta ação.','warn');return;}
   ov(true);
   try {
     var pedido = getPedidoById(id);
@@ -1785,6 +1807,7 @@ async function occRetornarAgRetira(id) {
     _lastPainelSnap = '';
     atualizarTelasAtivas();
     refreshPedidosSoon(500);
+    await logOcorrencia(id, pedido.numero, pedido.nome_cliente, pedido.num_nota, 'RETORNO', 'Pedido retornado para Ag. Retira.');
     toast('Pedido #' + pedido.numero + ' retornado para Ag. Retira.', 'ok');
   } catch(e) { toast(e.message, 'err'); }
   finally { ov(false); }
@@ -1792,6 +1815,8 @@ async function occRetornarAgRetira(id) {
 
 // ── Cancelar em Ocorrências ──
 async function occCancelar(id) {
+  if(!isAdmin()){toast('Apenas administradores podem executar esta ação.','warn');return;}
+  var pedido = getPedidoById(id);
   _occCtx = {modo: 'exclusao', id: id, setorLabel: 'Ocorrências'};
   el('occ-title').textContent = 'Cancelar pedido em Ocorrências';
   el('occ-desc').textContent = 'Informe o motivo do cancelamento.';
@@ -1800,35 +1825,53 @@ async function occCancelar(id) {
 }
 
 // ── Render Ag. Retira ──
+
+// ── Log ocorrência no Supabase ──
+async function logOcorrencia(pedido_id, numero, nome_cliente, num_nota, tipo, descricao) {
+  try {
+    await sb.from('ocorrencias').insert({
+      pedido_id: pedido_id,
+      numero: numero,
+      nome_cliente: nome_cliente || '',
+      num_nota: num_nota || '',
+      tipo: tipo,
+      descricao: descricao,
+      usuario: ME ? ME.login : '',
+      created_at: new Date().toISOString()
+    });
+  } catch(e) { console.warn('Erro ao registrar ocorrência:', e); }
+}
+
 function renderAgRetira() {
   var items = PEDIDOS.filter(function(o) { return o.status === 'ag_retira'; });
   renderAgRetiraBadge();
   if (el('agr-count')) el('agr-count').textContent = items.length + ' pedido(s)';
   if (el('agr-empty')) el('agr-empty').style.display = items.length ? 'none' : 'block';
-  if (!el('agr-grid')) return;
+  if (!el('agr-tbody')) return;
+  if(el('agr-table'))el('agr-table').style.display=items.length?'':'none';
 
-  el('agr-grid').innerHTML = items.map(function(o) {
+  el('agr-tbody').innerHTML = items.map(function(o) {
     var entrou = tsMs(o.pendente_desde);
     var diasMs = now() - entrou;
     var dias = Math.floor(diasMs / (24*60*60*1000));
     var expired = diasMs >= AGR_15_DAYS_MS;
     var dataEntrada = o.pendente_desde ? new Date(o.pendente_desde).toLocaleDateString('pt-BR') : '—';
+    var dotClass = dias >= 15 ? 'dot-red' : dias >= 10 ? 'dot-yellow' : 'dot-green';
+    var btnOcc = expired ? '<button class="boc" onclick="enviarParaOcorrencias(\'' + o.id + '\')">Ocorrências</button>' : '';
 
-    var btnOcc = expired ? '<button class="bmv" style="border-color:rgba(239,159,39,.5);color:var(--warn)" onclick="enviarParaOcorrencias(\'' + o.id + '\')">Ocorrências</button>' : '';
-
-    return '<div class="agr-card">' +
-      '<div class="agr-info">' +
-        '<span class="agr-num">#' + o.numero + '</span>' +
-        '<span class="agr-cli">' + (o.nome_cliente || '—') + '</span>' +
-        '<span class="agr-nf">NF: ' + (o.num_nota || '—') + '</span>' +
-        '<span class="agr-days">Entrada: ' + dataEntrada + ' · ' + dias + ' dia(s) aguardando' + (expired ? ' ⚠ PRAZO EXPIRADO' : '') + '</span>' +
-      '</div>' +
-      '<div class="agr-actions">' +
-        '<button class="bcall" onclick="agRetiraChamarBalcao(\'' + o.id + '\')" style="animation:none;font-weight:500">Chamar balcão</button>' +
+    return '<tr>' +
+      '<td><span class="dot-status ' + dotClass + '"></span></td>' +
+      '<td style="font-family:var(--font-head);font-size:15px;font-weight:700">#' + o.numero + '</td>' +
+      '<td>' + (o.nome_cliente || '—') + '</td>' +
+      '<td style="color:var(--sep)">' + (o.num_nota || '—') + '</td>' +
+      '<td style="color:var(--muted)">' + dataEntrada + '</td>' +
+      '<td><span style="font-weight:600;color:' + (dias>=15?'var(--danger)':dias>=10?'var(--warn)':'var(--accent)') + '">' + dias + ' dia(s)</span></td>' +
+      '<td><div class="act-btns">' +
+        '<button class="bcall" onclick="agRetiraChamarBalcao(\'' + o.id + '\')" style="animation:none">Chamar balcão</button>' +
         btnOcc +
         '<button class="bexc" onclick="agRetiraCancelar(\'' + o.id + '\')">Cancelar</button>' +
-      '</div>' +
-    '</div>';
+      '</div></td>' +
+    '</tr>';
   }).join('');
 }
 
@@ -1838,31 +1881,36 @@ function renderOcorrencias() {
   renderOcorrenciasBadge();
   if (el('occ-count')) el('occ-count').textContent = items.length + ' pedido(s)';
   if (el('occ-empty')) el('occ-empty').style.display = items.length ? 'none' : 'block';
-  if (!el('occ-grid')) return;
+  if (!el('occ-tbody')) return;
+  if(el('occ-table'))el('occ-table').style.display=items.length?'':'none';
+  var adm = isAdmin();
 
-  el('occ-grid').innerHTML = items.map(function(o) {
+  el('occ-tbody').innerHTML = items.map(function(o) {
     var entrou = tsMs(o.pendente_desde);
     var tempoMs = now() - entrou;
-    var horas = Math.floor(tempoMs / (60*60*1000));
     var restanteMs = Math.max(0, OCC_48H_MS - tempoMs);
     var restanteH = Math.floor(restanteMs / (60*60*1000));
     var restanteM = Math.floor((restanteMs % (60*60*1000)) / (60*1000));
     var quaseExpirando = restanteMs < 6*60*60*1000;
     var dataEntrada = o.pendente_desde ? new Date(o.pendente_desde).toLocaleString('pt-BR') : '—';
+    var dotClass = quaseExpirando ? 'dot-red' : 'dot-yellow';
 
-    return '<div class="occ-card' + (quaseExpirando ? ' occ-expiring' : '') + '">' +
-      '<div class="agr-info">' +
-        '<span class="agr-num">#' + o.numero + '</span>' +
-        '<span class="agr-cli">' + (o.nome_cliente || '—') + '</span>' +
-        '<span class="agr-nf">NF: ' + (o.num_nota || '—') + '</span>' +
-        '<span class="agr-days">Entrada em ocorrência: ' + dataEntrada + '</span>' +
-        '<span class="occ-timer">Tempo restante: ' + restanteH + 'h ' + restanteM + 'm (máx 48h)</span>' +
-      '</div>' +
-      '<div class="agr-actions">' +
-        '<button class="bmv" style="border-color:rgba(239,159,39,.5);color:var(--warn)" onclick="occRetornarAgRetira(\'' + o.id + '\')">← Retornar Ag. Retira</button>' +
-        '<button class="bexc" onclick="occCancelar(\'' + o.id + '\')">Cancelar</button>' +
-      '</div>' +
-    '</div>';
+    var acoes = adm
+      ? '<div class="act-btns">' +
+          '<button class="bmv" style="border-color:rgba(245,158,11,.4);color:var(--warn)" onclick="occRetornarAgRetira(\'' + o.id + '\')">← Retornar</button>' +
+          '<button class="bexc" onclick="occCancelar(\'' + o.id + '\')">Cancelar</button>' +
+        '</div>'
+      : '<span style="font-size:10px;color:var(--muted)">Somente admin</span>';
+
+    return '<tr>' +
+      '<td><span class="dot-status ' + dotClass + '"></span></td>' +
+      '<td style="font-family:var(--font-head);font-size:15px;font-weight:700">#' + o.numero + '</td>' +
+      '<td>' + (o.nome_cliente || '—') + '</td>' +
+      '<td style="color:var(--sep)">' + (o.num_nota || '—') + '</td>' +
+      '<td style="color:var(--muted)">' + dataEntrada + '</td>' +
+      '<td><span style="font-weight:600;color:' + (quaseExpirando?'var(--danger)':'var(--warn)') + '">' + restanteH + 'h ' + restanteM + 'm</span></td>' +
+      '<td>' + acoes + '</td>' +
+    '</tr>';
   }).join('');
 }
 
