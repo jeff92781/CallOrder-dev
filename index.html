@@ -544,6 +544,7 @@ const RETORNO_PADRAO = {estoque:'atendimento',corte:'estoque',separacao:'corte',
 const SL = {atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',separacao:'Separação',faturamento:'Faturamento',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira',em_ocorrencia:'Ocorrência'};
 const SC = {atendimento:'tag-at',estoque:'tag-es',corte:'tag-co',separacao:'tag-se',faturamento:'tag-fa',pronto_balcao:'tag-rd',balcao_chamado:'tag-rd',finalizado:'tag-do'};
 const SD = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1'};
+const SICONCOLOR = {atendimento:'#a78bfa',estoque:'#c49a6c',corte:'#ef4444',separacao:'#f1f5f9',faturamento:'#22d3a7'};
 const SICON = {
   atendimento: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="COLOR" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
   estoque:     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="COLOR" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>',
@@ -552,7 +553,7 @@ const SICON = {
   faturamento: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="COLOR" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>'
 };
 function sectorIcon(setor){
-  var color = SD[setor] || '#888';
+  var color = SICONCOLOR[setor] || SD[setor] || '#888';
   var tpl = SICON[setor];
   if(!tpl) return '<div class="cdot" style="background:'+color+'"></div>';
   return '<span class="cdot-icon">'+tpl.replace(/COLOR/g, color)+'</span>';
