@@ -664,7 +664,7 @@ function applyTheme(t){
 }
 function toggleTheme(){var c=getStoredTheme();applyTheme(c==='dark'?'light':'dark');}
 applyTheme(getStoredTheme());
-const SUPA_URL = 'https://lpjyrmkgjgehfaosagxl.supabase.co;
+const SUPA_URL = 'https://lpjyrmkgjgehfaosagxl.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwanlybWtnamdlaGZhb3NhZ3hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDgwOTIsImV4cCI6MjA5MTA4NDA5Mn0.c0EweQ387mQI5Fh1auNaCwTNTBLZulRFdg0cjUSvnSU';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 const SETORES = ['atendimento','estoque','corte','separacao','faturamento'];
@@ -1699,12 +1699,12 @@ function renderSetorView(setor){
     var canAct=podeAtuarNoSetor(setor);
     var btns=[];
     var ep=(o.status==='pronto_balcao'||o.status==='balcao_chamado');
-    if(canAct&&setor!=='atendimento'&&!ep)btns.push('<button class="bret" style="padding:5px 12px;font-size:11px" onclick="openReturnActive(''+o.id+'')">Retornar</button>');
-    if(setor==='atendimento'&&canAct)btns.push('<button class="bmv" style="background:#c49a6c;padding:5px 12px;font-size:11px" onclick="enviar(''+o.id+'','estoque')">→ Estoque</button>');
-    if(setor==='estoque'&&canAct){btns.push('<button class="bmv" style="background:#ef4444;padding:5px 12px;font-size:11px" onclick="enviar(''+o.id+'','corte')">→ Corte</button>');btns.push('<button class="bcon" style="background:#6366f1;padding:5px 12px;font-size:11px" onclick="enviar(''+o.id+'','separacao')">→ Separação</button>');}
-    if(setor==='corte'&&canAct)btns.push('<button class="bcon" style="background:#6366f1;padding:5px 12px;font-size:11px" onclick="enviar(''+o.id+'','separacao')">→ Separação</button>');
-    if(setor==='faturamento'&&podeFaturar())btns.push('<button class="bfin" style="padding:5px 12px;font-size:11px" onclick="openNota(''+o.id+'')">Faturar</button>');
-    if(podeExcluirPedido()&&!ep)btns.push('<button class="bexc" style="padding:5px 12px;font-size:11px" onclick="openDeletePedido(''+o.id+'')">Excluir</button>');
+    if(canAct&&setor!=='atendimento'&&!ep)btns.push('<button class="bret" style="padding:5px 12px;font-size:11px" onclick="openReturnActive(\'\''+o.id+'\'\')">Retornar</button>');
+    if(setor==='atendimento'&&canAct)btns.push('<button class="bmv" style="background:#c49a6c;padding:5px 12px;font-size:11px" onclick="enviar(\'\''+o.id+'\'\',\'estoque\')">→ Estoque</button>');
+    if(setor==='estoque'&&canAct){btns.push('<button class="bmv" style="background:#ef4444;padding:5px 12px;font-size:11px" onclick="enviar(\'\''+o.id+'\'\',\'corte\')">→ Corte</button>');btns.push('<button class="bcon" style="background:#6366f1;padding:5px 12px;font-size:11px" onclick="enviar(\'\''+o.id+'\'\',\'separacao\')">→ Separação</button>');}
+    if(setor==='corte'&&canAct)btns.push('<button class="bcon" style="background:#6366f1;padding:5px 12px;font-size:11px" onclick="enviar(\'\''+o.id+'\'\',\'separacao\')">→ Separação</button>');
+    if(setor==='faturamento'&&podeFaturar())btns.push('<button class="bfin" style="padding:5px 12px;font-size:11px" onclick="openNota(\'\''+o.id+'\'\')">Faturar</button>');
+    if(podeExcluirPedido()&&!ep)btns.push('<button class="bexc" style="padding:5px 12px;font-size:11px" onclick="openDeletePedido(\'\''+o.id+'\'\')">Excluir</button>');
     var cor=TIPO_SAIDA_COLOR[o.tipo_saida||'retira']||'#22d3a7';
     return '<tr>'+
       '<td><span style="width:10px;height:10px;border-radius:50%;background:'+cor+';display:inline-block"></span></td>'+
@@ -1746,11 +1746,11 @@ function renderExpedicao(){
     var cor=TIPO_SAIDA_COLOR[o.tipo_saida||'retira']||'#22d3a7';
     var btns=[];
     if(o.status==='pronto_balcao'&&canAct){
-      btns.push('<button class="bcall" style="padding:5px 12px;font-size:11px" onclick="chamarBalcao(''+o.id+'')">Chamar</button>');
-      btns.push('<button class="boc" style="padding:5px 12px;font-size:11px" onclick="enviarAgRetira(''+o.id+'')">Ag. Retira</button>');
+      btns.push('<button class="bcall" style="padding:5px 12px;font-size:11px" onclick="chamarBalcao(\'\''+o.id+'\'\')">Chamar</button>');
+      btns.push('<button class="boc" style="padding:5px 12px;font-size:11px" onclick="enviarAgRetira(\'\''+o.id+'\'\')">Ag. Retira</button>');
     }
-    if(o.status==='ag_retira'&&canAct)btns.push('<button class="bfin" style="padding:5px 12px;font-size:11px" onclick="registrarEntregaOuRetirada(''+o.id+'')">Confirmar Saída</button>');
-    if(podeExcluirPedido())btns.push('<button class="bexc" style="padding:5px 12px;font-size:11px" onclick="openDeletePedido(''+o.id+'')">Excluir</button>');
+    if(o.status==='ag_retira'&&canAct)btns.push('<button class="bfin" style="padding:5px 12px;font-size:11px" onclick="registrarEntregaOuRetirada(\'\''+o.id+'\'\')">Confirmar Saída</button>');
+    if(podeExcluirPedido())btns.push('<button class="bexc" style="padding:5px 12px;font-size:11px" onclick="openDeletePedido(\'\''+o.id+'\'\')">Excluir</button>');
     var parcialBadge=o.parcial?'<span style="color:#f59e0b;font-size:10px;font-weight:700">Sim</span>':'<span style="color:var(--muted);font-size:10px">Não</span>';
     var pendBadge=o.pendencia?'<span style="color:#ef4444;font-size:10px;font-weight:700">Sim</span>':'<span style="color:var(--muted);font-size:10px">Não</span>';
     return '<tr>'+
@@ -1817,7 +1817,7 @@ function renderCanhotos(){
       '<td style="font-size:10px;color:var(--muted);font-family:var(--font-mono)" title="'+(o.chave_nf||'')+'">'+chaveAbrev+'</td>'+
       '<td style="font-size:11px">'+fatAt+'</td>'+
       '<td style="font-size:11px;font-weight:600">'+fmtBRL(o.valor_total)+'</td>'+
-      '<td><button class="bfin" style="padding:5px 12px;font-size:11px" onclick="openCanhoto(''+o.id+'')">Registrar Canhoto</button></td>'+
+      '<td><button class="bfin" style="padding:5px 12px;font-size:11px" onclick="openCanhoto(\'\''+o.id+'\'\')">Registrar Canhoto</button></td>'+
     '</tr>';
   }).join('');
 }
