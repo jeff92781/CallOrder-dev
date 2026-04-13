@@ -264,9 +264,6 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
     <button class="tab" onclick="go('senha')">Minha Senha</button>
     <button class="tab adm-only" onclick="go('config')" style="display:none">Configurações</button>
     <button class="tab" onclick="go('agretira')" id="tab-agretira">Ag. Retira <span id="agretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
-    <button class="tab setor-only" onclick="go('setor')" id="tab-setor" style="display:none">Meu Setor</button>
-    <button class="tab setor-only" onclick="go('expedicao')" id="tab-expedicao" style="display:none">Expedição</button>
-    <button class="tab setor-only" onclick="go('canhotos')" id="tab-canhotos" style="display:none">Canhotos</button>
     <button class="tab" onclick="go('ocorrencias')" id="tab-ocorrencias">Ocorrências <span id="ocorrencias-badge" style="display:none;background:rgba(239,159,39,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
   </div>
   <div class="nav-right">
@@ -476,105 +473,13 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
     <div><div style="font-size:14px;color:rgba(255,255,255,0.55);font-weight:500">Em andamento</div><div style="font-size:24px;font-weight:700;color:#22d3a7" id="tvp-active">0</div></div>
   </div>
 </div>
-
-<div class="screen" id="screen-setor">
-  <main>
-    <div class="ph">
-      <span class="pt" id="setor-screen-title">Meu Setor</span>
-      <span style="color:var(--muted);font-size:12px" id="setor-screen-count"></span>
-      <button class="btnn" id="btn-novo-setor" style="display:none" onclick="openNewOrder()">+ Novo Pedido</button>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
-      <table class="utbl" style="table-layout:fixed;width:100%">
-        <thead id="setor-screen-thead"></thead>
-        <tbody id="setor-screen-tbody"></tbody>
-      </table>
-    </div>
-    <div id="setor-screen-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhum pedido no momento.</div>
-  </main>
-</div>
-
-<div class="screen" id="screen-expedicao">
-  <main>
-    <div class="ph">
-      <span class="pt">Expedição</span>
-      <span style="color:var(--muted);font-size:12px" id="exp-count"></span>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap" id="exp-filter-tabs">
-      <button class="tab active" onclick="setExpFilter('todos')" id="exp-tab-todos">Todos</button>
-      <button class="tab" onclick="setExpFilter('balcao')" id="exp-tab-balcao">Balcão</button>
-      <button class="tab" onclick="setExpFilter('retira')" id="exp-tab-retira">Retira</button>
-      <button class="tab" onclick="setExpFilter('entrega')" id="exp-tab-entrega">Entrega</button>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
-      <table class="utbl" style="table-layout:fixed;width:100%">
-        <thead>
-          <tr>
-            <th style="width:32px"></th>
-            <th style="width:100px">Pedido</th>
-            <th>Cliente</th>
-            <th style="width:90px">Tipo</th>
-            <th style="width:120px">Retirante</th>
-            <th style="width:90px">NF</th>
-            <th style="width:90px">Valor</th>
-            <th style="width:70px">Parcial</th>
-            <th style="width:70px">Pendência</th>
-            <th style="width:180px">Ações</th>
-          </tr>
-        </thead>
-        <tbody id="exp-tbody"></tbody>
-      </table>
-    </div>
-    <div id="exp-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhum pedido na expedição no momento.</div>
-  </main>
-</div>
-
-<div class="screen" id="screen-canhotos">
-  <main>
-    <div class="ph">
-      <span class="pt">Canhotos</span>
-      <span style="color:var(--muted);font-size:12px" id="canhoto-count"></span>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
-      <table class="utbl" style="table-layout:fixed;width:100%">
-        <thead>
-          <tr>
-            <th style="width:32px"></th>
-            <th style="width:100px">Pedido</th>
-            <th>Cliente</th>
-            <th style="width:90px">Tipo</th>
-            <th style="width:110px">NF</th>
-            <th style="width:130px">Chave NF</th>
-            <th style="width:100px">Faturado em</th>
-            <th style="width:90px">Valor</th>
-            <th style="width:160px">Ações</th>
-          </tr>
-        </thead>
-        <tbody id="canhoto-tbody"></tbody>
-      </table>
-    </div>
-    <div id="canhoto-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhum canhoto pendente.</div>
-  </main>
-</div>
-
-<div class="mb" id="m-canhoto">
-  <div class="mo">
-    <div class="mt">Registrar Canhoto</div>
-    <p style="color:var(--muted);font-size:12px;margin-bottom:16px">Confirme o recebimento do canhoto assinado.</p>
-    <div class="f"><label class="fl">Assinado por *</label><input type="text" id="canhoto-assinado" placeholder="Nome de quem assinou"/></div>
-    <div class="f"><label class="fl">Data do retorno *</label><input type="date" id="canhoto-data"/></div>
-    <div class="f"><label class="fl">Observação</label><input type="text" id="canhoto-obs" placeholder="Opcional"/></div>
-    <div class="ma"><button class="bcan" onclick="closeM('m-canhoto')">Cancelar</button><button class="bok" onclick="confirmarCanhoto()">Confirmar</button></div>
-  </div>
-</div>
 <div class="mb" id="m-new-order">
   <div class="mo">
     <div class="mt">Novo Pedido — Atendimento</div>
     <div class="f"><label class="fl">Número do Pedido *</label><input type="text" id="no-num" placeholder="Ex: 00123"/></div>
     <div class="f"><label class="fl">Nome do Cliente *</label><input type="text" id="no-cli" placeholder="Nome completo"/></div>
-    <div class="f"><label class="fl">Vendedor</label><input type="text" id="no-vend" placeholder="Nome do vendedor"/></div>
-    <div class="f"><label class="fl">Tipo de Saída *</label>
-      <select id="no-tipo"><option value="balcao">Balcão (cliente aguarda)</option><option value="retira">Retira (cliente vem buscar)</option><option value="entrega">Entrega (motorista leva)</option></select>
+    <div class="f"><label class="fl">Prioridade</label>
+      <select id="no-prio"><option value="retira">Retira</option><option value="balcao">Balcão</option></select>
     </div>
     <div class="f"><label class="fl">Observação (opcional)</label><input type="text" id="no-obs"/></div>
     <div class="ma"><button class="bcan" onclick="closeM('m-new-order')">Cancelar</button><button class="bok" onclick="createOrder()">Criar Pedido</button></div>
@@ -583,22 +488,8 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 <div class="mb" id="m-nota">
   <div class="mo">
     <div class="mt">Faturamento — Nota Fiscal</div>
-    <p style="color:var(--muted);font-size:12px;margin-bottom:16px">Preencha todos os campos obrigatórios para faturar o pedido.</p>
-    <div class="f"><label class="fl">Número da NF *</label><input type="text" id="nota-num" placeholder="000123"/></div>
-    <div class="f"><label class="fl">Chave da NF (44 dígitos) *</label><input type="text" id="nota-chave" placeholder="00000000000000000000000000000000000000000000" maxlength="44"/></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="f" style="margin-bottom:0"><label class="fl">Valor Total (R$) *</label><input type="number" id="nota-valor-total" placeholder="0,00" step="0.01" min="0"/></div>
-      <div class="f" style="margin-bottom:0"><label class="fl">Valor Pago (R$)</label><input type="number" id="nota-valor-pago" placeholder="0,00" step="0.01" min="0"/></div>
-    </div>
-    <div class="f" style="margin-top:12px"><label class="fl">Retirante (quem vai retirar)</label><input type="text" id="nota-retirante" placeholder="Nome de quem retira / motorista"/></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px">
-      <div class="f" style="margin-bottom:0"><label class="fl">Parcial?</label>
-        <select id="nota-parcial"><option value="false">Não</option><option value="true">Sim</option></select>
-      </div>
-      <div class="f" style="margin-bottom:0"><label class="fl">Pendência?</label>
-        <select id="nota-pendencia"><option value="false">Não</option><option value="true">Sim</option></select>
-      </div>
-    </div>
+    <p style="color:var(--muted);font-size:12px;margin-bottom:16px">Informe o número da NF. Após faturar, o pedido volta para a Separação com o botão de chamar balcão.</p>
+    <div class="f"><label class="fl">Número da Nota Fiscal *</label><input type="text" id="nota-num" placeholder="000123"/></div>
     <div class="ma"><button class="bcan" onclick="closeM('m-nota')">Cancelar</button><button class="bok" onclick="confirmarNota()">Faturar e Enviar</button></div>
   </div>
 </div>
@@ -617,9 +508,8 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
         <option value="atendimento">Atendimento</option>
         <option value="estoque">Estoque</option>
         <option value="corte">Corte</option>
-        <option value="expedicao">Expedição</option>
+        <option value="separacao">Separação</option>
         <option value="faturamento">Faturamento</option>
-        <option value="canhotos">Canhotos</option>
       </select>
     </div>
     <div class="ma"><button class="bcan" onclick="closeM('m-new-user')">Cancelar</button><button class="bok" onclick="createUser()">Criar</button></div>
@@ -664,16 +554,13 @@ function applyTheme(t){
 }
 function toggleTheme(){var c=getStoredTheme();applyTheme(c==='dark'?'light':'dark');}
 applyTheme(getStoredTheme());
-const SUPA_URL = 'https://lpjyrmkgjgehfaosagxl.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwanlybWtnamdlaGZhb3NhZ3hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDgwOTIsImV4cCI6MjA5MTA4NDA5Mn0.c0EweQ387mQI5Fh1auNaCwTNTBLZulRFdg0cjUSvnSU';
+const SUPA_URL = 'https://egshgwnnaxfvtxwvgnnh.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVnc2hnd25uYXhmdnR4d3Znbm5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNTQ2MjIsImV4cCI6MjA5MDgzMDYyMn0.udgUHpDU4wldbwsnl46AuzyljIRxNPtY00n6YrOtje4';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 const SETORES = ['atendimento','estoque','corte','separacao','faturamento'];
-const SETORES_SETOR = ['atendimento','estoque','corte','expedicao','faturamento','canhotos'];
 const PROXIMO_SETOR = {atendimento:'estoque',estoque:'corte',corte:'separacao',separacao:'faturamento'};
 const RETORNO_PADRAO = {estoque:'atendimento',corte:'estoque',separacao:'corte',faturamento:'separacao'};
-const SL = {atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',separacao:'Separação',expedicao:'Expedição',faturamento:'Faturamento',canhotos:'Canhotos',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira',em_ocorrencia:'Ocorrência'};
-const TIPO_SAIDA_LABEL = {retira:'Retira',balcao:'Balcão',entrega:'Entrega'};
-const TIPO_SAIDA_COLOR = {retira:'#3b82f6',balcao:'#22d3a7',entrega:'#f59e0b'};
+const SL = {atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',separacao:'Separação',faturamento:'Faturamento',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira',em_ocorrencia:'Ocorrência'};
 const SC = {atendimento:'tag-at',estoque:'tag-es',corte:'tag-co',separacao:'tag-se',faturamento:'tag-fa',pronto_balcao:'tag-rd',balcao_chamado:'tag-rd',finalizado:'tag-do'};
 const SD = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1'};
 const SICONCOLOR = {atendimento:'#a78bfa',estoque:'#c49a6c',corte:'#ef4444',separacao:'#f1f5f9',faturamento:'#22d3a7'};
@@ -913,30 +800,18 @@ function applyLoggedUser(user){
   ME=user;
   el('nav-nome').textContent=ME.nome||'—';
   el('nav-role').textContent=ME.role||'—';
-  var s=meuSetor();
+
   if(temSetorRestrito()){
-    el('nav-setor').textContent=SL[s]||s;
+    el('nav-setor').textContent=meuSetor()==='atendimento'?'Atendimento + Faturamento':(SL[meuSetor()]||meuSetor());
     if(el('nav-user'))el('nav-user').textContent=ME&&ME.nome?ME.nome:(ME&&ME.login?ME.login:'');
     el('nav-setor').style.display='';
   }else{
     el('nav-setor').style.display='none';
   }
+
   el('main-nav').style.display='flex';
   document.querySelectorAll('.adm-only').forEach(function(e){e.style.display = isAdmin() ? '' : 'none';});
   el('btn-novo').style.display = podeCriarPedido() ? 'flex' : 'none';
-  // Show/hide sector-specific tabs
-  var isSectorUser = temSetorRestrito() && !isAdmin();
-  document.querySelectorAll('.setor-only').forEach(function(e){e.style.display='none';});
-  if(isSectorUser){
-    if(s==='expedicao'&&el('tab-expedicao'))el('tab-expedicao').style.display='';
-    else if(s==='canhotos'&&el('tab-canhotos'))el('tab-canhotos').style.display='';
-    else if(el('tab-setor'))el('tab-setor').style.display='';
-    // hide painel tab for non-admin sector users
-    document.querySelectorAll('.tab').forEach(function(t){
-      var oc=t.getAttribute('onclick')||'';
-      if(oc.indexOf("'painel'")>=0||oc.indexOf("'tv'")>=0)t.style.display='none';
-    });
-  }
 }
 function upsertPedidoLocal(partial){
   if(!partial || !partial.id)return;
@@ -1207,15 +1082,13 @@ async function doLogin(){
     applyLoggedUser(res.data);
     saveSession(res.data);
     allHide();
+    el('screen-painel').classList.add('active');
     await fetchPedidos();
+    _lastPainelSnap = buildSnapshot(PEDIDOS);
+    renderPainel();
     startRealtime();
     startClock();
     startPolling();
-    var _s=res.data.setor||'todos';
-    if(_s==='expedicao'){el('screen-expedicao').classList.add('active');renderExpedicao();}
-    else if(_s==='canhotos'){el('screen-canhotos').classList.add('active');renderCanhotos();}
-    else if(isAdmin()||_s==='todos'){el('screen-painel').classList.add('active');_lastPainelSnap=buildSnapshot(PEDIDOS);renderPainel();}
-    else{el('screen-setor').classList.add('active');renderSetorView(_s);}
   }catch(e){
     el('lerr').textContent=e.message;
   }finally{
@@ -1340,9 +1213,6 @@ async function go(name){
   if(name==='config'){setTimeout(carregarVozes,100);}
   if(name==='agretira'){ov(true);await fetchPedidos();ov(false);renderAgRetira();}
   if(name==='ocorrencias'){ov(true);await fetchPedidos();ov(false);renderOcorrencias();}
-  if(name==='setor'){ov(true);await fetchPedidos();ov(false);renderSetorView(meuSetor());}
-  if(name==='expedicao'){ov(true);await fetchPedidos();ov(false);renderExpedicao();}
-  if(name==='canhotos'){ov(true);await fetchPedidos();ov(false);renderCanhotos();}
 }
 
 // ── MUDANÇA 5: Clock SÓ atualiza texto do relógio + timers in-place ──
@@ -1584,36 +1454,40 @@ async function confirmarRec(id){
 function openNota(id){_notaTarget=id;el('nota-num').value='';openM('m-nota');}
 async function confirmarNota(){
   var nota=el('nota-num').value.trim();
-  var chave=el('nota-chave')?el('nota-chave').value.trim():'';
-  var vTotal=el('nota-valor-total')?parseFloat(el('nota-valor-total').value)||null:null;
-  var vPago=el('nota-valor-pago')?parseFloat(el('nota-valor-pago').value)||null:null;
-  var retirante=el('nota-retirante')?el('nota-retirante').value.trim():'';
-  var parcial=el('nota-parcial')?el('nota-parcial').value==='true':false;
-  var pendencia=el('nota-pendencia')?el('nota-pendencia').value==='true':false;
   if(!nota){toast('Informe o número da nota fiscal.','err');return;}
-  if(!chave||chave.length<10){toast('Informe a chave da NF (mínimo 10 dígitos).','err');return;}
-  if(!vTotal||vTotal<=0){toast('Informe o valor total da NF.','err');return;}
-  var saldo=parcial&&vPago?Math.max(0,vTotal-vPago):0;
   closeM('m-nota');ov(true);
   try{
     var o=PEDIDOS.find(function(p){return p.id===_notaTarget;});
     if(!o)throw new Error('Pedido não encontrado');
     var agora=new Date().toISOString();
     var tempoSetor=Math.max(0,new Date(agora)-new Date(o.setor_entrada_at));
-    var destSetor=o.tipo_saida==='entrega'?'expedicao':'separacao';
     var res=await sb.from('pedidos').update({
-      setor:destSetor,status:'pronto_balcao',setor_pendente:'',pendente_desde:null,
-      setor_entrada_at:agora,finalizado_at:agora,num_nota:nota,
-      chave_nf:chave,valor_total:vTotal,valor_pago:vPago,saldo_pendente:saldo,
-      retirante:retirante,parcial:parcial,pendencia:pendencia
+      setor:'separacao',
+      status:'pronto_balcao',
+      setor_pendente:'',
+      pendente_desde:null,
+      setor_entrada_at:agora,
+      finalizado_at:agora,
+      num_nota:nota
     }).eq('id',_notaTarget);
     if(res.error)throw res.error;
-    upsertPedidoLocal({id:_notaTarget,setor:destSetor,status:'pronto_balcao',setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,finalizado_at:agora,num_nota:nota,chave_nf:chave,valor_total:vTotal,valor_pago:vPago,saldo_pendente:saldo,retirante:retirante,parcial:parcial,pendencia:pendencia});
-    _lastPainelSnap='';atualizarTelasAtivas();
-    sb.from('movimentacoes').insert({pedido_id:_notaTarget,setor_origem:o.setor,setor_destino:destSetor,usuario:ME.login,entrada_at:o.setor_entrada_at,saida_at:agora,tempo_ms:tempoSetor,confirmado_por:ME.login,confirmado_at:agora,tempo_confirmacao_ms:0});
-    sb.from('notas_fiscais').insert({pedido_id:_notaTarget,numero_nf:nota,chave_nf:chave,valor_total:vTotal,valor_pago:vPago,tipo:'emissao',registrado_por:ME.login,obs:retirante});
+    upsertPedidoLocal({id:_notaTarget,setor:'separacao',status:'pronto_balcao',setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,finalizado_at:agora,num_nota:nota});
+    _lastPainelSnap='';
+    atualizarTelasAtivas();
+    sb.from('movimentacoes').insert({
+      pedido_id:_notaTarget,
+      setor_origem:o.setor,
+      setor_destino:'separacao',
+      usuario:ME.login,
+      entrada_at:o.setor_entrada_at,
+      saida_at:agora,
+      tempo_ms:tempoSetor,
+      confirmado_por:ME.login,
+      confirmado_at:agora,
+      tempo_confirmacao_ms:0
+    });
     refreshPedidosSoon(500);
-    toast('Faturado! Pedido → '+(destSetor==='expedicao'?'Expedição':'Separação')+' | NF: '+nota,'move');
+    toast('Faturado! Pedido voltou para a Separação para chamar balcão.','move');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);_notaTarget=null;}
 }
@@ -1637,12 +1511,9 @@ async function chamarBalcao(id){
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
 }
-function openNewOrder(){el('no-num').value='';el('no-cli').value='';el('no-obs').value='';if(el('no-tipo'))el('no-tipo').value='balcao';if(el('no-vend'))el('no-vend').value='';openM('m-new-order');}
+function openNewOrder(){el('no-num').value='';el('no-cli').value='';el('no-obs').value='';el('no-prio').value='retira';openM('m-new-order');}
 async function createOrder(){
-  var num=el('no-num').value.trim(),cli=el('no-cli').value.trim();
-  var tipo=el('no-tipo')?el('no-tipo').value:'balcao';
-  var vend=el('no-vend')?el('no-vend').value.trim():'';
-  var prio=tipo==='balcao'?'balcao':'retira';
+  var num=el('no-num').value.trim(),cli=el('no-cli').value.trim(),prio=el('no-prio').value;
   if(!num){toast('Informe o número do pedido.','err');return;}
   if(!cli){toast('Informe o nome do cliente.','err');return;}
   closeM('m-new-order');ov(true);
@@ -1650,180 +1521,14 @@ async function createOrder(){
     var dup=await sb.from('pedidos').select('id').eq('numero',num).neq('status','finalizado');
     if(dup.data&&dup.data.length>0){toast('Já existe um pedido ativo com este número.','err');return;}
     var agora=new Date().toISOString();
-    var res=await sb.from('pedidos').insert({numero:num,setor:'atendimento',setor_pendente:'',status:'em_andamento',criado_por:ME.login,entrada_at:agora,setor_entrada_at:agora,obs:el('no-obs').value,nome_cliente:cli,prioridade:prio,num_nota:'',tipo_saida:tipo,vendedor:vend});
+    var res=await sb.from('pedidos').insert({numero:num,setor:'atendimento',setor_pendente:'',status:'em_andamento',criado_por:ME.login,entrada_at:agora,setor_entrada_at:agora,obs:el('no-obs').value,nome_cliente:cli,prioridade:prio,num_nota:''});
     if(res.error)throw res.error;
     await refreshUI();
-    toast('Pedido #'+num+' criado — '+cli+' ['+TIPO_SAIDA_LABEL[tipo]+']','ok');
+    toast('Pedido #'+num+' criado — '+cli,'ok');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
 }
 
-
-// ══════════════════════════════════════════════════════════
-// TELAS POR SETOR
-// ══════════════════════════════════════════════════════════
-
-function tipoBadge(tipo){
-  var t=tipo||'retira';
-  var lbl=TIPO_SAIDA_LABEL[t]||t;
-  var cor=TIPO_SAIDA_COLOR[t]||'#888';
-  return '<span style="display:inline-block;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700;background:'+cor+'22;color:'+cor+';border:1px solid '+cor+'44">'+lbl+'</span>';
-}
-
-function fmtBRL(v){
-  if(!v&&v!==0)return '—';
-  return 'R$ '+parseFloat(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-}
-
-function renderSetorView(setor){
-  if(!el('screen-setor'))return;
-  el('setor-screen-title').textContent=SL[setor]||setor;
-  el('btn-novo-setor').style.display=podeCriarPedido()?'flex':'none';
-  // columns by sector
-  var cols='<tr><th style="width:32px"></th><th style="width:100px">Pedido</th><th>Cliente</th><th style="width:90px">Tipo</th><th style="width:90px">Tempo</th><th style="width:180px">Ações</th></tr>';
-  el('setor-screen-thead').innerHTML=cols;
-  var pedidos=PEDIDOS.filter(function(o){
-    if(o.status==='cancelado')return false;
-    if(o.status==='aguardando')return o.setor_pendente===setor;
-    return o.setor===setor && o.status==='em_andamento';
-  });
-  pedidos.sort(function(a,b){
-    var tp={balcao:0,retira:1,entrega:2};
-    return (tp[a.tipo_saida||'retira']||1)-(tp[b.tipo_saida||'retira']||1);
-  });
-  el('setor-screen-count').textContent=pedidos.length+' pedido(s)';
-  el('setor-screen-empty').style.display=pedidos.length?'none':'block';
-  el('setor-screen-tbody').innerHTML=pedidos.map(function(o){
-    var s=calcSetorMs(o),t=calcTotalMs(o);
-    var sMs=Math.max(0,(s.freeze||now())-s.entry);
-    var canAct=podeAtuarNoSetor(setor);
-    var btns=[];
-    var ep=(o.status==='pronto_balcao'||o.status==='balcao_chamado');
-    if(canAct&&setor!=='atendimento'&&!ep)btns.push('<button class="bret" style="padding:5px 12px;font-size:11px" onclick="openReturnActive(\''+o.id+'\')" >Retornar</button>');
-    if(setor==='atendimento'&&canAct)btns.push('<button class="bmv" style="background:#c49a6c;padding:5px 12px;font-size:11px" onclick="enviar(\''+o.id+'\',\'estoque\')" >→ Estoque</button>');
-    if(setor==='estoque'&&canAct){btns.push('<button class="bmv" style="background:#ef4444;padding:5px 12px;font-size:11px" onclick="enviar(\''+o.id+'\',\'corte\')" >→ Corte</button>');btns.push('<button class="bcon" style="background:#6366f1;padding:5px 12px;font-size:11px" onclick="enviar(\''+o.id+'\',\'separacao\')" >→ Separação</button>');}
-    if(setor==='corte'&&canAct)btns.push('<button class="bcon" style="background:#6366f1;padding:5px 12px;font-size:11px" onclick="enviar(\''+o.id+'\',\'separacao\')" >→ Separação</button>');
-    if(setor==='faturamento'&&podeFaturar())btns.push('<button class="bfin" style="padding:5px 12px;font-size:11px" onclick="openNota(\''+o.id+'\')" >Faturar</button>');
-    if(podeExcluirPedido()&&!ep)btns.push('<button class="bexc" style="padding:5px 12px;font-size:11px" onclick="openDeletePedido(\''+o.id+'\')" >Excluir</button>');
-    var cor=TIPO_SAIDA_COLOR[o.tipo_saida||'retira']||'#22d3a7';
-    return '<tr>'+
-      '<td><span style="width:10px;height:10px;border-radius:50%;background:'+cor+';display:inline-block"></span></td>'+
-      '<td style="font-family:var(--font-head);font-size:16px;font-weight:800">#'+o.numero+'</td>'+
-      '<td style="font-size:12px"><div style="font-weight:600">'+o.nome_cliente+'</div><div style="color:var(--muted);font-size:10px">'+o.criado_por+'</div></td>'+
-      '<td>'+tipoBadge(o.tipo_saida)+'</td>'+
-      '<td style="font-size:13px;font-weight:600">'+fmtT(sMs)+'</td>'+
-      '<td><div style="display:flex;gap:6px;flex-wrap:wrap">'+btns.join('')+'</div></td>'+
-    '</tr>';
-  }).join('');
-}
-
-var _expFilter='todos';
-function setExpFilter(f){
-  _expFilter=f;
-  ['todos','balcao','retira','entrega'].forEach(function(k){
-    var t=el('exp-tab-'+k);if(t)t.classList.toggle('active',k===f);
-  });
-  renderExpedicao();
-}
-
-function renderExpedicao(){
-  if(!el('exp-tbody'))return;
-  var pedidos=PEDIDOS.filter(function(o){
-    if(o.status==='cancelado')return false;
-    var inExp=(o.setor==='separacao'||o.setor==='expedicao'||o.status==='pronto_balcao'||o.status==='balcao_chamado'||o.status==='ag_retira');
-    if(!inExp)return false;
-    if(_expFilter!=='todos'&&(o.tipo_saida||'retira')!==_expFilter)return false;
-    return true;
-  });
-  pedidos.sort(function(a,b){
-    var tp={balcao:0,retira:1,entrega:2};
-    return (tp[a.tipo_saida||'retira']||1)-(tp[b.tipo_saida||'retira']||1);
-  });
-  el('exp-count').textContent=pedidos.length+' pedido(s)';
-  el('exp-empty').style.display=pedidos.length?'none':'block';
-  var canAct=podeAtuarNoSetor('separacao')||podeAtuarNoSetor('expedicao')||isAdmin();
-  el('exp-tbody').innerHTML=pedidos.map(function(o){
-    var cor=TIPO_SAIDA_COLOR[o.tipo_saida||'retira']||'#22d3a7';
-    var btns=[];
-    if(o.status==='pronto_balcao'&&canAct){
-      btns.push('<button class="bcall" style="padding:5px 12px;font-size:11px" onclick="chamarBalcao(\''+o.id+'\')">Chamar</button>');
-      btns.push('<button class="boc" style="padding:5px 12px;font-size:11px" onclick="enviarAgRetira(\''+o.id+'\')">Ag. Retira</button>');
-    }
-    if(o.status==='ag_retira'&&canAct)btns.push('<button class="bfin" style="padding:5px 12px;font-size:11px" onclick="registrarEntregaOuRetirada(\''+o.id+'\')">Confirmar Saída</button>');
-    if(podeExcluirPedido())btns.push('<button class="bexc" style="padding:5px 12px;font-size:11px" onclick="openDeletePedido(\''+o.id+'\')">Excluir</button>');
-    var parcialBadge=o.parcial?'<span style="color:#f59e0b;font-size:10px;font-weight:700">Sim</span>':'<span style="color:var(--muted);font-size:10px">Não</span>';
-    var pendBadge=o.pendencia?'<span style="color:#ef4444;font-size:10px;font-weight:700">Sim</span>':'<span style="color:var(--muted);font-size:10px">Não</span>';
-    return '<tr>'+
-      '<td><span style="width:10px;height:10px;border-radius:50%;background:'+cor+';display:inline-block"></span></td>'+
-      '<td style="font-family:var(--font-head);font-size:16px;font-weight:800">#'+o.numero+'</td>'+
-      '<td style="font-size:12px"><div style="font-weight:600">'+o.nome_cliente+'</div><div style="color:var(--muted);font-size:10px">'+(o.vendedor||o.criado_por)+'</div></td>'+
-      '<td>'+tipoBadge(o.tipo_saida)+'</td>'+
-      '<td style="font-size:11px;color:var(--muted)">'+(o.retirante||'—')+'</td>'+
-      '<td style="font-size:11px;color:var(--sep)">'+(o.num_nota||'—')+'</td>'+
-      '<td style="font-size:11px"><div>'+fmtBRL(o.valor_total)+'</div>'+(o.saldo_pendente?'<div style="color:#ef4444;font-size:10px">Saldo: '+fmtBRL(o.saldo_pendente)+'</div>':'')+'</td>'+
-      '<td>'+parcialBadge+'</td>'+
-      '<td>'+pendBadge+'</td>'+
-      '<td><div style="display:flex;gap:4px;flex-wrap:wrap">'+btns.join('')+'</div></td>'+
-    '</tr>';
-  }).join('');
-}
-
-var _canhotoTarget=null;
-function openCanhoto(id){_canhotoTarget=id;if(el('canhoto-assinado'))el('canhoto-assinado').value='';if(el('canhoto-data'))el('canhoto-data').value=new Date().toISOString().split('T')[0];if(el('canhoto-obs'))el('canhoto-obs').value='';openM('m-canhoto');}
-
-async function confirmarCanhoto(){
-  var assinado=el('canhoto-assinado')?el('canhoto-assinado').value.trim():'';
-  var data=el('canhoto-data')?el('canhoto-data').value:'';
-  if(!assinado){toast('Informe quem assinou.','err');return;}
-  if(!data){toast('Informe a data do retorno.','err');return;}
-  closeM('m-canhoto');ov(true);
-  try{
-    var obs=el('canhoto-obs')?el('canhoto-obs').value.trim():'';
-    var res=await sb.from('pedidos').update({status:'finalizado'}).eq('id',_canhotoTarget);
-    if(res.error)throw res.error;
-    await sb.from('notas_fiscais').insert({pedido_id:_canhotoTarget,tipo:'canhoto',registrado_por:ME.login,obs:'Assinado por: '+assinado+' em '+data+(obs?' | '+obs:'')});
-    upsertPedidoLocal({id:_canhotoTarget,status:'finalizado'});
-    _lastPainelSnap='';atualizarTelasAtivas();
-    refreshPedidosSoon(500);renderCanhotos();
-    toast('Canhoto registrado com sucesso!','ok');
-  }catch(e){toast(e.message,'err');}
-  finally{ov(false);_canhotoTarget=null;}
-}
-
-async function registrarEntregaOuRetirada(id){
-  var o=PEDIDOS.find(function(p){return p.id===id;});
-  if(!o)return;
-  openCanhoto(id);
-}
-
-function renderCanhotos(){
-  if(!el('canhoto-tbody'))return;
-  var pedidos=PEDIDOS.filter(function(o){
-    return (o.status==='ag_retira'||o.status==='pronto_balcao'||o.status==='balcao_chamado')&&o.num_nota;
-  });
-  pedidos.sort(function(a,b){return tsMs(a.finalizado_at)-tsMs(b.finalizado_at);});
-  el('canhoto-count').textContent=pedidos.length+' pendente(s)';
-  el('canhoto-empty').style.display=pedidos.length?'none':'block';
-  el('canhoto-tbody').innerHTML=pedidos.map(function(o){
-    var cor=TIPO_SAIDA_COLOR[o.tipo_saida||'retira']||'#22d3a7';
-    var fatAt=o.finalizado_at?new Date(o.finalizado_at).toLocaleDateString('pt-BR'):'—';
-    var chaveAbrev=o.chave_nf?o.chave_nf.substring(0,12)+'...':'—';
-    return '<tr>'+
-      '<td><span style="width:10px;height:10px;border-radius:50%;background:'+cor+';display:inline-block"></span></td>'+
-      '<td style="font-family:var(--font-head);font-size:16px;font-weight:800">#'+o.numero+'</td>'+
-      '<td style="font-size:12px;font-weight:600">'+o.nome_cliente+'</td>'+
-      '<td>'+tipoBadge(o.tipo_saida)+'</td>'+
-      '<td style="font-size:11px;color:var(--sep)">'+(o.num_nota||'—')+'</td>'+
-      '<td style="font-size:10px;color:var(--muted);font-family:var(--font-mono)" title="'+(o.chave_nf||'')+'">'+chaveAbrev+'</td>'+
-      '<td style="font-size:11px">'+fatAt+'</td>'+
-      '<td style="font-size:11px;font-weight:600">'+fmtBRL(o.valor_total)+'</td>'+
-      '<td><button class="bfin" style="padding:5px 12px;font-size:11px" onclick="openCanhoto(\'\''+o.id+'\'\')">Registrar Canhoto</button></td>'+
-    '</tr>';
-  }).join('');
-}
-
-// Update renderExpedicao/renderSetorView/renderCanhotos on realtime events
-var _origAtualizarTelasAtivas=atualizarTelasAtivas;
 // ── TEMPO OPERACIONAL CORRIGIDO ──
 // Calcula o tempo entre entrada e saída considerando apenas horário comercial
 // (08:30 às 18:15). Pedidos que ficaram overnight não inflam a média.
