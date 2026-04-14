@@ -138,9 +138,9 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 .ca{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
 .ca>*:last-child:nth-child(odd){grid-column:1/-1}
 .ca>button{width:100%;box-sizing:border-box;height:36px;display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px!important;padding:0 10px!important}
-.bmv{padding:6px 14px;background:#3b82f6;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:12px;cursor:pointer;transition:all .2s;font-weight:700}
+.bmv{padding:9px 18px;background:#3b82f6;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:13px;cursor:pointer;transition:all .2s;font-weight:700}
 .bmv:hover{background:#2563eb;transform:translateY(-1px)}
-.bret{padding:6px 14px;background:#f97316;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:12px;cursor:pointer;transition:all .2s;font-weight:700}
+.bret{padding:9px 18px;background:#f97316;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:13px;cursor:pointer;transition:all .2s;font-weight:700}
 .bret:hover{background:#ea6c08;transform:translateY(-1px)}
 .bfin{padding:6px 14px;background:#22d3a7;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:12px;cursor:pointer;transition:all .2s;font-weight:700}
 .bfin:hover{background:#10b981;transform:translateY(-1px)}
@@ -312,22 +312,22 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 .hsl-bar{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px}
 .hsl-alert{width:8px;height:8px;border-radius:50%;background:var(--danger);animation:blinkCall 1.2s infinite;margin-left:6px;flex-shrink:0}
 /* Setor order cards */
-.setor-order-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:10px;position:relative;transition:all .2s}
+.setor-order-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px 26px;margin-bottom:14px;position:relative;transition:all .2s}
 .setor-order-card:hover{border-color:var(--border2);box-shadow:var(--shadow)}
-.soc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
-.soc-num{font-family:var(--font-head);font-size:22px;font-weight:800}
-.soc-cli{font-size:13px;font-weight:600}
-.soc-meta{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:10px}
-.soc-timer{font-family:var(--font-mono);font-size:20px;font-weight:800;color:#fff;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.soc-top{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.soc-num{font-family:var(--font-head);font-size:28px;font-weight:800}
+.soc-cli{font-size:15px;font-weight:600}
+.soc-meta{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:14px}
+.soc-timer{font-family:var(--font-mono);font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
 .soc-timer.warn{color:var(--warn)}.soc-timer.danger{color:var(--danger)}
-.soc-timer-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.soc-timer-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
 .soc-transit-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);color:var(--warn);font-size:11px;font-weight:600;animation:blinkCall 1.5s infinite}
-.soc-tipo{font-size:12px;font-weight:700;padding:3px 12px;border-radius:20px;letter-spacing:.04em;flex-shrink:0}
+.soc-tipo{font-size:13px;font-weight:700;padding:5px 14px;border-radius:20px;letter-spacing:.04em;flex-shrink:0}
 .soc-tipo.balcao{color:#ef4444;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);animation:blinkCall 1.2s infinite}
 .soc-tipo.retira{color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2)}
 .soc-tipo.entrega{color:#3b82f6;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3)}
-.soc-hora{font-size:13px;font-weight:700;color:#fff;font-family:var(--font-mono)}
-.soc-fields{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.soc-hora{font-size:15px;font-weight:700;color:#fff;font-family:var(--font-mono)}
+.soc-fields{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
 .soc-field{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);cursor:default}
 .soc-field.clickable{cursor:pointer}.soc-field.clickable:hover{border-color:var(--border3)}
 .soc-field.ok{border-color:rgba(34,211,167,.3);color:var(--accent)}
@@ -1418,7 +1418,8 @@ async function go(name){if(name==='home'){allHide();el('screen-home').classList.
   if(name==='setor'){if(_setorAtual)renderSetor(_setorAtual);return;}
   if(name==='expedicao'){allHide();el('screen-expedicao').classList.add('active');renderExpedicao();return;}
   if(name==='consultar'){allHide();el('screen-consultar').classList.add('active');document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});var tab=el('tab-consultar');if(tab)tab.classList.add('active');return;}
-  if(name==='pendencias'){ov(true);await fetchPedidos();ov(false);renderPendencias();return;}
+  if(name==='pendencias'){allHide();el('screen-pendencias').classList.add('active');document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});var pt=el('tab-pendencias');if(pt)pt.classList.add('active');ov(true);await fetchPedidos();ov(false);renderPendencias();return;}
+  if(name==='ocorrencias'){allHide();el('screen-ocorrencias').classList.add('active');document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});var ot=el('tab-ocorrencias');if(ot)ot.classList.add('active');ov(true);await fetchPedidos();ov(false);renderOcorrencias();return;}
   
   if(ME)startPolling();
   allHide();el('screen-'+name).classList.add('active');
@@ -2869,14 +2870,15 @@ function renderSetor(setor){
   if(btnNovo) btnNovo.style.display = (setor==='atendimento' && podeCriarPedido())?'inline-block':'none';
   // For delivery sectors filter by status, not setor field
   var chegando, items;
+  var EXCL = ['finalizado','cancelado','canhoto_ok','pendencia_ativa'];
   if(setor==='retira'){
-    items = PEDIDOS.filter(function(o){return o.setor==='retira'||o.status==='ag_retira';});
+    items = PEDIDOS.filter(function(o){return (o.setor==='retira'||o.status==='ag_retira') && EXCL.indexOf(o.status)<0;});
     chegando = [];
   } else if(setor==='balcao'){
-    items = PEDIDOS.filter(function(o){return o.setor==='balcao'||(o.status==='pronto_balcao'||o.status==='balcao_chamado');});
+    items = PEDIDOS.filter(function(o){return (o.setor==='balcao'||o.status==='pronto_balcao'||o.status==='balcao_chamado') && EXCL.indexOf(o.status)<0;});
     chegando = [];
   } else if(setor==='entrega'){
-    items = PEDIDOS.filter(function(o){return o.setor==='entrega'||(o.status==='ag_entrega'||o.status==='em_entrega'||o.status==='entregue');});
+    items = PEDIDOS.filter(function(o){return (o.setor==='entrega'||o.status==='ag_entrega'||o.status==='em_entrega') && EXCL.indexOf(o.status)<0;});
     chegando = [];
   } else if(setor==='canhotos'){
     items = PEDIDOS.filter(function(o){return o.status==='entregue';});
@@ -2893,13 +2895,16 @@ function renderSetor(setor){
   if(el('setor-screen-chegando')){
     el('setor-screen-chegando').innerHTML = chegando ? chegando.map(function(o){
       var canAccept = podeAtuarNoSetor(setor);
+      var tp = o.tipo_saida||o.prioridade||'retira';
+      var tpBadge = '<span class="soc-tipo '+tp+'">'+(tp==='balcao'?'🏪 Balcão':tp==='entrega'?'🚚 Entrega':'📦 Retira')+'</span>';
       return '<div class="transit-banner" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
         '<span class="dp"></span>' +
-        '<span style="font-family:var(--font-head);font-weight:700;color:var(--accent)">#'+o.numero+'</span>' +
-        '<span style="color:var(--text)">'+(o.nome_cliente||'')+'</span>' +
+        '<span style="font-family:var(--font-head);font-size:18px;font-weight:800;color:var(--accent)">#'+o.numero+'</span>' +
+        '<span style="color:var(--text);font-weight:600">'+(o.nome_cliente||'')+'</span>' +
         '<span style="color:var(--muted);font-size:11px">'+(SL[o.setor]||o.setor)+' → '+SL[setor]+'</span>' +
+        tpBadge +
         (canAccept
-          ? '<button class="bmv" style="margin-left:auto;background:#22c55e" onclick="confirmarRec(\''+o.id+'\')">✓ Confirmar Recebimento</button>'
+          ? '<button class="bmv" style="margin-left:auto;background:#22c55e;white-space:nowrap" onclick="confirmarRec(\''+o.id+'\')">✓ Confirmar Recebimento</button>'
           : '<span style="margin-left:auto;color:var(--muted);font-size:11px">Aguardando confirmação...</span>') +
       '</div>';
     }).join('') : '';
