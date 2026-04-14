@@ -2853,11 +2853,15 @@ function renderSetor(setor){
   if(el('setor-screen-empty')) el('setor-screen-empty').style.display = (items.length+(chegando?chegando.length:0))?'none':'block';
   if(el('setor-screen-chegando')){
     el('setor-screen-chegando').innerHTML = chegando ? chegando.map(function(o){
-      return '<div class="transit-banner">' +
+      var canAccept = podeAtuarNoSetor(setor);
+      return '<div class="transit-banner" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
         '<span class="dp"></span>' +
-        '<span style="font-family:var(--font-head);font-weight:700">#'+o.numero+'</span> ' +
-        '<span>'+(o.nome_cliente||'')+'</span>' +
-        '<span style="margin-left:auto;color:var(--muted)">'+(SL[o.setor]||o.setor)+' → '+SL[setor]+'</span>' +
+        '<span style="font-family:var(--font-head);font-weight:700;color:var(--accent)">#'+o.numero+'</span>' +
+        '<span style="color:var(--text)">'+(o.nome_cliente||'')+'</span>' +
+        '<span style="color:var(--muted);font-size:11px">'+(SL[o.setor]||o.setor)+' → '+SL[setor]+'</span>' +
+        (canAccept
+          ? '<button class="bmv" style="margin-left:auto;background:#22c55e" onclick="confirmarRec(\''+o.id+'\')">✓ Confirmar Recebimento</button>'
+          : '<span style="margin-left:auto;color:var(--muted);font-size:11px">Aguardando confirmação...</span>') +
       '</div>';
     }).join('') : '';
   }
@@ -2876,6 +2880,8 @@ function renderSetorCard(o, setor){
   var totalMs = Math.max(0,(t.freeze||now())-t.entry);
   var tC = totalMs>45*60000?'cd':totalMs>25*60000?'cw':'';
   var hora = tsMs(o.entrada_at)?new Date(tsMs(o.entrada_at)).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'--';
+  var setorFreezeAttr = s.freeze ? ' data-timer-freeze="'+s.freeze+'"' : '';
+  var totalFreezeAttr = t.freeze ? ' data-timer-freeze="'+t.freeze+'"' : '';
   var fields = '<div class="soc-fields">';
   if(o.parcial||o.is_parcial) fields += '<span class="soc-field warn">Parcial</span>';
   if(o.pendencia||o.has_pendencia) fields += '<span class="soc-field danger">Pendência</span>';
@@ -2938,9 +2944,9 @@ function renderSetorCard(o, setor){
       '<span style="font-size:10px;color:var(--muted);margin-left:auto">'+hora+'</span>' +
     '</div>' +
     '<div class="soc-meta">' +
-      '<span>Neste setor: '+fmtT(setorMs)+'</span>' +
-      '<span>|</span>' +
-      '<span class="'+tC+'">Total: '+fmtT(totalMs)+'</span>' +
+      '<span data-timer-entry="'+s.entry+'"'+setorFreezeAttr+'>⏱ '+fmtT(setorMs)+'</span>' +
+      '<span style="color:var(--muted2)">|</span>' +
+      '<span class="'+tC+'" data-timer-entry="'+t.entry+'"'+totalFreezeAttr+'>Total: '+fmtT(totalMs)+'</span>' +
     '</div>' +
     fields +
     (acoes.length?'<div class="ca" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">'+acoes.join('')+'</div>':'') +
