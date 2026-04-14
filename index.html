@@ -2830,7 +2830,7 @@ function renderSetor(setor){
   if(el('setor-screen-title')) el('setor-screen-title').textContent = SL[setor]||setor;
   // Add/hide "+ Novo Pedido" button for atendimento
   var btnNovo = el('btn-setor-novo');
-  if(btnNovo) btnNovo.style.display = (setor==='atendimento' && podeCriarPedido())?'':'none';
+  if(btnNovo) btnNovo.style.display = (setor==='atendimento' && podeCriarPedido())?'inline-block':'none';
   // For delivery sectors filter by status, not setor field
   var chegando, items;
   if(setor==='retira'){
