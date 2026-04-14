@@ -334,8 +334,7 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 <nav id="main-nav" style="display:none">
   <span class="logo" onclick="go('home')" style="cursor:pointer">Call <span>Order</span></span>
   <div class="nav-tabs">
-    <button class="tab" onclick="go('home')" id="tab-home">Home</button>
-    <button class="tab" onclick="go('expedicao')" id="tab-expedicao">Expedição</button>
+    <button class="tab" onclick="go('consultar')" id="tab-consultar">Consultar</button>
     <button class="tab" onclick="go('pendencias')" id="tab-pendencias">Pendências <span id="pendencias-badge" style="display:none;background:rgba(239,68,68,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('ocorrencias')" id="tab-ocorrencias">Ocorrências <span id="ocorrencias-badge" style="display:none;background:rgba(239,159,39,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('relatorios')">Relatórios</button>
@@ -627,19 +626,22 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
       </div>
     </main>
   </div>
-  <div id="screen-rastrear" style="display:none;background:var(--bg);min-height:100vh;padding:28px;font-family:var(--font-mono)">
+<div class="screen" id="screen-consultar">
+  <main>
+    <div class="ph">
+      <button onclick="go('home')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:0;font-family:var(--font-mono)">‹ Voltar</button>
+      <span class="pt">Consultar Pedido</span>
+    </div>
     <div class="track-wrap">
-      <div style="margin-bottom:28px">
-        <span style="font-family:var(--font-head);font-size:24px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent">Rastreamento de Pedido</span>
-      </div>
-      <div class="track-search">
+      <div class="track-search" style="margin-bottom:24px">
         <input type="text" id="track-input" placeholder="Nº Pedido, Nº Nota Fiscal ou CNPJ..." onkeydown="if(event.key==='Enter')buscarRastreamento()"/>
         <button class="btnp" style="width:auto;padding:12px 20px" onclick="buscarRastreamento()">Buscar</button>
       </div>
       <div id="track-result" style="display:none"></div>
       <div id="track-empty" style="display:none;color:var(--muted);text-align:center;padding:40px 0">Pedido não encontrado. Verifique o número e tente novamente.</div>
     </div>
-  </div>
+  </main>
+</div>
   <div class="mb" id="m-new-order">
   <div class="mo" style="max-width:460px">
     <div class="mt">Novo Pedido — Atendimento</div>
@@ -752,12 +754,12 @@ applyTheme(getStoredTheme());
 const SUPA_URL = 'https://lpjyrmkgjgehfaosagxl.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwanlybWtnamdlaGZhb3NhZ3hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDgwOTIsImV4cCI6MjA5MTA4NDA5Mn0.c0EweQ387mQI5Fh1auNaCwTNTBLZulRFdg0cjUSvnSU';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
-const SETORES = ['atendimento','estoque','corte','separacao','faturamento','retira','balcao','entrega'];
+const SETORES = ['atendimento','estoque','corte','separacao','faturamento','retira','balcao','entrega','canhotos'];
 const PROXIMO_SETOR = {atendimento:'estoque',estoque:'corte',corte:'separacao',separacao:'faturamento'};
-const RETORNO_PADRAO = {estoque:'atendimento',corte:'estoque',separacao:'corte',faturamento:'separacao',retira:'faturamento',balcao:'faturamento',entrega:'faturamento'};
-const SL = {atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',separacao:'Separação',faturamento:'Faturamento',retira:'Retira',balcao:'Balcão',entrega:'Entrega',expedicao:'Expedição',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira',em_ocorrencia:'Ocorrência',pendencia_ativa:'Pendência',pronto_balcao:'Pronto p/ Balcão',balcao_chamado:'Chamado',ag_entrega:'Ag. Entrega',em_entrega:'Em Entrega',entregue:'Entregue',canhoto_ok:'Canhoto OK'};
+const RETORNO_PADRAO = {estoque:'atendimento',corte:'estoque',separacao:'corte',faturamento:'separacao',retira:'faturamento',balcao:'faturamento',entrega:'faturamento',canhotos:'entrega'};
+const SL = {atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',separacao:'Separação',faturamento:'Faturamento',retira:'Retira',balcao:'Balcão',entrega:'Entrega',canhotos:'Canhotos',expedicao:'Expedição',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira',em_ocorrencia:'Ocorrência',pendencia_ativa:'Pendência',pronto_balcao:'Pronto p/ Balcão',balcao_chamado:'Chamado',ag_entrega:'Ag. Entrega',em_entrega:'Em Entrega',entregue:'Entregue',canhoto_ok:'Canhoto OK'};
 const SC = {atendimento:'tag-at',estoque:'tag-es',corte:'tag-co',separacao:'tag-se',faturamento:'tag-fa',pronto_balcao:'tag-rd',balcao_chamado:'tag-rd',finalizado:'tag-do'};
-const SD = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1',retira:'#60a5fa',balcao:'#f87171',entrega:'#a855f7',expedicao:'#34d399'};
+const SD = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1',retira:'#60a5fa',balcao:'#f87171',entrega:'#a855f7',canhotos:'#fb923c',expedicao:'#34d399'};
 const SICONCOLOR = {atendimento:'#a78bfa',estoque:'#c49a6c',corte:'#ef4444',separacao:'#f1f5f9',faturamento:'#22d3a7'};
 const SICON = {
   atendimento: '<svg width="18" height="18" viewBox="0 0 24 24" fill="COLOR" stroke="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2zm0 12c5.33 0 8 2.67 8 4v2H4v-2c0-1.33 2.67-4 8-4z"/></svg>',
@@ -1403,6 +1405,7 @@ function allHide(){document.querySelectorAll('.screen').forEach(function(s){s.cl
 async function go(name){if(name==='home'){allHide();el('screen-home').classList.add('active');ov(true);await fetchPedidos();ov(false);renderHome();return;}
   if(name==='setor'){if(_setorAtual)renderSetor(_setorAtual);return;}
   if(name==='expedicao'){allHide();el('screen-expedicao').classList.add('active');renderExpedicao();return;}
+  if(name==='consultar'){allHide();el('screen-consultar').classList.add('active');document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});var tab=el('tab-consultar');if(tab)tab.classList.add('active');return;}
   if(name==='pendencias'){ov(true);await fetchPedidos();ov(false);renderPendencias();return;}
   
   if(ME)startPolling();
@@ -2686,8 +2689,8 @@ function renderTrackCard(o){
   if(tipo==='entrega'){
     eventos.push({key:'ag_entrega',label:'Aguardando saída para entrega',done:['ag_entrega','em_entrega','entregue','canhoto_ok'].indexOf(o.status)>=0,ts:null});
     eventos.push({key:'em_entrega',label:'A caminho do destino',done:['em_entrega','entregue','canhoto_ok'].indexOf(o.status)>=0,ts:null,active:o.status==='em_entrega'});
-    eventos.push({key:'entregue',label:'Entregue no destino',done:['entregue','canhoto_ok'].indexOf(o.status)>=0,ts:null});
-    eventos.push({key:'canhoto',label:'Canhoto assinado recebido',done:o.status==='canhoto_ok',ts:o.status==='canhoto_ok'?o.finalizado_at:null});
+    eventos.push({key:'entregue',label:'Entregue no destino',done:['entregue','canhoto_ok','finalizado'].indexOf(o.status)>=0,ts:null});
+    eventos.push({key:'canhoto',label:'Canhoto assinado recebido',done:['canhoto_ok','finalizado'].indexOf(o.status)>=0,ts:o.canhoto_at||null,active:o.status==='entregue'});
   } else if(tipo==='retira'){
     eventos.push({key:'ag_retira',label:'Aguardando retirada',done:['ag_retira','balcao_chamado','finalizado'].indexOf(o.status)>=0,ts:null});
     eventos.push({key:'retirado',label:'Retirado pelo cliente',done:o.status==='finalizado',ts:o.finalizado_at});
@@ -2727,10 +2730,10 @@ function renderTrackCard(o){
   '</div>';
 }
 
-// Initialize rastrear mode
+// Initialize rastrear/consultar mode
 if(window.location.search.indexOf('rastrear=1')>=0){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
-  el('screen-rastrear').style.display='block';
+  var sc=el('screen-consultar');if(sc)sc.classList.add('active');
   applyTheme(getStoredTheme());
 }
 
@@ -2743,8 +2746,8 @@ function renderHome(){
   if(el('home-date')) el('home-date').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
   var list = el('home-setor-list');
   if(!list) return;
-  var colors = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1',retira:'#60a5fa',balcao:'#f87171',entrega:'#a855f7'};
-  var icons = {atendimento:'📋',estoque:'📦',corte:'✂️',separacao:'🔧',faturamento:'🧾',retira:'📦',balcao:'🏪',entrega:'🚚'};
+  var colors = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1',retira:'#60a5fa',balcao:'#f87171',entrega:'#a855f7',canhotos:'#fb923c'};
+  var icons = {atendimento:'📋',estoque:'📦',corte:'✂️',separacao:'🔧',faturamento:'🧾',retira:'📦',balcao:'🏪',entrega:'🚚',canhotos:'📋'};
   list.innerHTML = SETORES.map(function(setor){
     var items, chegando, total, hasAlert, subParts=[];
     if(setor==='retira'){
@@ -2766,6 +2769,11 @@ function renderHome(){
       if(items.length-emRota) subParts.push((items.length-emRota)+' aguardando');
       if(emRota) subParts.push(emRota+' em rota');
       hasAlert = false;
+    } else if(setor==='canhotos'){
+      items = PEDIDOS.filter(function(o){return o.status==='entregue';});
+      chegando = [];
+      if(items.length) subParts.push(items.length+' aguardando canhoto');
+      hasAlert = items.some(function(o){ return now()-tsMs(o.setor_entrada_at)>24*60*60000; });
     } else {
       items = PEDIDOS.filter(function(o){ return o.setor===setor && isOperacionalVisivel(o) && o.status!=='aguardando'; });
       chegando = PEDIDOS.filter(function(o){ return o.status==='aguardando' && o.setor_pendente===setor; });
@@ -2773,7 +2781,7 @@ function renderHome(){
       if(chegando.length) subParts.push(chegando.length + ' chegando');
       hasAlert = items.some(function(o){ return now()-tsMs(o.setor_entrada_at)>45*60000; });
     }
-    total = items.length + chegando.length;
+    total = items.length + (chegando?chegando.length:0);
     return '<div class="hsl-item" onclick="abrirSetor(\''+setor+'\')">' +
       '<div class="hsl-bar" style="background:'+(colors[setor]||'var(--accent)')+'"></div>' +
       '<span style="font-size:22px">'+(icons[setor]||'📁')+'</span>' +
@@ -2786,6 +2794,16 @@ function renderHome(){
       '<div class="hsl-arrow">›</div>' +
     '</div>';
   }).join('');
+  // Expedição row — NF receipt/return only (not part of production flow)
+  list.innerHTML += '<div class="hsl-item" onclick="go(\'expedicao\')">' +
+    '<div class="hsl-bar" style="background:#34d399"></div>' +
+    '<span style="font-size:22px">📄</span>' +
+    '<div class="hsl-left">' +
+      '<div class="hsl-name">Expedição</div>' +
+      '<div class="hsl-sub">Recebimento e Devolução de NF</div>' +
+    '</div>' +
+    '<div class="hsl-arrow">›</div>' +
+  '</div>';
   // Stats row — pendências + ocorrências quick view
   var pendCount=PEDIDOS.filter(function(o){return o.status==='pendencia_ativa';}).length;
   var occCount=PEDIDOS.filter(function(o){return o.status==='em_ocorrencia';}).length;
@@ -2823,6 +2841,9 @@ function renderSetor(setor){
     chegando = [];
   } else if(setor==='entrega'){
     items = PEDIDOS.filter(function(o){return o.setor==='entrega'||(o.status==='ag_entrega'||o.status==='em_entrega'||o.status==='entregue');});
+    chegando = [];
+  } else if(setor==='canhotos'){
+    items = PEDIDOS.filter(function(o){return o.status==='entregue';});
     chegando = [];
   } else {
     chegando = PEDIDOS.filter(function(o){return o.status==='aguardando' && o.setor_pendente===setor;});
@@ -2897,8 +2918,11 @@ function renderSetorCard(o, setor){
       acoes.push('<button class="bmv" style="background:#a855f7" onclick="expAbrirCarregamento(\''+o.id+'\')">🚚 Registrar Carregamento</button>');
     else if(o.status==='em_entrega')
       acoes.push('<button class="bmv" style="background:#22c55e" onclick="expConfirmarEntregaRealizada(\''+o.id+'\')">✅ Confirmar Entrega</button>');
+  } else if(setor==='canhotos' && canAct){
+    if(o.status==='entregue')
+      acoes.push('<button class="bmv" style="background:#fb923c" onclick="expRegistrarCanhoto(\''+o.id+'\')">📋 Registrar Canhoto</button>');
   }
-  if(podeExcluirPedido() && setor!=='retira' && setor!=='balcao' && setor!=='entrega'){
+  if(podeExcluirPedido() && setor!=='retira' && setor!=='balcao' && setor!=='entrega' && setor!=='canhotos'){
     acoes.push('<button class="bexc" onclick="openDeletePedido(\''+o.id+'\')">Excluir</button>');
   }
 
@@ -3059,6 +3083,24 @@ async function expConfirmarEntregaRealizada(id){
     toast('Entrega confirmada! Pedido #'+o.numero+' entregue.','ok');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
+}
+
+// ── Canhotos: registro da chave NF do canhoto assinado ──
+async function expRegistrarCanhoto(id){
+  var o=getPedidoById(id);if(!o)return toast('Pedido não encontrado.','err');
+  abrirModalChaveNF('Registrar Canhoto — Chave NF','Informe a chave da NF do canhoto assinado do pedido #'+o.numero+'. Confirma recebimento do comprovante de entrega.',async function(chave){
+    ov(true);
+    try{
+      var agora=new Date().toISOString();
+      var res=await sb.from('pedidos').update({status:'canhoto_ok',canhoto_at:agora,chave_canhoto:chave}).eq('id',id);
+      if(res.error)throw res.error;
+      upsertPedidoLocal({id:id,status:'canhoto_ok',finalizado_at:agora});
+      atualizarTelasAtivas();
+      sb.from('timeline_pedido').insert({pedido_id:id,evento:'CANHOTO_OK',descricao:'Canhoto assinado recebido. Chave NF: '+chave,usuario:ME.login,evento_at:agora});
+      toast('Canhoto registrado! Pedido #'+o.numero+' finalizado.','ok');
+    }catch(e){toast(e.message,'err');}
+    finally{ov(false);}
+  });
 }
 
 // ── Pendências ──
