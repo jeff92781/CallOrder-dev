@@ -297,6 +297,34 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 /* Entregas screen */
 .entr-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:12px}
 
+
+/* Home sector list */
+.hsl-item{display:flex;align-items:center;gap:14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.hsl-item:hover{border-color:var(--border3);transform:translateX(4px);box-shadow:var(--shadow)}
+.hsl-left{display:flex;flex-direction:column;flex:1}
+.hsl-name{font-family:var(--font-head);font-size:16px;font-weight:700;margin-bottom:2px}
+.hsl-sub{font-size:11px;color:var(--muted)}
+.hsl-count{font-family:var(--font-head);font-size:26px;font-weight:800;min-width:48px;text-align:right}
+.hsl-arrow{color:var(--muted);font-size:18px;margin-left:8px}
+.hsl-bar{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px}
+.hsl-alert{width:8px;height:8px;border-radius:50%;background:var(--danger);animation:blinkCall 1.2s infinite;margin-left:6px;flex-shrink:0}
+/* Setor order cards */
+.setor-order-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:10px;position:relative;transition:all .2s}
+.setor-order-card:hover{border-color:var(--border2);box-shadow:var(--shadow)}
+.soc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.soc-num{font-family:var(--font-head);font-size:22px;font-weight:800}
+.soc-cli{font-size:13px;font-weight:600}
+.soc-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;font-size:11px;color:var(--muted)}
+.soc-fields{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.soc-field{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);cursor:default}
+.soc-field.clickable{cursor:pointer}.soc-field.clickable:hover{border-color:var(--border3)}
+.soc-field.ok{border-color:rgba(34,211,167,.3);color:var(--accent)}
+.soc-field.warn{border-color:rgba(245,158,11,.3);color:var(--warn)}
+.soc-field.danger{border-color:rgba(239,68,68,.3);color:var(--danger)}
+.soc-field.purple{border-color:rgba(168,85,247,.3);color:#a855f7}
+.soc-actions{display:flex;flex-wrap:wrap;gap:8px}
+.transit-banner{display:flex;align-items:center;gap:10px;background:rgba(59,130,246,.06);border:1px dashed rgba(59,130,246,.35);border-radius:var(--radius);padding:12px 16px;margin-bottom:10px;font-size:12px;color:var(--blue)}
+
 </style>
 </head>
 <body>
@@ -307,13 +335,14 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   <span class="logo" onclick="go('painel')" style="cursor:pointer">Call <span>Order</span></span>
   <div class="nav-tabs">
     <button class="tab" onclick="go('home')" id="tab-home">Home</button>
-    <button class="tab" onclick="go('entregas')" id="tab-entregas">Entregas <span id="entregas-badge" style="display:none;background:rgba(168,85,247,.2);color:#a855f7;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <button class="tab" onclick="go('expedicao')" id="tab-expedicao">Expedição</button>
+    <button class="tab" onclick="go('agretira')" id="tab-agretira">Ag. Retira <span id="agretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <button class="tab" onclick="go('pendencias')" id="tab-pendencias">Pendências <span id="pendencias-badge" style="display:none;background:rgba(239,68,68,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <button class="tab" onclick="go('ocorrencias')" id="tab-ocorrencias">Ocorrências <span id="ocorrencias-badge" style="display:none;background:rgba(239,159,39,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('relatorios')">Relatórios</button>
     <button class="tab adm-only" onclick="go('usuarios')" style="display:none">Usuários</button>
     <button class="tab" onclick="go('senha')">Minha Senha</button>
     <button class="tab adm-only" onclick="go('config')" style="display:none">Configurações</button>
-    <button class="tab" onclick="go('agretira')" id="tab-agretira">Ag. Retira <span id="agretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
-    <button class="tab" onclick="go('ocorrencias')" id="tab-ocorrencias">Ocorrências <span id="ocorrencias-badge" style="display:none;background:rgba(239,159,39,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
   </div>
   <div class="nav-right">
     <span id="nav-nome">—</span>
@@ -345,6 +374,65 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
     <div class="kb" id="kanban"></div>
   </main>
 </div>
+<div class="screen active" id="screen-home">
+  <main>
+    <div class="ph" style="margin-bottom:8px">
+      <span class="pt">Central de Pedidos</span>
+      <span id="home-date" style="color:var(--muted);font-size:12px"></span>
+    </div>
+    <div id="home-setor-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px" id="home-stats"></div>
+  </main>
+</div>
+<div class="screen" id="screen-setor">
+  <main>
+    <div class="ph">
+      <button onclick="go('home')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:0;display:flex;align-items:center;gap:6px;font-family:var(--font-mono)">‹ Voltar</button>
+      <span class="pt" id="setor-screen-title"></span>
+      <span style="color:var(--muted);font-size:12px" id="setor-screen-count"></span>
+    </div>
+    <div id="setor-screen-chegando" style="margin-bottom:16px"></div>
+    <div id="setor-screen-body" class="setor-list"></div>
+    <div id="setor-screen-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhum pedido neste setor no momento.</div>
+  </main>
+</div>
+<div class="screen" id="screen-expedicao">
+  <main>
+    <div class="ph">
+      <button onclick="go('home')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:0;font-family:var(--font-mono)">‹ Voltar</button>
+      <span class="pt">Expedição</span>
+      <span style="color:var(--muted);font-size:12px" id="exp-count"></span>
+    </div>
+    <div id="exp-chegando" style="margin-bottom:16px"></div>
+    <div style="margin-bottom:20px">
+      <div class="st" style="color:var(--danger)">🏪 Balcão</div>
+      <div id="exp-balcao-list"></div>
+      <div id="exp-balcao-empty" style="color:var(--muted);font-size:12px;padding:8px 0;display:none">Nenhum pedido aguardando no balcão.</div>
+    </div>
+    <div style="margin-bottom:20px">
+      <div class="st" style="color:var(--blue)">📦 Retira</div>
+      <div id="exp-retira-list"></div>
+      <div id="exp-retira-empty" style="color:var(--muted);font-size:12px;padding:8px 0;display:none">Nenhum pedido aguardando retirada.</div>
+    </div>
+    <div style="margin-bottom:20px">
+      <div class="st" style="color:#a855f7">🚚 Entrega</div>
+      <div id="exp-entrega-list"></div>
+      <div id="exp-entrega-empty" style="color:var(--muted);font-size:12px;padding:8px 0;display:none">Nenhum pedido para entrega.</div>
+    </div>
+  </main>
+</div>
+<div class="screen" id="screen-pendencias">
+  <main>
+    <div class="ph">
+      <span class="pt">Pendências</span>
+      <span style="color:var(--muted);font-size:12px" id="pend-count"></span>
+    </div>
+    <p style="color:var(--muted);font-size:12px;margin-bottom:20px">Saldos pendentes de faturamentos parciais. Cancele ou retorne ao processo para novo faturamento.</p>
+    <div id="pend-tbody"></div>
+    <div id="pend-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhuma pendência no momento.</div>
+  </main>
+</div>
+
 <div class="screen" id="screen-tv">
   <div class="tv-wrap">
     <div class="tv-head">
@@ -522,16 +610,6 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
     <div><div style="font-size:14px;color:rgba(255,255,255,0.55);font-weight:500">Em andamento</div><div style="font-size:24px;font-weight:700;color:#22d3a7" id="tvp-active">0</div></div>
   </div>
 </div>
-  <div class="screen" id="screen-home">
-    <main>
-      <div class="ph">
-        <span class="pt">Central de Pedidos</span>
-        <span id="home-date" style="color:var(--muted);font-size:12px"></span>
-      </div>
-      <div class="home-grid" id="home-setores-grid"></div>
-      <div style="margin-top:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px" id="home-stats"></div>
-    </main>
-  </div>
   <div class="screen" id="screen-entregas">
     <main>
       <div class="ph">
@@ -569,18 +647,35 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
     </div>
   </div>
   <div class="mb" id="m-new-order">
-  <div class="mo">
+  <div class="mo" style="max-width:460px">
     <div class="mt">Novo Pedido — Atendimento</div>
     <div class="f"><label class="fl">Número do Pedido *</label><input type="text" id="no-num" placeholder="Ex: 00123"/></div>
     <div class="f"><label class="fl">Nome do Cliente *</label><input type="text" id="no-cli" placeholder="Nome completo"/></div>
-    <div class="f"><label class="fl">Tipo de Saída</label>
-      <select id="no-prio"><option value="retira">Retira</option><option value="balcao">Balcão</option><option value="entrega">Entrega</option></select>
+    <div class="f"><label class="fl">Tipo de Saída *</label>
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <button type="button" id="btn-tipo-retira" class="tipo-btn" onclick="selecionarTipo('retira')" style="flex:1;padding:10px;border:2px solid var(--blue);border-radius:8px;background:rgba(59,130,246,.12);color:var(--blue);font-family:var(--font-mono);font-weight:700;cursor:pointer">📦 Retira</button>
+        <button type="button" id="btn-tipo-balcao" class="tipo-btn" onclick="selecionarTipo('balcao')" style="flex:1;padding:10px;border:2px solid var(--border2);border-radius:8px;background:var(--bg3);color:var(--muted);font-family:var(--font-mono);font-weight:700;cursor:pointer">🏪 Balcão</button>
+        <button type="button" id="btn-tipo-entrega" class="tipo-btn" onclick="selecionarTipo('entrega')" style="flex:1;padding:10px;border:2px solid var(--border2);border-radius:8px;background:var(--bg3);color:var(--muted);font-family:var(--font-mono);font-weight:700;cursor:pointer">🚚 Entrega</button>
+      </div>
+      <input type="hidden" id="no-prio" value="retira"/>
     </div>
-    <div class="f"><label class="fl">Nome de quem vai Retirar (opcional)</label><input type="text" id="no-retirante" placeholder="Nome do responsável pela retirada"/></div>
-    <div class="f"><label class="fl">Valor do Pedido (R$) (opcional)</label><input type="number" id="no-valor" placeholder="0,00" step="0.01" min="0"/></div>
-    <div class="f" style="display:flex;gap:20px">
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="no-parcial"/> Pedido Parcial</label>
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="no-pendencia"/> Tem Pendência</label>
+    <div class="f"><label class="fl">Nome de quem vai Retirar (opcional)</label><input type="text" id="no-retirante" placeholder="Nome do responsável"/></div>
+    <div class="f"><label class="fl">Valor do Pedido (R$) *</label><input type="number" id="no-valor" placeholder="0,00" step="0.01" min="0.01"/></div>
+    <div class="f">
+      <label class="fl">Pedido Parcial?</label>
+      <div style="display:flex;gap:10px;margin-top:6px">
+        <button type="button" id="btn-parcial-sim" onclick="selecionarParcial(true)" style="flex:1;padding:9px;border:2px solid var(--border2);border-radius:8px;background:var(--bg3);color:var(--muted);font-family:var(--font-mono);font-weight:600;cursor:pointer">Sim</button>
+        <button type="button" id="btn-parcial-nao" onclick="selecionarParcial(false)" style="flex:1;padding:9px;border:2px solid var(--accent);border-radius:8px;background:rgba(34,211,167,.1);color:var(--accent);font-family:var(--font-mono);font-weight:600;cursor:pointer">Não</button>
+      </div>
+      <input type="hidden" id="no-parcial-val" value="false"/>
+    </div>
+    <div class="f">
+      <label class="fl">Ficará na Pendência?</label>
+      <div style="display:flex;gap:10px;margin-top:6px">
+        <button type="button" id="btn-pendencia-sim" onclick="selecionarPendencia(true)" style="flex:1;padding:9px;border:2px solid var(--border2);border-radius:8px;background:var(--bg3);color:var(--muted);font-family:var(--font-mono);font-weight:600;cursor:pointer">Sim</button>
+        <button type="button" id="btn-pendencia-nao" onclick="selecionarPendencia(false)" style="flex:1;padding:9px;border:2px solid var(--accent);border-radius:8px;background:rgba(34,211,167,.1);color:var(--accent);font-family:var(--font-mono);font-weight:600;cursor:pointer">Não</button>
+      </div>
+      <input type="hidden" id="no-pendencia-val" value="false"/>
     </div>
     <div class="f"><label class="fl">Observação (opcional)</label><input type="text" id="no-obs"/></div>
     <div class="ma"><button class="bcan" onclick="closeM('m-new-order')">Cancelar</button><button class="bok" onclick="createOrder()">Criar Pedido</button></div>
@@ -666,12 +761,12 @@ applyTheme(getStoredTheme());
 const SUPA_URL = 'https://lpjyrmkgjgehfaosagxl.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwanlybWtnamdlaGZhb3NhZ3hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDgwOTIsImV4cCI6MjA5MTA4NDA5Mn0.c0EweQ387mQI5Fh1auNaCwTNTBLZulRFdg0cjUSvnSU';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
-const SETORES = ['atendimento','estoque','corte','separacao','faturamento'];
-const PROXIMO_SETOR = {atendimento:'estoque',estoque:'corte',corte:'separacao',separacao:'faturamento'};
-const RETORNO_PADRAO = {estoque:'atendimento',corte:'estoque',separacao:'corte',faturamento:'separacao'};
-const SL = {atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',separacao:'Separação',faturamento:'Faturamento',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira',em_ocorrencia:'Ocorrência'};
+const SETORES = ['atendimento','estoque','corte','separacao','faturamento','expedicao'];
+const PROXIMO_SETOR = {atendimento:'estoque',estoque:'corte',corte:'separacao',separacao:'faturamento',faturamento:'expedicao'};
+const RETORNO_PADRAO = {estoque:'atendimento',corte:'estoque',separacao:'corte',faturamento:'separacao',expedicao:'faturamento'};
+const SL = {atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',separacao:'Separação',faturamento:'Faturamento',expedicao:'Expedição',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira',em_ocorrencia:'Ocorrência',pendencia_ativa:'Pendência',balcao_chamado:'Balcão',ag_entrega:'Ag. Entrega',em_entrega:'Em Entrega',entregue:'Entregue',canhoto_ok:'Canhoto OK'};
 const SC = {atendimento:'tag-at',estoque:'tag-es',corte:'tag-co',separacao:'tag-se',faturamento:'tag-fa',pronto_balcao:'tag-rd',balcao_chamado:'tag-rd',finalizado:'tag-do'};
-const SD = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1'};
+const SD = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1',expedicao:'#a855f7'};
 const SICONCOLOR = {atendimento:'#a78bfa',estoque:'#c49a6c',corte:'#ef4444',separacao:'#f1f5f9',faturamento:'#22d3a7'};
 const SICON = {
   atendimento: '<svg width="18" height="18" viewBox="0 0 24 24" fill="COLOR" stroke="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2zm0 12c5.33 0 8 2.67 8 4v2H4v-2c0-1.33 2.67-4 8-4z"/></svg>',
@@ -686,7 +781,7 @@ function sectorIcon(setor){
   if(!tpl) return '<div class="cdot" style="background:'+color+'"></div>';
   return '<span class="cdot-icon">'+tpl.replace(/COLOR/g, color)+'</span>';
 }
-const BC = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1'};
+const BC = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1',expedicao:'#a855f7'};
 const ALERT_MS = 5*60*1000;
 const JANELA_NARRACAO_BALCAO_MS = 90*1000;
 let ME=null, PEDIDOS=[], MOVS=[], _ti=null, _notaTarget=null, _ch=null;
@@ -742,6 +837,9 @@ function scheduleRender() {
     if (ativa === 'screen-entregas') { renderEntregas(); }
     if (ativa === 'screen-agretira') { renderAgRetira(); }
     if (ativa === 'screen-ocorrencias') { renderOcorrencias(); }
+    if (ativa === 'screen-expedicao') { renderExpedicao(); }
+    if (ativa === 'screen-pendencias') { renderPendencias(); }
+    if (ativa === 'screen-setor') { if(_setorAtual) renderSetor(_setorAtual); }
   });
 }
 
@@ -1247,7 +1345,7 @@ function startRealtime(){
 }
 async function fetchPedidos(){
   var hoje=new Date();hoje.setHours(0,0,0,0);
-  var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.ag_entrega,status.eq.em_entrega,status.eq.entregue,status.eq.canhoto_ok').order('entrada_at',{ascending:false});
+  var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.ag_entrega,status.eq.em_entrega,status.eq.entregue,status.eq.canhoto_ok,status.eq.pendencia_ativa').order('entrada_at',{ascending:false});
   PEDIDOS=res.data||[];
 }
 async function fetchMovs(){
@@ -1311,7 +1409,11 @@ function exportarPedidosExcel(){
 }
 async function fetchUsuarios(){var res=await sb.from('usuarios').select('id,nome,login,role,setor,ativo').order('nome');return res.data||[];}
 function allHide(){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});}
-async function go(name){
+async function go(name){if(name==='home'){allHide();el('screen-home').classList.add('active');ov(true);await fetchPedidos();ov(false);renderHome();return;}
+  if(name==='setor'){if(_setorAtual)renderSetor(_setorAtual);return;}
+  if(name==='expedicao'){_setorAtual='expedicao';ov(true);await fetchPedidos();ov(false);renderExpedicao();return;}
+  if(name==='pendencias'){ov(true);await fetchPedidos();ov(false);renderPendencias();return;}
+  
   if(ME)startPolling();
   allHide();el('screen-'+name).classList.add('active');
   document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
@@ -1362,9 +1464,6 @@ function startClock(){
       if(ms>10*60000&&!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');toast('Pedido #'+o.numero+' aguarda confirmação há +10min!','err',7000);}
     });
   },1000);
-}
-function isOperacionalVisivel(o){
-  return o.status!=='finalizado' && o.status!=='cancelado' && o.status!=='balcao_chamado' && o.status!=='ag_retira' && o.status!=='em_ocorrencia' && o.status!=='ag_entrega' && o.status!=='em_entrega' && o.status!=='entregue' && o.status!=='canhoto_ok';
 }
 function isTVVisivel(o){
   var tipo = o.tipo_saida || o.prioridade || 'retira';
@@ -1578,84 +1677,6 @@ async function confirmarRec(id){
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
 }
-function openNota(id){_notaTarget=id;el('nota-num').value='';openM('m-nota');}
-async function confirmarNota(){
-  var nota=el('nota-num').value.trim();
-  if(!nota){toast('Informe o número da nota fiscal.','err');return;}
-  closeM('m-nota');ov(true);
-  try{
-    var o=PEDIDOS.find(function(p){return p.id===_notaTarget;});
-    if(!o)throw new Error('Pedido não encontrado');
-    var agora=new Date().toISOString();
-    var tempoSetor=Math.max(0,new Date(agora)-new Date(o.setor_entrada_at));
-    var res=await sb.from('pedidos').update({
-      setor:'separacao',
-      status:'pronto_balcao',
-      setor_pendente:'',
-      pendente_desde:null,
-      setor_entrada_at:agora,
-      finalizado_at:agora,
-      num_nota:nota
-    }).eq('id',_notaTarget);
-    if(res.error)throw res.error;
-    upsertPedidoLocal({id:_notaTarget,setor:'separacao',status:'pronto_balcao',setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,finalizado_at:agora,num_nota:nota});
-    _lastPainelSnap='';
-    atualizarTelasAtivas();
-    sb.from('movimentacoes').insert({
-      pedido_id:_notaTarget,
-      setor_origem:o.setor,
-      setor_destino:'separacao',
-      usuario:ME.login,
-      entrada_at:o.setor_entrada_at,
-      saida_at:agora,
-      tempo_ms:tempoSetor,
-      confirmado_por:ME.login,
-      confirmado_at:agora,
-      tempo_confirmacao_ms:0
-    });
-    refreshPedidosSoon(500);
-    toast('Faturado! Pedido voltou para a Separação para chamar balcão.','move');
-  }catch(e){toast(e.message,'err');}
-  finally{ov(false);_notaTarget=null;}
-}
-async function chamarBalcao(id){
-  ov(true);
-  try{
-    var pedido=getPedidoById(id);
-    if(!pedido)throw new Error('Pedido não encontrado.');
-    var agora=new Date().toISOString();
-    var res=await sb.from('pedidos').update({
-      status:'balcao_chamado',
-      pendente_desde:agora
-    }).eq('id',id);
-    if(res.error)throw res.error;
-    upsertPedidoLocal({id:id,status:'balcao_chamado',pendente_desde:agora});
-    _lastPainelSnap='';
-    atualizarTelasAtivas();
-    refreshPedidosSoon(500);
-    // Toast silencioso (narração será feita pela TV)
-    var _e=document.createElement('div');_e.className='toast t-ok';_e.textContent='Pedido #'+pedido.numero+' chamado para o balcão.';el('tw').appendChild(_e);requestAnimationFrame(function(){requestAnimationFrame(function(){_e.classList.add('show');});});setTimeout(function(){_e.classList.remove('show');setTimeout(function(){_e.remove();},300);},3500);
-  }catch(e){toast(e.message,'err');}
-  finally{ov(false);}
-}
-function openNewOrder(){el('no-num').value='';el('no-cli').value='';el('no-obs').value='';el('no-prio').value='retira';openM('m-new-order');}
-async function createOrder(){
-  var num=el('no-num').value.trim(),cli=el('no-cli').value.trim(),prio=el('no-prio').value;
-  if(!num){toast('Informe o número do pedido.','err');return;}
-  if(!cli){toast('Informe o nome do cliente.','err');return;}
-  closeM('m-new-order');ov(true);
-  try{
-    var dup=await sb.from('pedidos').select('id').eq('numero',num).neq('status','finalizado');
-    if(dup.data&&dup.data.length>0){toast('Já existe um pedido ativo com este número.','err');return;}
-    var agora=new Date().toISOString();
-    var res=await sb.from('pedidos').insert({numero:num,setor:'atendimento',setor_pendente:'',status:'em_andamento',criado_por:ME.login,entrada_at:agora,setor_entrada_at:agora,obs:el('no-obs').value,nome_cliente:cli,prioridade:prio,num_nota:''});
-    if(res.error)throw res.error;
-    await refreshUI();
-    toast('Pedido #'+num+' criado — '+cli,'ok');
-  }catch(e){toast(e.message,'err');}
-  finally{ov(false);}
-}
-
 // ── TEMPO OPERACIONAL CORRIGIDO ──
 // Calcula o tempo entre entrada e saída considerando apenas horário comercial
 // (08:30 às 18:15). Pedidos que ficaram overnight não inflam a média.
@@ -1967,7 +1988,7 @@ async function iniciarTVPublica(){
   async function carregarTVPublica(){
     try{
       var hoje=new Date();hoje.setHours(0,0,0,0);
-      var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.ag_entrega,status.eq.em_entrega,status.eq.entregue,status.eq.canhoto_ok').order('entrada_at',{ascending:false});
+      var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.ag_entrega,status.eq.em_entrega,status.eq.entregue,status.eq.canhoto_ok,status.eq.pendencia_ativa').order('entrada_at',{ascending:false});
       _tvPub=res.data||[];
       var snap = buildSnapshot(_tvPub);
       if (snap !== _lastTVPubSnap) {
@@ -2011,50 +2032,6 @@ var AGR_15_DAYS_MS = 15 * 24 * 60 * 60 * 1000;
 var OCC_48H_MS = 48 * 60 * 60 * 1000;
 var _agrAlertDismissed = {};
 
-async function enviarAgRetira(id) {
-  ov(true);
-  try {
-    var pedido = getPedidoById(id);
-    if (!pedido) throw new Error('Pedido não encontrado.');
-    var agora = new Date().toISOString();
-    var res = await sb.from('pedidos').update({
-      status: 'ag_retira',
-      pendente_desde: agora
-    }).eq('id', id);
-    if (res.error) throw res.error;
-    upsertPedidoLocal({id: id, status: 'ag_retira', pendente_desde: agora});
-    var linha = buildOccurrenceLine('AG. RETIRA', 'Separação', 'Pedido enviado para aguardando retirada.');
-    await appendObsPedido(id, linha);
-    _lastPainelSnap = '';
-    atualizarTelasAtivas();
-    refreshPedidosSoon(500);
-    toast('Pedido #' + pedido.numero + ' enviado para Ag. Retira.', 'warn');
-  } catch(e) { toast(e.message, 'err'); }
-  finally { ov(false); }
-}
-
-async function agRetiraChamarBalcao(id) {
-  ov(true);
-  try {
-    var pedido = getPedidoById(id);
-    if (!pedido) throw new Error('Pedido não encontrado.');
-    var agora = new Date().toISOString();
-    var res = await sb.from('pedidos').update({
-      status: 'balcao_chamado',
-      setor: 'separacao',
-      pendente_desde: agora
-    }).eq('id', id);
-    if (res.error) throw res.error;
-    upsertPedidoLocal({id: id, status: 'balcao_chamado', setor: 'separacao', pendente_desde: agora});
-    var linha = buildOccurrenceLine('RETIRADA', 'Ag. Retira', 'Cliente retornou. Chamado no balcão.');
-    await appendObsPedido(id, linha);
-    _lastPainelSnap = '';
-    atualizarTelasAtivas();
-    refreshPedidosSoon(500);
-    var _e2=document.createElement('div');_e2.className='toast t-ok';_e2.textContent='Cliente chamado no balcão! Pedido #'+pedido.numero;el('tw').appendChild(_e2);requestAnimationFrame(function(){requestAnimationFrame(function(){_e2.classList.add('show');});});setTimeout(function(){_e2.classList.remove('show');setTimeout(function(){_e2.remove();},300);},3500);
-  } catch(e) { toast(e.message, 'err'); }
-  finally { ov(false); }
-}
 
 async function agRetiraCancelar(id) {
   _occCtx = {modo: 'exclusao', id: id, setorLabel: 'Ag. Retira'};
@@ -2348,27 +2325,6 @@ function calcSaldoNota(){
   if(el('nota-saldo-val'))el('nota-saldo-val').textContent='R$ '+saldo.toFixed(2).replace('.',',');
 }
 
-// createOrder - save new fields
-async function createOrder(){
-  var num=el('no-num').value.trim(),cli=el('no-cli').value.trim(),prio=el('no-prio').value;
-  var retirante=(el('no-retirante')?el('no-retirante').value.trim():'');
-  var valor=el('no-valor')&&el('no-valor').value?parseFloat(el('no-valor').value):null;
-  var parcial=el('no-parcial')&&el('no-parcial').checked;
-  var pendencia=el('no-pendencia')&&el('no-pendencia').checked;
-  if(!num){toast('Informe o número do pedido.','err');return;}
-  if(!cli){toast('Informe o nome do cliente.','err');return;}
-  closeM('m-new-order');ov(true);
-  try{
-    var dup=await sb.from('pedidos').select('id').eq('numero',num).neq('status','finalizado');
-    if(dup.data&&dup.data.length>0){toast('Já existe um pedido ativo com este número.','err');ov(false);return;}
-    var agora=new Date().toISOString();
-    var res=await sb.from('pedidos').insert({numero:num,setor:'atendimento',setor_pendente:'',status:'em_andamento',criado_por:ME.login,entrada_at:agora,setor_entrada_at:agora,obs:el('no-obs').value,nome_cliente:cli,prioridade:prio,tipo_saida:prio,num_nota:'',retirante:retirante||null,valor_total:valor,parcial:parcial,pendencia:pendencia});
-    if(res.error)throw res.error;
-    await refreshUI();
-    toast('Pedido #'+num+' criado — '+cli,'ok');
-  }catch(e){toast(e.message,'err');}
-  finally{ov(false);}
-}
 
 // openNota - clear fields and preload data
 function openNota(id){
@@ -2402,27 +2358,35 @@ async function confirmarNota(){
     var tempoSetor=Math.max(0,new Date(agora)-new Date(o.setor_entrada_at));
     var tipo = o.tipo_saida||o.prioridade||'retira';
     var novoStatus, novoSetor;
-    if(tipo==='entrega'){
-      novoStatus='ag_entrega'; novoSetor='separacao';
-    } else {
-      novoStatus='pronto_balcao'; novoSetor='separacao';
-    }
+    if(tipo==='entrega'){novoStatus='ag_entrega';}
+    else if(tipo==='retira'){novoStatus='ag_retira';}
+    else {novoStatus='pronto_balcao';}
+    novoSetor='expedicao';
     var res=await sb.from('pedidos').update({
       setor:novoSetor, status:novoStatus, setor_pendente:'', pendente_desde:null,
-      setor_entrada_at:agora, finalizado_at:agora, num_nota:nota, chave_nf:chave,
+      setor_entrada_at:agora, finalizado_at:null, num_nota:nota, chave_nf:chave,
       valor_total:valorTotal, valor_pago:valorPago||null, saldo_pendente:saldo
     }).eq('id',_notaTarget);
     if(res.error)throw res.error;
-    upsertPedidoLocal({id:_notaTarget,setor:novoSetor,status:novoStatus,setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,finalizado_at:agora,num_nota:nota,chave_nf:chave,valor_total:valorTotal,valor_pago:valorPago||null,saldo_pendente:saldo});
+    upsertPedidoLocal({id:_notaTarget,setor:novoSetor,status:novoStatus,setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,finalizado_at:null,num_nota:nota,chave_nf:chave,valor_total:valorTotal,valor_pago:valorPago||null,saldo_pendente:saldo});
     _lastPainelSnap='';
     atualizarTelasAtivas();
-    Promise.all([
+    var logs=[
       sb.from('movimentacoes').insert({pedido_id:_notaTarget,setor_origem:o.setor,setor_destino:novoSetor,usuario:ME.login,entrada_at:o.setor_entrada_at,saida_at:agora,tempo_ms:tempoSetor,confirmado_por:ME.login,confirmado_at:agora,tempo_confirmacao_ms:0}),
       sb.from('notas_fiscais').insert({pedido_id:_notaTarget,numero_nf:nota,chave_nf:chave,valor_total:valorTotal,valor_pago:valorPago||null,tipo:tipo,registrado_por:ME.login,registrado_at:agora}),
-      sb.from('timeline_pedido').insert({pedido_id:_notaTarget,evento:'FATURAMENTO',descricao:'NF '+nota+' emitida. Chave: '+chave+'. Valor: R\$'+valorTotal.toFixed(2),usuario:ME.login,evento_at:agora})
-    ]);
+      sb.from('timeline_pedido').insert({pedido_id:_notaTarget,evento:'FATURAMENTO',descricao:'NF '+nota+' emitida. Chave: '+chave+'. Valor: R$'+valorTotal.toFixed(2)+(saldo?' | Saldo: R$'+saldo.toFixed(2):''),usuario:ME.login,evento_at:agora})
+    ];
+    // Se há saldo E o pedido tem flag de pendência → criar registro de Pendência
+    if(saldo&&saldo>0&&(o.has_pendencia||o.pendencia)){
+      var numPend=o.numero+'-P';
+      logs.push(sb.from('pedidos').insert({numero:numPend,setor:'pendencias',setor_pendente:'',status:'pendencia_ativa',criado_por:ME.login,entrada_at:agora,setor_entrada_at:agora,nome_cliente:o.nome_cliente,retirante:o.retirante||null,obs:'Saldo pendente ref. pedido #'+o.numero+' NF '+nota,valor_total:saldo,prioridade:tipo,tipo_saida:tipo,num_nota:nota,has_pendencia:true,pedido_origem_id:_notaTarget}));
+      logs.push(sb.from('timeline_pedido').insert({pedido_id:_notaTarget,evento:'PENDENCIA_CRIADA',descricao:'Saldo de R$'+saldo.toFixed(2)+' registrado como pendência #'+numPend,usuario:ME.login,evento_at:agora}));
+    }
+    Promise.all(logs);
     refreshPedidosSoon(500);
-    toast(tipo==='entrega'?'Faturado! Pedido enviado para Ag. Entrega.':'Faturado! Pedido pronto para chamar balcão.','move');
+    var msg=tipo==='entrega'?'Faturado! Ag. Entrega.':tipo==='retira'?'Faturado! Ag. Retirada.':'Faturado! Pronto p/ balcão.';
+    if(saldo&&saldo>0&&(o.has_pendencia||o.pendencia)) msg+=' Pendência criada (saldo R$'+saldo.toFixed(2)+').';
+    toast(msg,'move');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);_notaTarget=null;}
 }
@@ -2623,39 +2587,6 @@ async function togglePendencia(id){
   }catch(e){toast(e.message,'err');}
 }
 
-// Home screen render
-function renderHome(){
-  if(el('home-date'))el('home-date').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
-  var grid=el('home-setores-grid');
-  if(!grid)return;
-  var colors={atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1'};
-  grid.innerHTML=SETORES.map(function(setor){
-    var items=PEDIDOS.filter(function(o){return o.setor===setor&&isOperacionalVisivel(o);});
-    var chegando=PEDIDOS.filter(function(o){return o.status==='aguardando'&&o.setor_pendente===setor;});
-    var total=items.length+chegando.length;
-    var hasAlert=items.some(function(o){var ms=now()-tsMs(o.setor_entrada_at);return ms>45*60000;});
-    var subText = total > 0 ? (items.length + ' ativo' + (items.length !== 1 ? 's' : '') + (chegando.length ? ' · ' + chegando.length + ' chegando' : '')) : 'nenhum pedido';
-    return '<div class="home-card" onclick="go(\'painel\')" style="border-color:' + (hasAlert ? 'rgba(239,68,68,.4)' : 'var(--border)') + '">' +
-      '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:' + colors[setor] + '"></div>' +
-      '<div class="home-card-name">' + SL[setor] + '</div>' +
-      '<div class="home-card-count" style="color:' + colors[setor] + '">' + total + '</div>' +
-      '<div class="home-card-sub">' + subText + '</div>' +
-    '</div>';
-  }).join('');
-  
-  var agRetiraCount=PEDIDOS.filter(function(o){return o.status==='ag_retira';}).length;
-  var balcaoCount=PEDIDOS.filter(function(o){return o.status==='balcao_chamado'||o.status==='pronto_balcao';}).length;
-  var entregaCount=PEDIDOS.filter(function(o){return o.status==='ag_entrega'||o.status==='em_entrega'||o.status==='entregue';}).length;
-  var ocorrCount=PEDIDOS.filter(function(o){return o.status==='em_ocorrencia';}).length;
-  var statsEl=el('home-stats');
-  if(statsEl)statsEl.innerHTML=[
-    {l:'Ag. Retirada',v:agRetiraCount,c:agRetiraCount>0?'var(--warn)':'var(--muted)',click:"go('agretira')"},
-    {l:'No Balcão',v:balcaoCount,c:balcaoCount>0?'var(--accent)':'var(--muted)',click:"go('painel')"},
-    {l:'Entregas',v:entregaCount,c:entregaCount>0?'#a855f7':'var(--muted)',click:"go('entregas')"},
-    {l:'Ocorrências',v:ocorrCount,c:ocorrCount>0?'var(--danger)':'var(--muted)',click:"go('ocorrencias')"}
-  ].map(function(s){return '<div class="kpi" style="cursor:pointer" onclick="'+s.click+'">' +
-    '<div class="kl">'+s.l+'</div><div class="kv" style="color:'+s.c+'">'+s.v+'</div></div>';}).join('');
-}
 
 // Entregas screen render
 function renderEntregas(){
@@ -2805,6 +2736,442 @@ if(window.location.search.indexOf('rastrear=1')>=0){
   applyTheme(getStoredTheme());
 }
 
+
+// Global variable for current sector
+var _setorAtual = '';
+
+// Render home screen with sector list
+function renderHome(){
+  if(el('home-date')) el('home-date').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+  var list = el('home-setor-list');
+  if(!list) return;
+  var colors = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1',expedicao:'#a855f7'};
+  var icons = {atendimento:'📋',estoque:'📦',corte:'✂️',separacao:'🔧',faturamento:'🧾',expedicao:'🚚'};
+  list.innerHTML = SETORES.map(function(setor){
+    var items, chegando, total, hasAlert, subParts=[];
+    if(setor==='expedicao'){
+      // Expedição: count by specific statuses
+      items = PEDIDOS.filter(function(o){ return o.status==='pronto_balcao'||o.status==='balcao_chamado'||o.status==='ag_retira'||o.status==='ag_entrega'||o.status==='em_entrega'; });
+      chegando = PEDIDOS.filter(function(o){ return o.status==='aguardando' && o.setor_pendente==='expedicao'; });
+      var balcCount=PEDIDOS.filter(function(o){var tp=o.tipo_saida||o.prioridade||'retira';return tp==='balcao'&&(o.status==='pronto_balcao'||o.status==='balcao_chamado');}).length;
+      var retCount=PEDIDOS.filter(function(o){var tp=o.tipo_saida||o.prioridade||'retira';return tp==='retira'&&o.status==='ag_retira';}).length;
+      var entCount=PEDIDOS.filter(function(o){var tp=o.tipo_saida||o.prioridade||'retira';return tp==='entrega'&&(o.status==='ag_entrega'||o.status==='em_entrega');}).length;
+      if(balcCount) subParts.push(balcCount+' balcão');
+      if(retCount) subParts.push(retCount+' retira');
+      if(entCount) subParts.push(entCount+' entrega');
+      hasAlert = items.some(function(o){ return now()-tsMs(o.setor_entrada_at)>60*60000; });
+    } else {
+      items = PEDIDOS.filter(function(o){ return o.setor===setor && isOperacionalVisivel(o) && o.status!=='aguardando'; });
+      chegando = PEDIDOS.filter(function(o){ return o.status==='aguardando' && o.setor_pendente===setor; });
+      if(items.length) subParts.push(items.length + ' ativo' + (items.length>1?'s':''));
+      if(chegando.length) subParts.push(chegando.length + ' chegando');
+      hasAlert = items.some(function(o){ return now()-tsMs(o.setor_entrada_at)>45*60000; });
+    }
+    total = items.length + chegando.length;
+    return '<div class="hsl-item" onclick="abrirSetor(\''+setor+'\')">' +
+      '<div class="hsl-bar" style="background:'+(colors[setor]||'var(--accent)')+'"></div>' +
+      '<span style="font-size:22px">'+(icons[setor]||'📁')+'</span>' +
+      '<div class="hsl-left">' +
+        '<div class="hsl-name">'+SL[setor]+'</div>' +
+        '<div class="hsl-sub">'+(subParts.join(' · ')||'nenhum pedido')+'</div>' +
+      '</div>' +
+      (hasAlert?'<div class="hsl-alert"></div>':'') +
+      '<div class="hsl-count" style="color:'+(colors[setor]||'var(--accent)')+'">'+total+'</div>' +
+      '<div class="hsl-arrow">›</div>' +
+    '</div>';
+  }).join('');
+  // Stats row — pendências + ocorrências quick view
+  var pendCount=PEDIDOS.filter(function(o){return o.status==='pendencia_ativa';}).length;
+  var occCount=PEDIDOS.filter(function(o){return o.status==='em_ocorrencia';}).length;
+  var statsEl=el('home-stats');
+  if(statsEl) statsEl.innerHTML=[
+    {l:'Pendências',v:pendCount,c:pendCount>0?'var(--danger)':'var(--muted)',click:"go('pendencias')"},
+    {l:'Ocorrências',v:occCount,c:occCount>0?'var(--warn)':'var(--muted)',click:"go('ocorrencias')"}
+  ].map(function(s){return '<div class="kpi" style="cursor:pointer" onclick="'+s.click+'">' +
+    '<div class="kl">'+s.l+'</div><div class="kv" style="color:'+s.c+'">'+s.v+'</div></div>';}).join('');
+}
+
+function abrirSetor(setor){
+  _setorAtual = setor;
+  if(setor === 'expedicao'){
+    allHide();
+    el('screen-expedicao').classList.add('active');
+    ov(true);
+    fetchPedidos().then(function(){
+      ov(false);
+      renderExpedicao();
+    });
+    return;
+  }
+  allHide();
+  el('screen-setor').classList.add('active');
+  ov(true);
+  fetchPedidos().then(function(){
+    ov(false);
+    renderSetor(setor);
+  });
+}
+
+function renderSetor(setor){
+  if(el('setor-screen-title')) el('setor-screen-title').textContent = SL[setor]||setor;
+  var chegando = PEDIDOS.filter(function(o){return o.status==='aguardando' && o.setor_pendente===setor;});
+  var items = PEDIDOS.filter(function(o){return o.setor===setor && isOperacionalVisivel(o) && o.status!=='aguardando';});
+  if(el('setor-screen-count')) el('setor-screen-count').textContent = (items.length+chegando.length)+' pedido(s)';
+  if(el('setor-screen-empty')) el('setor-screen-empty').style.display = (items.length+chegando.length)?'none':'block';
+  if(el('setor-screen-chegando')){
+    el('setor-screen-chegando').innerHTML = chegando.map(function(o){
+      return '<div class="transit-banner">' +
+        '<span class="dp"></span>' +
+        '<span style="font-family:var(--font-head);font-weight:700">#'+o.numero+'</span> ' +
+        '<span>'+(o.nome_cliente||'')+'</span>' +
+        '<span style="margin-left:auto;color:var(--muted)">'+(SL[o.setor]||o.setor)+' → '+SL[setor]+'</span>' +
+      '</div>';
+    }).join('');
+  }
+  if(el('setor-screen-body')){
+    el('setor-screen-body').innerHTML = items.map(function(o){
+      return renderSetorCard(o, setor);
+    }).join('');
+  }
+}
+
+function renderSetorCard(o, setor){
+  var tipo = o.tipo_saida||o.prioridade||'retira';
+  var s = calcSetorMs(o);
+  var t = calcTotalMs(o);
+  var setorMs = Math.max(0,(s.freeze||now())-s.entry);
+  var totalMs = Math.max(0,(t.freeze||now())-t.entry);
+  var tC = totalMs>45*60000?'cd':totalMs>25*60000?'cw':'';
+  var hora = tsMs(o.entrada_at)?new Date(tsMs(o.entrada_at)).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'--';
+  var fields = '<div class="soc-fields">';
+  if(o.parcial) fields += '<span class="soc-field warn">Parcial</span>';
+  if(o.pendencia) fields += '<span class="soc-field danger">Pendência</span>';
+  if(o.valor_total) fields += '<span class="soc-field">R$ '+parseFloat(o.valor_total).toFixed(2).replace('.',',')+'</span>';
+  if(o.retirante) fields += '<span class="soc-field ok">👤 '+o.retirante+'</span>';
+  fields += '</div>';
+  return '<div class="setor-order-card '+tC+'">' +
+    '<div class="soc-top">' +
+      '<span class="soc-num">#'+o.numero+'</span>' +
+      '<span class="soc-cli">'+(o.nome_cliente||'—')+'</span>' +
+      '<span style="font-size:10px;color:var(--muted);margin-left:auto">'+hora+'</span>' +
+    '</div>' +
+    '<div class="soc-meta">' +
+      '<span>Neste setor: '+fmtT(setorMs)+'</span>' +
+      '<span>|</span>' +
+      '<span class="'+tC+'">Total: '+fmtT(totalMs)+'</span>' +
+    '</div>' +
+    fields +
+  '</div>';
+}
+
+function renderExpedicao(){
+  var canAct = podeAtuarNoSetor('expedicao');
+  var chegando = PEDIDOS.filter(function(o){return o.status==='aguardando' && o.setor_pendente==='expedicao';});
+  var balcaoItems = PEDIDOS.filter(function(o){ var tp=o.tipo_saida||o.prioridade||'retira'; return tp==='balcao' && (o.status==='pronto_balcao'||o.status==='balcao_chamado'); });
+  var retiraItems = PEDIDOS.filter(function(o){ var tp=o.tipo_saida||o.prioridade||'retira'; return tp==='retira' && o.status==='ag_retira'; });
+  var entregaItems = PEDIDOS.filter(function(o){ var tp=o.tipo_saida||o.prioridade||'retira'; return tp==='entrega' && (o.status==='ag_entrega'||o.status==='em_entrega'); });
+
+  if(el('exp-count')) el('exp-count').textContent = (balcaoItems.length+retiraItems.length+entregaItems.length)+' pedido(s)';
+  if(el('exp-chegando')){
+    el('exp-chegando').innerHTML = chegando.map(function(o){
+      return '<div class="transit-banner">' +
+        '<span class="dp"></span>' +
+        '<span style="font-family:var(--font-head);font-weight:700">#'+o.numero+'</span> ' +
+        '<span>'+(o.nome_cliente||'')+'</span>' +
+        '<span style="margin-left:auto;color:var(--muted)">chegando de '+(SL[o.setor]||o.setor)+'</span>' +
+      '</div>';
+    }).join('');
+  }
+  // ─── Balcão ───
+  if(el('exp-balcao-list')) el('exp-balcao-list').innerHTML = balcaoItems.length ? balcaoItems.map(function(o){
+    var isChamado = o.status==='balcao_chamado';
+    var nfTag = o.num_nota?('<span class="soc-field ok">NF '+o.num_nota+'</span>'):'';
+    var btns='';
+    if(canAct){
+      if(!isChamado) btns='<button class="bcall" onclick="expChamarBalcao(\''+o.id+'\')">📢 Chamar no Balcão</button>';
+      else btns='<button class="bmv" style="background:#22c55e" onclick="expConfirmarEntregaBalcao(\''+o.id+'\')">✅ Confirmar Entrega</button>';
+    }
+    return '<div class="setor-order-card">' +
+      '<div class="soc-top">' +
+        '<span class="soc-num">#'+o.numero+'</span>' +
+        '<span class="soc-cli">'+(o.nome_cliente||'—')+'</span>' +
+        (isChamado?'<span style="margin-left:8px;font-size:10px;background:rgba(34,211,167,.15);color:var(--accent);padding:2px 8px;border-radius:10px">CHAMADO</span>':'') +
+        (o.retirante?'<span style="margin-left:8px;font-size:11px;color:var(--muted)">👤 '+o.retirante+'</span>':'') +
+      '</div>' +
+      (nfTag?'<div class="soc-fields">'+nfTag+'</div>':'') +
+      (btns?'<div class="soc-actions" style="margin-top:10px">'+btns+'</div>':'') +
+    '</div>';
+  }).join('') : '';
+  if(el('exp-balcao-empty')) el('exp-balcao-empty').style.display = balcaoItems.length?'none':'block';
+  // ─── Retira ───
+  if(el('exp-retira-list')) el('exp-retira-list').innerHTML = retiraItems.length ? retiraItems.map(function(o){
+    var nfTag = o.num_nota?('<span class="soc-field ok">NF '+o.num_nota+'</span>'):'';
+    var btns = canAct?'<button class="bmv" onclick="expConfirmarRetirada(\''+o.id+'\')">✅ Confirmar Retirada</button>':'';
+    return '<div class="setor-order-card">' +
+      '<div class="soc-top">' +
+        '<span class="soc-num">#'+o.numero+'</span>' +
+        '<span class="soc-cli">'+(o.nome_cliente||'—')+'</span>' +
+        (o.retirante?'<span style="margin-left:8px;font-size:11px;color:var(--muted)">👤 '+o.retirante+'</span>':'') +
+      '</div>' +
+      (nfTag?'<div class="soc-fields">'+nfTag+'</div>':'') +
+      (btns?'<div class="soc-actions" style="margin-top:10px">'+btns+'</div>':'') +
+    '</div>';
+  }).join('') : '';
+  if(el('exp-retira-empty')) el('exp-retira-empty').style.display = retiraItems.length?'none':'block';
+  // ─── Entrega ───
+  if(el('exp-entrega-list')) el('exp-entrega-list').innerHTML = entregaItems.length ? entregaItems.map(function(o){
+    var isEmEntrega = o.status==='em_entrega';
+    var nfTag = o.num_nota?('<span class="soc-field ok">NF '+o.num_nota+'</span>'):'';
+    var placaTag = o.placa_veiculo?('<span class="soc-field">🚗 '+o.placa_veiculo+'</span>'):'';
+    var motorTag = o.motorista?('<span class="soc-field">👨‍✈️ '+o.motorista+'</span>'):'';
+    var btns='';
+    if(canAct){
+      if(!isEmEntrega) btns='<button class="bmv" style="background:#a855f7" onclick="expAbrirCarregamento(\''+o.id+'\')">🚚 Registrar Carregamento</button>';
+      else btns='<button class="bmv" style="background:#22c55e" onclick="expConfirmarEntregaRealizada(\''+o.id+'\')">✅ Confirmar Entrega Realizada</button>';
+    }
+    return '<div class="setor-order-card">' +
+      '<div class="soc-top">' +
+        '<span class="soc-num">#'+o.numero+'</span>' +
+        '<span class="soc-cli">'+(o.nome_cliente||'—')+'</span>' +
+        (isEmEntrega?'<span style="margin-left:8px;font-size:10px;background:rgba(168,85,247,.15);color:#a855f7;padding:2px 8px;border-radius:10px">EM ROTA</span>':'') +
+      '</div>' +
+      '<div class="soc-fields">'+nfTag+placaTag+motorTag+'</div>' +
+      (btns?'<div class="soc-actions" style="margin-top:10px">'+btns+'</div>':'') +
+    '</div>';
+  }).join('') : '';
+  if(el('exp-entrega-empty')) el('exp-entrega-empty').style.display = entregaItems.length?'none':'block';
+}
+
+// ── Expedição: Balcão ──
+async function expChamarBalcao(id){
+  var o=getPedidoById(id);if(!o)return toast('Pedido não encontrado.','err');
+  ov(true);
+  try{
+    var agora=new Date().toISOString();
+    var res=await sb.from('pedidos').update({status:'balcao_chamado'}).eq('id',id);
+    if(res.error)throw res.error;
+    upsertPedidoLocal({id:id,status:'balcao_chamado'});
+    atualizarTelasAtivas();
+    sb.from('timeline_pedido').insert({pedido_id:id,evento:'BALCAO_CHAMADO',descricao:'Cliente chamado no balcão',usuario:ME.login,evento_at:agora});
+    toast('Cliente chamado no balcão para pedido #'+o.numero,'ok');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
+}
+async function expConfirmarEntregaBalcao(id){
+  var o=getPedidoById(id);if(!o)return toast('Pedido não encontrado.','err');
+  abrirModalChaveNF('Confirmar Entrega — Balcão','Confirme a chave da NF do pedido #'+o.numero+' para registrar a entrega no balcão.',async function(chave){
+    ov(true);
+    try{
+      var agora=new Date().toISOString();
+      var res=await sb.from('pedidos').update({status:'finalizado',finalizado_at:agora,chave_nf:chave}).eq('id',id);
+      if(res.error)throw res.error;
+      upsertPedidoLocal({id:id,status:'finalizado',finalizado_at:agora,chave_nf:chave});
+      atualizarTelasAtivas();
+      sb.from('timeline_pedido').insert({pedido_id:id,evento:'ENTREGUE_BALCAO',descricao:'Entrega realizada no balcão. Chave NF: '+chave,usuario:ME.login,evento_at:agora});
+      toast('Entrega confirmada! Pedido #'+o.numero+' finalizado.','ok');
+    }catch(e){toast(e.message,'err');}
+    finally{ov(false);}
+  });
+}
+// ── Expedição: Retira ──
+async function expConfirmarRetirada(id){
+  var o=getPedidoById(id);if(!o)return toast('Pedido não encontrado.','err');
+  abrirModalChaveNF('Confirmar Retirada','Confirme a chave da NF do pedido #'+o.numero+' para registrar a retirada.',async function(chave){
+    ov(true);
+    try{
+      var agora=new Date().toISOString();
+      var res=await sb.from('pedidos').update({status:'finalizado',finalizado_at:agora,chave_nf:chave}).eq('id',id);
+      if(res.error)throw res.error;
+      upsertPedidoLocal({id:id,status:'finalizado',finalizado_at:agora,chave_nf:chave});
+      atualizarTelasAtivas();
+      sb.from('timeline_pedido').insert({pedido_id:id,evento:'RETIRADO',descricao:'Mercadoria retirada pelo cliente. Chave NF: '+chave,usuario:ME.login,evento_at:agora});
+      toast('Retirada confirmada! Pedido #'+o.numero+' finalizado.','ok');
+    }catch(e){toast(e.message,'err');}
+    finally{ov(false);}
+  });
+}
+// ── Expedição: Entrega (Carregamento) ──
+var _cargTarget=null;
+function expAbrirCarregamento(id){
+  var o=getPedidoById(id);if(!o)return toast('Pedido não encontrado.','err');
+  _cargTarget=id;
+  if(el('carg-chave'))el('carg-chave').value='';
+  if(el('carg-placa'))el('carg-placa').value='';
+  if(el('carg-motorista'))el('carg-motorista').value='';
+  if(el('carg-pedido'))el('carg-pedido').textContent='Pedido #'+o.numero+' — '+(o.nome_cliente||'');
+  openM('m-carregamento');
+}
+async function expConfirmarCarregamento(){
+  var chave=el('carg-chave')?el('carg-chave').value.trim():'';
+  var placa=el('carg-placa')?el('carg-placa').value.trim():'';
+  var motorista=el('carg-motorista')?el('carg-motorista').value.trim():'';
+  if(!chave||chave.length!==44){toast('A chave da NF deve ter exatamente 44 dígitos.','err');return;}
+  if(!placa){toast('Informe a placa do veículo.','err');return;}
+  if(!motorista){toast('Informe o nome do motorista/transportadora.','err');return;}
+  closeM('m-carregamento');ov(true);
+  try{
+    var o=getPedidoById(_cargTarget);if(!o)throw new Error('Pedido não encontrado.');
+    var agora=new Date().toISOString();
+    var res=await sb.from('pedidos').update({status:'em_entrega',chave_nf:chave,placa_veiculo:placa,motorista:motorista}).eq('id',_cargTarget);
+    if(res.error)throw res.error;
+    upsertPedidoLocal({id:_cargTarget,status:'em_entrega',chave_nf:chave,placa_veiculo:placa,motorista:motorista});
+    atualizarTelasAtivas();
+    sb.from('timeline_pedido').insert({pedido_id:_cargTarget,evento:'CARREGADO',descricao:'Saiu para entrega. Placa: '+placa+'. Motorista: '+motorista+'. Chave NF: '+chave,usuario:ME.login,evento_at:agora});
+    toast('Carregamento registrado! Pedido #'+o.numero+' em rota.','move');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);_cargTarget=null;}
+}
+async function expConfirmarEntregaRealizada(id){
+  var o=getPedidoById(id);if(!o)return toast('Pedido não encontrado.','err');
+  if(!confirm('Confirmar que o pedido #'+o.numero+' foi entregue ao cliente?'))return;
+  ov(true);
+  try{
+    var agora=new Date().toISOString();
+    var res=await sb.from('pedidos').update({status:'entregue',finalizado_at:agora}).eq('id',id);
+    if(res.error)throw res.error;
+    upsertPedidoLocal({id:id,status:'entregue',finalizado_at:agora});
+    atualizarTelasAtivas();
+    sb.from('timeline_pedido').insert({pedido_id:id,evento:'ENTREGUE',descricao:'Entrega realizada ao cliente.',usuario:ME.login,evento_at:agora});
+    toast('Entrega confirmada! Pedido #'+o.numero+' entregue.','ok');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
+}
+
+// ── Pendências ──
+async function retornarPendenciaAoProcesso(id){
+  var o=getPedidoById(id);if(!o)return toast('Pedido não encontrado.','err');
+  if(!confirm('Retornar o pedido #'+o.numero+' ao processo de atendimento?'))return;
+  ov(true);
+  try{
+    var agora=new Date().toISOString();
+    var res=await sb.from('pedidos').update({setor:'atendimento',status:'em_andamento',setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,num_nota:'',chave_nf:null,valor_pago:null,saldo_pendente:null}).eq('id',id);
+    if(res.error)throw res.error;
+    upsertPedidoLocal({id:id,setor:'atendimento',status:'em_andamento',setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,num_nota:'',chave_nf:null,valor_pago:null,saldo_pendente:null});
+    atualizarTelasAtivas();
+    sb.from('timeline_pedido').insert({pedido_id:id,evento:'PENDENCIA_RETORNADA',descricao:'Pedido retornado ao atendimento para novo ciclo de faturamento.',usuario:ME.login,evento_at:agora});
+    toast('Pedido #'+o.numero+' retornado ao atendimento.','move');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
+}
+async function cancelarPendencia(id){
+  var o=getPedidoById(id);if(!o)return toast('Pedido não encontrado.','err');
+  if(!confirm('Cancelar o saldo pendente do pedido #'+o.numero+'? Esta ação não pode ser desfeita.'))return;
+  ov(true);
+  try{
+    var agora=new Date().toISOString();
+    var res=await sb.from('pedidos').update({status:'cancelado',setor:'cancelado',finalizado_at:agora}).eq('id',id);
+    if(res.error)throw res.error;
+    upsertPedidoLocal({id:id,status:'cancelado',setor:'cancelado',finalizado_at:agora});
+    atualizarTelasAtivas();
+    sb.from('timeline_pedido').insert({pedido_id:id,evento:'PENDENCIA_CANCELADA',descricao:'Saldo pendente cancelado.',usuario:ME.login,evento_at:agora});
+    toast('Saldo pendente cancelado.','ok');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
+}
+
+function renderPendencias(){
+  var items=PEDIDOS.filter(function(o){return o.status==='pendencia_ativa';});
+  var badge=el('pendencias-badge');
+  if(badge){badge.textContent=items.length;badge.style.display=items.length?'inline':'none';}
+  if(el('pend-count'))el('pend-count').textContent=items.length+' pendência(s)';
+  if(el('pend-empty'))el('pend-empty').style.display=items.length?'none':'block';
+  if(!el('pend-tbody'))return;
+  el('pend-tbody').innerHTML=items.map(function(o){
+    var entrada=o.entrada_at?new Date(o.entrada_at).toLocaleString('pt-BR'):'—';
+    return '<div class="setor-order-card" style="border-color:rgba(239,68,68,.25)">' +
+      '<div class="soc-top">' +
+        '<span class="soc-num">#'+o.numero+'</span>' +
+        '<span class="soc-cli">'+(o.nome_cliente||'—')+'</span>' +
+        (o.num_nota?'<span style="font-size:11px;color:var(--sep);margin-left:8px">NF orig: '+o.num_nota+'</span>':'') +
+        '<span style="margin-left:auto;font-size:10px;color:var(--muted)">'+entrada+'</span>' +
+      '</div>' +
+      '<div class="soc-fields">' +
+        (o.valor_total?'<span class="soc-field danger">Saldo: R$ '+parseFloat(o.valor_total).toFixed(2).replace('.',',')+'</span>':'') +
+        (o.retirante?'<span class="soc-field ok">👤 '+o.retirante+'</span>':'') +
+        (o.obs?'<span class="soc-field" style="font-size:10px;color:var(--muted)">'+o.obs+'</span>':'') +
+      '</div>' +
+      '<div class="soc-actions" style="margin-top:10px;display:flex;gap:8px">' +
+        '<button class="bmv" style="flex:1" onclick="retornarPendenciaAoProcesso(\''+o.id+'\')">🔄 Retornar ao Processo</button>' +
+        '<button class="bexc" style="flex:0 0 auto" onclick="cancelarPendencia(\''+o.id+'\')">✕ Cancelar Saldo</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function isOperacionalVisivel(o){
+  return o.status!=='finalizado' && o.status!=='cancelado' && o.status!=='balcao_chamado' && o.status!=='ag_retira' && o.status!=='em_ocorrencia' && o.status!=='ag_entrega' && o.status!=='em_entrega' && o.status!=='entregue' && o.status!=='canhoto_ok' && o.status!=='pendencia_ativa';
+}
+
+
+function selecionarTipo(tipo){
+  el('no-prio').value=tipo;
+  ['retira','balcao','entrega'].forEach(function(t){
+    var btn=el('btn-tipo-'+t);
+    if(!btn)return;
+    var colors={retira:['var(--blue)','rgba(59,130,246,.12)'],balcao:['var(--danger)','rgba(239,68,68,.1)'],entrega:['#a855f7','rgba(168,85,247,.1)']};
+    if(t===tipo){
+      btn.style.borderColor=colors[t][0];btn.style.background=colors[t][1];btn.style.color=colors[t][0];
+    } else {
+      btn.style.borderColor='var(--border2)';btn.style.background='var(--bg3)';btn.style.color='var(--muted)';
+    }
+  });
+}
+
+function selecionarParcial(val){
+  el('no-parcial-val').value=String(val);
+  var sim=el('btn-parcial-sim'),nao=el('btn-parcial-nao');
+  if(val){
+    if(sim){sim.style.borderColor='var(--warn)';sim.style.background='rgba(245,158,11,.1)';sim.style.color='var(--warn)';}
+    if(nao){nao.style.borderColor='var(--border2)';nao.style.background='var(--bg3)';nao.style.color='var(--muted)';}
+  }else{
+    if(nao){nao.style.borderColor='var(--accent)';nao.style.background='rgba(34,211,167,.1)';nao.style.color='var(--accent)';}
+    if(sim){sim.style.borderColor='var(--border2)';sim.style.background='var(--bg3)';sim.style.color='var(--muted)';}
+  }
+}
+
+function selecionarPendencia(val){
+  el('no-pendencia-val').value=String(val);
+  var sim=el('btn-pendencia-sim'),nao=el('btn-pendencia-nao');
+  if(val){
+    if(sim){sim.style.borderColor='var(--danger)';sim.style.background='rgba(239,68,68,.08)';sim.style.color='var(--danger)';}
+    if(nao){nao.style.borderColor='var(--border2)';nao.style.background='var(--bg3)';nao.style.color='var(--muted)';}
+  }else{
+    if(nao){nao.style.borderColor='var(--accent)';nao.style.background='rgba(34,211,167,.1)';nao.style.color='var(--accent)';}
+    if(sim){sim.style.borderColor='var(--border2)';sim.style.background='var(--bg3)';sim.style.color='var(--muted)';}
+  }
+}
+
+function openNewOrder(){
+  el('no-num').value='';el('no-cli').value='';el('no-obs').value='';
+  if(el('no-retirante'))el('no-retirante').value='';
+  if(el('no-valor'))el('no-valor').value='';
+  selecionarTipo('retira');
+  selecionarParcial(false);
+  selecionarPendencia(false);
+  openM('m-new-order');
+}
+
+async function createOrder(){
+  var num=el('no-num').value.trim(),cli=el('no-cli').value.trim(),prio=el('no-prio').value;
+  var retirante=el('no-retirante')?el('no-retirante').value.trim():'';
+  var valorEl=el('no-valor');
+  var valor=valorEl&&valorEl.value?parseFloat(valorEl.value):null;
+  var parcial=el('no-parcial-val')?el('no-parcial-val').value==='true':false;
+  var pendencia=el('no-pendencia-val')?el('no-pendencia-val').value==='true':false;
+  if(!num){toast('Informe o número do pedido.','err');return;}
+  if(!cli){toast('Informe o nome do cliente.','err');return;}
+  if(!valor||valor<=0){toast('Informe o valor do pedido (obrigatório).','err');return;}
+  closeM('m-new-order');ov(true);
+  try{
+    var agora=new Date().toISOString();
+    var res=await sb.from('pedidos').insert({numero:num,setor:'atendimento',setor_pendente:'',status:'em_andamento',criado_por:ME.login,entrada_at:agora,setor_entrada_at:agora,obs:el('no-obs').value||'',nome_cliente:cli,prioridade:prio,tipo_saida:prio,num_nota:'',retirante:retirante||null,valor_total:valor,parcial:parcial,pendencia:pendencia});
+    if(res.error)throw res.error;
+    await refreshUI();
+    toast('Pedido #'+num+' criado — '+cli,'ok');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
+}
+
 </script>
 <div class="mb" id="m-chave-nf">
   <div class="mo">
@@ -2812,6 +3179,16 @@ if(window.location.search.indexOf('rastrear=1')>=0){
     <p style="color:var(--muted);font-size:12px;margin-bottom:16px" id="chave-nf-desc">Informe a chave da nota fiscal para continuar.</p>
     <div class="f"><label class="fl">Chave da NF (44 dígitos) *</label><input type="text" id="chave-nf-input" placeholder="44 dígitos" maxlength="44" style="font-size:11px;letter-spacing:1px" oninput="this.value=this.value.replace(/\D/g,'')"/></div>
     <div class="ma"><button class="bcan" id="chave-nf-cancel" onclick="closeM('m-chave-nf')">Cancelar</button><button class="bok" id="chave-nf-ok" onclick="confirmarChaveNF()">Confirmar</button></div>
+  </div>
+</div>
+<div class="mb" id="m-carregamento">
+  <div class="mo" style="max-width:460px">
+    <div class="mt">Expedição — Registrar Carregamento</div>
+    <p id="carg-pedido" style="color:var(--muted);font-size:12px;margin-bottom:16px"></p>
+    <div class="f"><label class="fl">Chave da NF (44 dígitos) *</label><input type="text" id="carg-chave" placeholder="44 dígitos" maxlength="44" style="font-size:11px;letter-spacing:1px" oninput="this.value=this.value.replace(/\D/g,'')"/></div>
+    <div class="f"><label class="fl">Placa do Veículo *</label><input type="text" id="carg-placa" placeholder="Ex: ABC-1234" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"/></div>
+    <div class="f"><label class="fl">Motorista / Transportadora *</label><input type="text" id="carg-motorista" placeholder="Nome do motorista ou transportadora"/></div>
+    <div class="ma"><button class="bcan" onclick="closeM('m-carregamento')">Cancelar</button><button class="bok" onclick="expConfirmarCarregamento()">Confirmar Carregamento</button></div>
   </div>
 </div>
 </body>
