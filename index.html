@@ -332,11 +332,10 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 <div id="ov" class="h">Carregando...</div>
 <div id="tw"></div>
 <nav id="main-nav" style="display:none">
-  <span class="logo" onclick="go('painel')" style="cursor:pointer">Call <span>Order</span></span>
+  <span class="logo" onclick="go('home')" style="cursor:pointer">Call <span>Order</span></span>
   <div class="nav-tabs">
     <button class="tab" onclick="go('home')" id="tab-home">Home</button>
     <button class="tab" onclick="go('expedicao')" id="tab-expedicao">Expedição</button>
-    <button class="tab" onclick="go('agretira')" id="tab-agretira">Ag. Retira <span id="agretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('pendencias')" id="tab-pendencias">Pendências <span id="pendencias-badge" style="display:none;background:rgba(239,68,68,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('ocorrencias')" id="tab-ocorrencias">Ocorrências <span id="ocorrencias-badge" style="display:none;background:rgba(239,159,39,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('relatorios')">Relatórios</button>
@@ -390,6 +389,7 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
       <button onclick="go('home')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:0;display:flex;align-items:center;gap:6px;font-family:var(--font-mono)">‹ Voltar</button>
       <span class="pt" id="setor-screen-title"></span>
       <span style="color:var(--muted);font-size:12px" id="setor-screen-count"></span>
+      <button class="btnn" id="btn-setor-novo" style="display:none" onclick="openNewOrder()">+ Novo Pedido</button>
     </div>
     <div id="setor-screen-chegando" style="margin-bottom:16px"></div>
     <div id="setor-screen-body" class="setor-list"></div>
@@ -400,24 +400,18 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   <main>
     <div class="ph">
       <button onclick="go('home')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:0;font-family:var(--font-mono)">‹ Voltar</button>
-      <span class="pt">Expedição</span>
-      <span style="color:var(--muted);font-size:12px" id="exp-count"></span>
+      <span class="pt">Expedição — Registro de NF</span>
+      <button class="btnn" onclick="openM('m-nf-expedicao')">+ Registrar NF</button>
     </div>
-    <div id="exp-chegando" style="margin-bottom:16px"></div>
-    <div style="margin-bottom:20px">
-      <div class="st" style="color:var(--danger)">🏪 Balcão</div>
-      <div id="exp-balcao-list"></div>
-      <div id="exp-balcao-empty" style="color:var(--muted);font-size:12px;padding:8px 0;display:none">Nenhum pedido aguardando no balcão.</div>
-    </div>
-    <div style="margin-bottom:20px">
-      <div class="st" style="color:var(--blue)">📦 Retira</div>
-      <div id="exp-retira-list"></div>
-      <div id="exp-retira-empty" style="color:var(--muted);font-size:12px;padding:8px 0;display:none">Nenhum pedido aguardando retirada.</div>
-    </div>
-    <div style="margin-bottom:20px">
-      <div class="st" style="color:#a855f7">🚚 Entrega</div>
-      <div id="exp-entrega-list"></div>
-      <div id="exp-entrega-empty" style="color:var(--muted);font-size:12px;padding:8px 0;display:none">Nenhum pedido para entrega.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px">
+        <div class="st" style="color:var(--accent);margin-bottom:12px">📥 Recebimento</div>
+        <div id="exp-rec-list"><div style="color:var(--muted);font-size:12px">Nenhum registro.</div></div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px">
+        <div class="st" style="color:var(--warn);margin-bottom:12px">↩️ Devolução</div>
+        <div id="exp-dev-list"><div style="color:var(--muted);font-size:12px">Nenhum registro.</div></div>
+      </div>
     </div>
   </main>
 </div>
@@ -687,12 +681,9 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
     <p style="color:var(--muted);font-size:12px;margin-bottom:16px">Preencha os dados da NF. A chave é obrigatória para rastreamento.</p>
     <div class="f"><label class="fl">Número da Nota Fiscal *</label><input type="text" id="nota-num" placeholder="000123"/></div>
     <div class="f"><label class="fl">Chave da NF (44 dígitos) *</label><input type="text" id="nota-chave" placeholder="44 dígitos" maxlength="44" style="font-size:11px;letter-spacing:1px" oninput="this.value=this.value.replace(/\D/g,'')"/></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="f"><label class="fl">Valor Total (R$) *</label><input type="number" id="nota-valor-total" placeholder="0,00" step="0.01" min="0"/></div>
-      <div class="f"><label class="fl">Valor Pago (R$)</label><input type="number" id="nota-valor-pago" placeholder="0,00" step="0.01" min="0" oninput="calcSaldoNota()"/></div>
-    </div>
-    <div id="nota-saldo-wrap" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px">
-      Saldo pendente: <strong id="nota-saldo-val" style="color:var(--warn)">R$ 0,00</strong>
+    <div class="f"><label class="fl">Valor da NF (R$) * <span id="nota-valor-hint" style="font-size:11px;color:var(--muted);font-weight:400;margin-left:6px"></span></label><input type="number" id="nota-valor-total" placeholder="0,00" step="0.01" min="0" oninput="calcSaldoNota()"/></div>
+    <div id="nota-saldo-wrap" style="display:none;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px">
+      ⚠️ Saldo pendente: <strong id="nota-saldo-val" style="color:var(--warn)">R$ 0,00</strong> — será criado registro de Pendência
     </div>
     <div class="ma"><button class="bcan" onclick="closeM('m-nota')">Cancelar</button><button class="bok" onclick="confirmarNota()">Faturar e Enviar</button></div>
   </div>
@@ -761,12 +752,12 @@ applyTheme(getStoredTheme());
 const SUPA_URL = 'https://lpjyrmkgjgehfaosagxl.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwanlybWtnamdlaGZhb3NhZ3hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDgwOTIsImV4cCI6MjA5MTA4NDA5Mn0.c0EweQ387mQI5Fh1auNaCwTNTBLZulRFdg0cjUSvnSU';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
-const SETORES = ['atendimento','estoque','corte','separacao','faturamento','expedicao'];
-const PROXIMO_SETOR = {atendimento:'estoque',estoque:'corte',corte:'separacao',separacao:'faturamento',faturamento:'expedicao'};
-const RETORNO_PADRAO = {estoque:'atendimento',corte:'estoque',separacao:'corte',faturamento:'separacao',expedicao:'faturamento'};
-const SL = {atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',separacao:'Separação',faturamento:'Faturamento',expedicao:'Expedição',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira',em_ocorrencia:'Ocorrência',pendencia_ativa:'Pendência',balcao_chamado:'Balcão',ag_entrega:'Ag. Entrega',em_entrega:'Em Entrega',entregue:'Entregue',canhoto_ok:'Canhoto OK'};
+const SETORES = ['atendimento','estoque','corte','separacao','faturamento','retira','balcao','entrega'];
+const PROXIMO_SETOR = {atendimento:'estoque',estoque:'corte',corte:'separacao',separacao:'faturamento'};
+const RETORNO_PADRAO = {estoque:'atendimento',corte:'estoque',separacao:'corte',faturamento:'separacao',retira:'faturamento',balcao:'faturamento',entrega:'faturamento'};
+const SL = {atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',separacao:'Separação',faturamento:'Faturamento',retira:'Retira',balcao:'Balcão',entrega:'Entrega',expedicao:'Expedição',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira',em_ocorrencia:'Ocorrência',pendencia_ativa:'Pendência',pronto_balcao:'Pronto p/ Balcão',balcao_chamado:'Chamado',ag_entrega:'Ag. Entrega',em_entrega:'Em Entrega',entregue:'Entregue',canhoto_ok:'Canhoto OK'};
 const SC = {atendimento:'tag-at',estoque:'tag-es',corte:'tag-co',separacao:'tag-se',faturamento:'tag-fa',pronto_balcao:'tag-rd',balcao_chamado:'tag-rd',finalizado:'tag-do'};
-const SD = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1',expedicao:'#a855f7'};
+const SD = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1',retira:'#60a5fa',balcao:'#f87171',entrega:'#a855f7',expedicao:'#34d399'};
 const SICONCOLOR = {atendimento:'#a78bfa',estoque:'#c49a6c',corte:'#ef4444',separacao:'#f1f5f9',faturamento:'#22d3a7'};
 const SICON = {
   atendimento: '<svg width="18" height="18" viewBox="0 0 24 24" fill="COLOR" stroke="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a5 5 0 1 1 0 10A5 5 0 0 1 12 2zm0 12c5.33 0 8 2.67 8 4v2H4v-2c0-1.33 2.67-4 8-4z"/></svg>',
@@ -1411,7 +1402,7 @@ async function fetchUsuarios(){var res=await sb.from('usuarios').select('id,nome
 function allHide(){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});}
 async function go(name){if(name==='home'){allHide();el('screen-home').classList.add('active');ov(true);await fetchPedidos();ov(false);renderHome();return;}
   if(name==='setor'){if(_setorAtual)renderSetor(_setorAtual);return;}
-  if(name==='expedicao'){_setorAtual='expedicao';ov(true);await fetchPedidos();ov(false);renderExpedicao();return;}
+  if(name==='expedicao'){allHide();el('screen-expedicao').classList.add('active');renderExpedicao();return;}
   if(name==='pendencias'){ov(true);await fetchPedidos();ov(false);renderPendencias();return;}
   
   if(ME)startPolling();
@@ -2319,8 +2310,10 @@ function confirmarChaveNF(){
 // Helper function for nota modal
 function calcSaldoNota(){
   var total=parseFloat(el('nota-valor-total')&&el('nota-valor-total').value)||0;
-  var pago=parseFloat(el('nota-valor-pago')&&el('nota-valor-pago').value)||0;
-  var saldo=Math.max(0,total-pago);
+  // Compara com o valor do pedido original
+  var o=_notaTarget?getPedidoById(_notaTarget):null;
+  var valorPedido=o&&o.valor_total?parseFloat(o.valor_total):0;
+  var saldo=valorPedido>0?Math.max(0,valorPedido-total):0;
   if(el('nota-saldo-wrap'))el('nota-saldo-wrap').style.display=(saldo>0&&total>0)?'block':'none';
   if(el('nota-saldo-val'))el('nota-saldo-val').textContent='R$ '+saldo.toFixed(2).replace('.',',');
 }
@@ -2332,11 +2325,14 @@ function openNota(id){
   if(el('nota-num'))el('nota-num').value='';
   if(el('nota-chave'))el('nota-chave').value='';
   if(el('nota-valor-total'))el('nota-valor-total').value='';
-  if(el('nota-valor-pago'))el('nota-valor-pago').value='';
   if(el('nota-saldo-wrap'))el('nota-saldo-wrap').style.display='none';
   var o=getPedidoById(id);
   if(o&&o.chave_nf&&el('nota-chave'))el('nota-chave').value=o.chave_nf;
-  if(o&&o.valor_total&&el('nota-valor-total'))el('nota-valor-total').value=o.valor_total;
+  // Don't pre-fill valor — faturista enters NF value fresh; saldo auto-calculates vs pedido valor
+  if(o&&o.valor_total){
+    var hint=el('nota-valor-hint');
+    if(hint)hint.textContent='Valor do pedido: R$ '+parseFloat(o.valor_total).toFixed(2).replace('.',',');
+  }
   openM('m-nota');
 }
 
@@ -2344,48 +2340,50 @@ function openNota(id){
 async function confirmarNota(){
   var nota=el('nota-num').value.trim();
   var chave=(el('nota-chave')?el('nota-chave').value.trim():'');
-  var valorTotal=el('nota-valor-total')&&el('nota-valor-total').value?parseFloat(el('nota-valor-total').value):null;
-  var valorPago=el('nota-valor-pago')&&el('nota-valor-pago').value?parseFloat(el('nota-valor-pago').value):null;
+  var valorNF=el('nota-valor-total')&&el('nota-valor-total').value?parseFloat(el('nota-valor-total').value):null;
   if(!nota){toast('Informe o número da nota fiscal.','err');return;}
   if(!chave||chave.length!==44){toast('A chave da NF deve ter exatamente 44 dígitos.','err');return;}
-  if(!valorTotal||valorTotal<=0){toast('Informe o valor total da NF.','err');return;}
-  var saldo=(valorPago!==null&&valorPago<valorTotal)?valorTotal-valorPago:null;
+  if(!valorNF||valorNF<=0){toast('Informe o valor da NF.','err');return;}
+  var o=PEDIDOS.find(function(p){return p.id===_notaTarget;});
+  if(!o){toast('Pedido não encontrado.','err');return;}
+  // Saldo = valor do pedido − valor da NF (se NF < pedido)
+  var valorPedido=o.valor_total?parseFloat(o.valor_total):0;
+  var saldo=valorPedido>0&&valorNF<valorPedido?Math.round((valorPedido-valorNF)*100)/100:null;
   closeM('m-nota');ov(true);
   try{
-    var o=PEDIDOS.find(function(p){return p.id===_notaTarget;});
-    if(!o)throw new Error('Pedido não encontrado');
     var agora=new Date().toISOString();
     var tempoSetor=Math.max(0,new Date(agora)-new Date(o.setor_entrada_at));
     var tipo = o.tipo_saida||o.prioridade||'retira';
-    var novoStatus, novoSetor;
-    if(tipo==='entrega'){novoStatus='ag_entrega';}
-    else if(tipo==='retira'){novoStatus='ag_retira';}
-    else {novoStatus='pronto_balcao';}
-    novoSetor='expedicao';
+    // Route to correct sector based on tipo_saida
+    var novoSetor, novoStatus;
+    if(tipo==='entrega'){novoSetor='entrega';novoStatus='ag_entrega';}
+    else if(tipo==='retira'){novoSetor='retira';novoStatus='ag_retira';}
+    else {novoSetor='balcao';novoStatus='pronto_balcao';}
     var res=await sb.from('pedidos').update({
       setor:novoSetor, status:novoStatus, setor_pendente:'', pendente_desde:null,
       setor_entrada_at:agora, finalizado_at:null, num_nota:nota, chave_nf:chave,
-      valor_total:valorTotal, valor_pago:valorPago||null, saldo_pendente:saldo
+      valor_total:valorPedido||valorNF, valor_nf:valorNF, saldo_pendente:saldo||null
     }).eq('id',_notaTarget);
     if(res.error)throw res.error;
-    upsertPedidoLocal({id:_notaTarget,setor:novoSetor,status:novoStatus,setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,finalizado_at:null,num_nota:nota,chave_nf:chave,valor_total:valorTotal,valor_pago:valorPago||null,saldo_pendente:saldo});
+    upsertPedidoLocal({id:_notaTarget,setor:novoSetor,status:novoStatus,setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,finalizado_at:null,num_nota:nota,chave_nf:chave,valor_nf:valorNF,saldo_pendente:saldo||null});
     _lastPainelSnap='';
     atualizarTelasAtivas();
     var logs=[
       sb.from('movimentacoes').insert({pedido_id:_notaTarget,setor_origem:o.setor,setor_destino:novoSetor,usuario:ME.login,entrada_at:o.setor_entrada_at,saida_at:agora,tempo_ms:tempoSetor,confirmado_por:ME.login,confirmado_at:agora,tempo_confirmacao_ms:0}),
-      sb.from('notas_fiscais').insert({pedido_id:_notaTarget,numero_nf:nota,chave_nf:chave,valor_total:valorTotal,valor_pago:valorPago||null,tipo:tipo,registrado_por:ME.login,registrado_at:agora}),
-      sb.from('timeline_pedido').insert({pedido_id:_notaTarget,evento:'FATURAMENTO',descricao:'NF '+nota+' emitida. Chave: '+chave+'. Valor: R$'+valorTotal.toFixed(2)+(saldo?' | Saldo: R$'+saldo.toFixed(2):''),usuario:ME.login,evento_at:agora})
+      sb.from('notas_fiscais').insert({pedido_id:_notaTarget,numero_nf:nota,chave_nf:chave,valor_total:valorNF,tipo:tipo,registrado_por:ME.login,registrado_at:agora}),
+      sb.from('timeline_pedido').insert({pedido_id:_notaTarget,evento:'FATURAMENTO',descricao:'NF '+nota+' — R$'+valorNF.toFixed(2)+(saldo?' | Saldo p/ Pendência: R$'+saldo.toFixed(2):''),usuario:ME.login,evento_at:agora})
     ];
-    // Se há saldo E o pedido tem flag de pendência → criar registro de Pendência
-    if(saldo&&saldo>0&&(o.has_pendencia||o.pendencia)){
+    // Sempre cria Pendência quando há saldo
+    if(saldo&&saldo>0){
       var numPend=o.numero+'-P';
-      logs.push(sb.from('pedidos').insert({numero:numPend,setor:'pendencias',setor_pendente:'',status:'pendencia_ativa',criado_por:ME.login,entrada_at:agora,setor_entrada_at:agora,nome_cliente:o.nome_cliente,retirante:o.retirante||null,obs:'Saldo pendente ref. pedido #'+o.numero+' NF '+nota,valor_total:saldo,prioridade:tipo,tipo_saida:tipo,num_nota:nota,has_pendencia:true,pedido_origem_id:_notaTarget}));
-      logs.push(sb.from('timeline_pedido').insert({pedido_id:_notaTarget,evento:'PENDENCIA_CRIADA',descricao:'Saldo de R$'+saldo.toFixed(2)+' registrado como pendência #'+numPend,usuario:ME.login,evento_at:agora}));
+      logs.push(sb.from('pedidos').insert({numero:numPend,setor:'pendencias',setor_pendente:'',status:'pendencia_ativa',criado_por:ME.login,entrada_at:agora,setor_entrada_at:agora,nome_cliente:o.nome_cliente,retirante:o.retirante||null,obs:'Saldo ref. pedido #'+o.numero+' NF '+nota,valor_total:saldo,prioridade:tipo,tipo_saida:tipo,num_nota:nota,pedido_origem_id:_notaTarget}));
+      logs.push(sb.from('timeline_pedido').insert({pedido_id:_notaTarget,evento:'PENDENCIA_CRIADA',descricao:'Saldo de R$'+saldo.toFixed(2)+' → Pendência #'+numPend,usuario:ME.login,evento_at:agora}));
     }
     Promise.all(logs);
     refreshPedidosSoon(500);
-    var msg=tipo==='entrega'?'Faturado! Ag. Entrega.':tipo==='retira'?'Faturado! Ag. Retirada.':'Faturado! Pronto p/ balcão.';
-    if(saldo&&saldo>0&&(o.has_pendencia||o.pendencia)) msg+=' Pendência criada (saldo R$'+saldo.toFixed(2)+').';
+    var destLabel=tipo==='entrega'?'Entrega':tipo==='retira'?'Retira':'Balcão';
+    var msg='Faturado! Pedido enviado para '+destLabel+'.';
+    if(saldo&&saldo>0) msg+=' Pendência criada (saldo R$'+saldo.toFixed(2)+').';
     toast(msg,'move');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);_notaTarget=null;}
@@ -2745,21 +2743,29 @@ function renderHome(){
   if(el('home-date')) el('home-date').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
   var list = el('home-setor-list');
   if(!list) return;
-  var colors = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1',expedicao:'#a855f7'};
-  var icons = {atendimento:'📋',estoque:'📦',corte:'✂️',separacao:'🔧',faturamento:'🧾',expedicao:'🚚'};
+  var colors = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',separacao:'#FAC775',faturamento:'#ED93B1',retira:'#60a5fa',balcao:'#f87171',entrega:'#a855f7'};
+  var icons = {atendimento:'📋',estoque:'📦',corte:'✂️',separacao:'🔧',faturamento:'🧾',retira:'📦',balcao:'🏪',entrega:'🚚'};
   list.innerHTML = SETORES.map(function(setor){
     var items, chegando, total, hasAlert, subParts=[];
-    if(setor==='expedicao'){
-      // Expedição: count by specific statuses
-      items = PEDIDOS.filter(function(o){ return o.status==='pronto_balcao'||o.status==='balcao_chamado'||o.status==='ag_retira'||o.status==='ag_entrega'||o.status==='em_entrega'; });
-      chegando = PEDIDOS.filter(function(o){ return o.status==='aguardando' && o.setor_pendente==='expedicao'; });
-      var balcCount=PEDIDOS.filter(function(o){var tp=o.tipo_saida||o.prioridade||'retira';return tp==='balcao'&&(o.status==='pronto_balcao'||o.status==='balcao_chamado');}).length;
-      var retCount=PEDIDOS.filter(function(o){var tp=o.tipo_saida||o.prioridade||'retira';return tp==='retira'&&o.status==='ag_retira';}).length;
-      var entCount=PEDIDOS.filter(function(o){var tp=o.tipo_saida||o.prioridade||'retira';return tp==='entrega'&&(o.status==='ag_entrega'||o.status==='em_entrega');}).length;
-      if(balcCount) subParts.push(balcCount+' balcão');
-      if(retCount) subParts.push(retCount+' retira');
-      if(entCount) subParts.push(entCount+' entrega');
-      hasAlert = items.some(function(o){ return now()-tsMs(o.setor_entrada_at)>60*60000; });
+    if(setor==='retira'){
+      items = PEDIDOS.filter(function(o){return o.setor==='retira'||o.status==='ag_retira';});
+      chegando = [];
+      if(items.length) subParts.push(items.length+' aguardando');
+      hasAlert = items.some(function(o){ return now()-tsMs(o.setor_entrada_at)>120*60000; });
+    } else if(setor==='balcao'){
+      items = PEDIDOS.filter(function(o){return o.setor==='balcao'||(o.status==='pronto_balcao'||o.status==='balcao_chamado');});
+      chegando = [];
+      var chamados=items.filter(function(o){return o.status==='balcao_chamado';}).length;
+      if(items.length-chamados) subParts.push((items.length-chamados)+' aguardando');
+      if(chamados) subParts.push(chamados+' chamado'+(chamados>1?'s':''));
+      hasAlert = items.some(function(o){ return now()-tsMs(o.setor_entrada_at)>30*60000; });
+    } else if(setor==='entrega'){
+      items = PEDIDOS.filter(function(o){return o.setor==='entrega'||(o.status==='ag_entrega'||o.status==='em_entrega');});
+      chegando = [];
+      var emRota=items.filter(function(o){return o.status==='em_entrega';}).length;
+      if(items.length-emRota) subParts.push((items.length-emRota)+' aguardando');
+      if(emRota) subParts.push(emRota+' em rota');
+      hasAlert = false;
     } else {
       items = PEDIDOS.filter(function(o){ return o.setor===setor && isOperacionalVisivel(o) && o.status!=='aguardando'; });
       chegando = PEDIDOS.filter(function(o){ return o.status==='aguardando' && o.setor_pendente===setor; });
@@ -2793,16 +2799,6 @@ function renderHome(){
 
 function abrirSetor(setor){
   _setorAtual = setor;
-  if(setor === 'expedicao'){
-    allHide();
-    el('screen-expedicao').classList.add('active');
-    ov(true);
-    fetchPedidos().then(function(){
-      ov(false);
-      renderExpedicao();
-    });
-    return;
-  }
   allHide();
   el('screen-setor').classList.add('active');
   ov(true);
@@ -2814,19 +2810,35 @@ function abrirSetor(setor){
 
 function renderSetor(setor){
   if(el('setor-screen-title')) el('setor-screen-title').textContent = SL[setor]||setor;
-  var chegando = PEDIDOS.filter(function(o){return o.status==='aguardando' && o.setor_pendente===setor;});
-  var items = PEDIDOS.filter(function(o){return o.setor===setor && isOperacionalVisivel(o) && o.status!=='aguardando';});
-  if(el('setor-screen-count')) el('setor-screen-count').textContent = (items.length+chegando.length)+' pedido(s)';
-  if(el('setor-screen-empty')) el('setor-screen-empty').style.display = (items.length+chegando.length)?'none':'block';
+  // Add/hide "+ Novo Pedido" button for atendimento
+  var btnNovo = el('btn-setor-novo');
+  if(btnNovo) btnNovo.style.display = (setor==='atendimento' && podeCriarPedido())?'':'none';
+  // For delivery sectors filter by status, not setor field
+  var chegando, items;
+  if(setor==='retira'){
+    items = PEDIDOS.filter(function(o){return o.setor==='retira'||o.status==='ag_retira';});
+    chegando = [];
+  } else if(setor==='balcao'){
+    items = PEDIDOS.filter(function(o){return o.setor==='balcao'||(o.status==='pronto_balcao'||o.status==='balcao_chamado');});
+    chegando = [];
+  } else if(setor==='entrega'){
+    items = PEDIDOS.filter(function(o){return o.setor==='entrega'||(o.status==='ag_entrega'||o.status==='em_entrega'||o.status==='entregue');});
+    chegando = [];
+  } else {
+    chegando = PEDIDOS.filter(function(o){return o.status==='aguardando' && o.setor_pendente===setor;});
+    items = PEDIDOS.filter(function(o){return o.setor===setor && isOperacionalVisivel(o) && o.status!=='aguardando';});
+  }
+  if(el('setor-screen-count')) el('setor-screen-count').textContent = (items.length+(chegando?chegando.length:0))+' pedido(s)';
+  if(el('setor-screen-empty')) el('setor-screen-empty').style.display = (items.length+(chegando?chegando.length:0))?'none':'block';
   if(el('setor-screen-chegando')){
-    el('setor-screen-chegando').innerHTML = chegando.map(function(o){
+    el('setor-screen-chegando').innerHTML = chegando ? chegando.map(function(o){
       return '<div class="transit-banner">' +
         '<span class="dp"></span>' +
         '<span style="font-family:var(--font-head);font-weight:700">#'+o.numero+'</span> ' +
         '<span>'+(o.nome_cliente||'')+'</span>' +
         '<span style="margin-left:auto;color:var(--muted)">'+(SL[o.setor]||o.setor)+' → '+SL[setor]+'</span>' +
       '</div>';
-    }).join('');
+    }).join('') : '';
   }
   if(el('setor-screen-body')){
     el('setor-screen-body').innerHTML = items.map(function(o){
@@ -2844,15 +2856,61 @@ function renderSetorCard(o, setor){
   var tC = totalMs>45*60000?'cd':totalMs>25*60000?'cw':'';
   var hora = tsMs(o.entrada_at)?new Date(tsMs(o.entrada_at)).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'--';
   var fields = '<div class="soc-fields">';
-  if(o.parcial) fields += '<span class="soc-field warn">Parcial</span>';
-  if(o.pendencia) fields += '<span class="soc-field danger">Pendência</span>';
+  if(o.parcial||o.is_parcial) fields += '<span class="soc-field warn">Parcial</span>';
+  if(o.pendencia||o.has_pendencia) fields += '<span class="soc-field danger">Pendência</span>';
   if(o.valor_total) fields += '<span class="soc-field">R$ '+parseFloat(o.valor_total).toFixed(2).replace('.',',')+'</span>';
   if(o.retirante) fields += '<span class="soc-field ok">👤 '+o.retirante+'</span>';
+  if(o.num_nota) fields += '<span class="soc-field ok">NF '+o.num_nota+'</span>';
+  if(o.placa_veiculo) fields += '<span class="soc-field">🚗 '+o.placa_veiculo+'</span>';
+  if(o.motorista) fields += '<span class="soc-field">👨‍✈️ '+o.motorista+'</span>';
   fields += '</div>';
+
+  // ── Action buttons per sector ──
+  var canAct = podeAtuarNoSetor(setor);
+  var acoes = [];
+
+  if(setor==='atendimento' && canAct){
+    acoes.push('<button class="bmv" style="background:#7AD3C2" onclick="enviar(\''+o.id+'\',\'estoque\')">→ Estoque</button>');
+  } else if(setor==='estoque' && canAct){
+    acoes.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'corte\')">→ Corte</button>');
+    acoes.push('<button class="bcon" style="background:#6366f1" onclick="enviar(\''+o.id+'\',\'separacao\')">→ Separação</button>');
+    acoes.push('<button class="bret" onclick="openReturnActive(\''+o.id+'\')">Retornar</button>');
+  } else if(setor==='corte' && canAct){
+    acoes.push('<button class="bmv" style="background:#6366f1" onclick="enviar(\''+o.id+'\',\'separacao\')">→ Separação</button>');
+    acoes.push('<button class="bret" onclick="openReturnActive(\''+o.id+'\')">Retornar</button>');
+  } else if(setor==='separacao' && canAct){
+    acoes.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">→ Faturamento</button>');
+    acoes.push('<button class="bret" onclick="openReturnActive(\''+o.id+'\')">Retornar</button>');
+  } else if(setor==='faturamento' && podeFaturar()){
+    acoes.push('<button class="bfin" onclick="openNota(\''+o.id+'\')">Faturar</button>');
+    if(canAct) acoes.push('<button class="bret" onclick="openReturnActive(\''+o.id+'\')">Retornar</button>');
+  } else if(setor==='balcao' && canAct){
+    if(o.status==='pronto_balcao')
+      acoes.push('<button class="bcall" onclick="expChamarBalcao(\''+o.id+'\')">📢 Chamar no Balcão</button>');
+    else if(o.status==='balcao_chamado')
+      acoes.push('<button class="bmv" style="background:#22c55e" onclick="expConfirmarEntregaBalcao(\''+o.id+'\')">✅ Confirmar Entrega</button>');
+  } else if(setor==='retira' && canAct){
+    if(o.status==='ag_retira')
+      acoes.push('<button class="bmv" style="background:#22c55e" onclick="expConfirmarRetirada(\''+o.id+'\')">✅ Confirmar Retirada</button>');
+  } else if(setor==='entrega' && canAct){
+    if(o.status==='ag_entrega')
+      acoes.push('<button class="bmv" style="background:#a855f7" onclick="expAbrirCarregamento(\''+o.id+'\')">🚚 Registrar Carregamento</button>');
+    else if(o.status==='em_entrega')
+      acoes.push('<button class="bmv" style="background:#22c55e" onclick="expConfirmarEntregaRealizada(\''+o.id+'\')">✅ Confirmar Entrega</button>');
+  }
+  if(podeExcluirPedido() && setor!=='retira' && setor!=='balcao' && setor!=='entrega'){
+    acoes.push('<button class="bexc" onclick="openDeletePedido(\''+o.id+'\')">Excluir</button>');
+  }
+
+  var statusBadge='';
+  if(setor==='balcao'&&o.status==='balcao_chamado') statusBadge='<span style="font-size:10px;background:rgba(34,211,167,.15);color:var(--accent);padding:2px 8px;border-radius:10px;margin-left:8px">CHAMADO</span>';
+  if(setor==='entrega'&&o.status==='em_entrega') statusBadge='<span style="font-size:10px;background:rgba(168,85,247,.15);color:#a855f7;padding:2px 8px;border-radius:10px;margin-left:8px">EM ROTA</span>';
+
   return '<div class="setor-order-card '+tC+'">' +
     '<div class="soc-top">' +
       '<span class="soc-num">#'+o.numero+'</span>' +
       '<span class="soc-cli">'+(o.nome_cliente||'—')+'</span>' +
+      statusBadge +
       '<span style="font-size:10px;color:var(--muted);margin-left:auto">'+hora+'</span>' +
     '</div>' +
     '<div class="soc-meta">' +
@@ -2861,85 +2919,51 @@ function renderSetorCard(o, setor){
       '<span class="'+tC+'">Total: '+fmtT(totalMs)+'</span>' +
     '</div>' +
     fields +
+    (acoes.length?'<div class="ca" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">'+acoes.join('')+'</div>':'') +
   '</div>';
 }
 
+// ── Expedição: registro de NF de recebimento e devolução ──
+var _nfsExpedicao = [];
 function renderExpedicao(){
-  var canAct = podeAtuarNoSetor('expedicao');
-  var chegando = PEDIDOS.filter(function(o){return o.status==='aguardando' && o.setor_pendente==='expedicao';});
-  var balcaoItems = PEDIDOS.filter(function(o){ var tp=o.tipo_saida||o.prioridade||'retira'; return tp==='balcao' && (o.status==='pronto_balcao'||o.status==='balcao_chamado'); });
-  var retiraItems = PEDIDOS.filter(function(o){ var tp=o.tipo_saida||o.prioridade||'retira'; return tp==='retira' && o.status==='ag_retira'; });
-  var entregaItems = PEDIDOS.filter(function(o){ var tp=o.tipo_saida||o.prioridade||'retira'; return tp==='entrega' && (o.status==='ag_entrega'||o.status==='em_entrega'); });
-
-  if(el('exp-count')) el('exp-count').textContent = (balcaoItems.length+retiraItems.length+entregaItems.length)+' pedido(s)';
-  if(el('exp-chegando')){
-    el('exp-chegando').innerHTML = chegando.map(function(o){
-      return '<div class="transit-banner">' +
-        '<span class="dp"></span>' +
-        '<span style="font-family:var(--font-head);font-weight:700">#'+o.numero+'</span> ' +
-        '<span>'+(o.nome_cliente||'')+'</span>' +
-        '<span style="margin-left:auto;color:var(--muted)">chegando de '+(SL[o.setor]||o.setor)+'</span>' +
-      '</div>';
-    }).join('');
+  var recItems = _nfsExpedicao.filter(function(n){return n.tipo==='recebimento';});
+  var devItems = _nfsExpedicao.filter(function(n){return n.tipo==='devolucao';});
+  function nfCard(n){
+    return '<div class="setor-order-card" style="margin-bottom:8px">' +
+      '<div class="soc-top">' +
+        '<span class="soc-num">NF '+n.numero_nf+'</span>' +
+        '<span class="soc-cli">'+(n.fornecedor||n.cliente||'—')+'</span>' +
+        '<span style="margin-left:auto;font-size:10px;color:var(--muted)">'+new Date(n.registrado_at).toLocaleString('pt-BR')+'</span>' +
+      '</div>' +
+      '<div class="soc-fields">' +
+        (n.valor_total?'<span class="soc-field">R$ '+parseFloat(n.valor_total).toFixed(2).replace('.',',')+'</span>':'') +
+        '<span class="soc-field" style="font-size:10px;letter-spacing:.5px">'+n.chave_nf.substring(0,20)+'…</span>' +
+      '</div>' +
+    '</div>';
   }
-  // ─── Balcão ───
-  if(el('exp-balcao-list')) el('exp-balcao-list').innerHTML = balcaoItems.length ? balcaoItems.map(function(o){
-    var isChamado = o.status==='balcao_chamado';
-    var nfTag = o.num_nota?('<span class="soc-field ok">NF '+o.num_nota+'</span>'):'';
-    var btns='';
-    if(canAct){
-      if(!isChamado) btns='<button class="bcall" onclick="expChamarBalcao(\''+o.id+'\')">📢 Chamar no Balcão</button>';
-      else btns='<button class="bmv" style="background:#22c55e" onclick="expConfirmarEntregaBalcao(\''+o.id+'\')">✅ Confirmar Entrega</button>';
-    }
-    return '<div class="setor-order-card">' +
-      '<div class="soc-top">' +
-        '<span class="soc-num">#'+o.numero+'</span>' +
-        '<span class="soc-cli">'+(o.nome_cliente||'—')+'</span>' +
-        (isChamado?'<span style="margin-left:8px;font-size:10px;background:rgba(34,211,167,.15);color:var(--accent);padding:2px 8px;border-radius:10px">CHAMADO</span>':'') +
-        (o.retirante?'<span style="margin-left:8px;font-size:11px;color:var(--muted)">👤 '+o.retirante+'</span>':'') +
-      '</div>' +
-      (nfTag?'<div class="soc-fields">'+nfTag+'</div>':'') +
-      (btns?'<div class="soc-actions" style="margin-top:10px">'+btns+'</div>':'') +
-    '</div>';
-  }).join('') : '';
-  if(el('exp-balcao-empty')) el('exp-balcao-empty').style.display = balcaoItems.length?'none':'block';
-  // ─── Retira ───
-  if(el('exp-retira-list')) el('exp-retira-list').innerHTML = retiraItems.length ? retiraItems.map(function(o){
-    var nfTag = o.num_nota?('<span class="soc-field ok">NF '+o.num_nota+'</span>'):'';
-    var btns = canAct?'<button class="bmv" onclick="expConfirmarRetirada(\''+o.id+'\')">✅ Confirmar Retirada</button>':'';
-    return '<div class="setor-order-card">' +
-      '<div class="soc-top">' +
-        '<span class="soc-num">#'+o.numero+'</span>' +
-        '<span class="soc-cli">'+(o.nome_cliente||'—')+'</span>' +
-        (o.retirante?'<span style="margin-left:8px;font-size:11px;color:var(--muted)">👤 '+o.retirante+'</span>':'') +
-      '</div>' +
-      (nfTag?'<div class="soc-fields">'+nfTag+'</div>':'') +
-      (btns?'<div class="soc-actions" style="margin-top:10px">'+btns+'</div>':'') +
-    '</div>';
-  }).join('') : '';
-  if(el('exp-retira-empty')) el('exp-retira-empty').style.display = retiraItems.length?'none':'block';
-  // ─── Entrega ───
-  if(el('exp-entrega-list')) el('exp-entrega-list').innerHTML = entregaItems.length ? entregaItems.map(function(o){
-    var isEmEntrega = o.status==='em_entrega';
-    var nfTag = o.num_nota?('<span class="soc-field ok">NF '+o.num_nota+'</span>'):'';
-    var placaTag = o.placa_veiculo?('<span class="soc-field">🚗 '+o.placa_veiculo+'</span>'):'';
-    var motorTag = o.motorista?('<span class="soc-field">👨‍✈️ '+o.motorista+'</span>'):'';
-    var btns='';
-    if(canAct){
-      if(!isEmEntrega) btns='<button class="bmv" style="background:#a855f7" onclick="expAbrirCarregamento(\''+o.id+'\')">🚚 Registrar Carregamento</button>';
-      else btns='<button class="bmv" style="background:#22c55e" onclick="expConfirmarEntregaRealizada(\''+o.id+'\')">✅ Confirmar Entrega Realizada</button>';
-    }
-    return '<div class="setor-order-card">' +
-      '<div class="soc-top">' +
-        '<span class="soc-num">#'+o.numero+'</span>' +
-        '<span class="soc-cli">'+(o.nome_cliente||'—')+'</span>' +
-        (isEmEntrega?'<span style="margin-left:8px;font-size:10px;background:rgba(168,85,247,.15);color:#a855f7;padding:2px 8px;border-radius:10px">EM ROTA</span>':'') +
-      '</div>' +
-      '<div class="soc-fields">'+nfTag+placaTag+motorTag+'</div>' +
-      (btns?'<div class="soc-actions" style="margin-top:10px">'+btns+'</div>':'') +
-    '</div>';
-  }).join('') : '';
-  if(el('exp-entrega-empty')) el('exp-entrega-empty').style.display = entregaItems.length?'none':'block';
+  if(el('exp-rec-list'))el('exp-rec-list').innerHTML=recItems.length?recItems.map(nfCard).join(''):'<div style="color:var(--muted);font-size:12px">Nenhum registro.</div>';
+  if(el('exp-dev-list'))el('exp-dev-list').innerHTML=devItems.length?devItems.map(nfCard).join(''):'<div style="color:var(--muted);font-size:12px">Nenhum registro.</div>';
+}
+
+async function confirmarNFExpedicao(){
+  var tipo=el('nfe-tipo')?el('nfe-tipo').value:'recebimento';
+  var num=el('nfe-num')?el('nfe-num').value.trim():'';
+  var chave=el('nfe-chave')?el('nfe-chave').value.trim():'';
+  var valor=el('nfe-valor')&&el('nfe-valor').value?parseFloat(el('nfe-valor').value):null;
+  var forn=el('nfe-forn')?el('nfe-forn').value.trim():'';
+  if(!num){toast('Informe o número da NF.','err');return;}
+  if(!chave||chave.length!==44){toast('Chave da NF deve ter 44 dígitos.','err');return;}
+  closeM('m-nf-expedicao');ov(true);
+  try{
+    var agora=new Date().toISOString();
+    var rec={numero_nf:num,chave_nf:chave,valor_total:valor,tipo:tipo,fornecedor:forn||null,registrado_por:ME.login,registrado_at:agora};
+    var res=await sb.from('notas_fiscais').insert(rec);
+    if(res.error)throw res.error;
+    _nfsExpedicao.unshift(rec);
+    renderExpedicao();
+    toast('NF '+num+' registrada como '+tipo+'.','ok');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
 }
 
 // ── Expedição: Balcão ──
@@ -3179,6 +3203,22 @@ async function createOrder(){
     <p style="color:var(--muted);font-size:12px;margin-bottom:16px" id="chave-nf-desc">Informe a chave da nota fiscal para continuar.</p>
     <div class="f"><label class="fl">Chave da NF (44 dígitos) *</label><input type="text" id="chave-nf-input" placeholder="44 dígitos" maxlength="44" style="font-size:11px;letter-spacing:1px" oninput="this.value=this.value.replace(/\D/g,'')"/></div>
     <div class="ma"><button class="bcan" id="chave-nf-cancel" onclick="closeM('m-chave-nf')">Cancelar</button><button class="bok" id="chave-nf-ok" onclick="confirmarChaveNF()">Confirmar</button></div>
+  </div>
+</div>
+<div class="mb" id="m-nf-expedicao">
+  <div class="mo" style="max-width:460px">
+    <div class="mt">Expedição — Registrar NF</div>
+    <div class="f"><label class="fl">Tipo</label>
+      <select id="nfe-tipo" style="width:100%;padding:8px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--font-mono)">
+        <option value="recebimento">📥 Recebimento</option>
+        <option value="devolucao">↩️ Devolução</option>
+      </select>
+    </div>
+    <div class="f"><label class="fl">Número da NF *</label><input type="text" id="nfe-num" placeholder="000123"/></div>
+    <div class="f"><label class="fl">Chave da NF (44 dígitos) *</label><input type="text" id="nfe-chave" placeholder="44 dígitos" maxlength="44" style="font-size:11px;letter-spacing:1px" oninput="this.value=this.value.replace(/\D/g,'')"/></div>
+    <div class="f"><label class="fl">Fornecedor / Cliente</label><input type="text" id="nfe-forn" placeholder="Nome do fornecedor ou cliente"/></div>
+    <div class="f"><label class="fl">Valor (R$)</label><input type="number" id="nfe-valor" placeholder="0,00" step="0.01" min="0"/></div>
+    <div class="ma"><button class="bcan" onclick="closeM('m-nf-expedicao')">Cancelar</button><button class="bok" onclick="confirmarNFExpedicao()">Registrar</button></div>
   </div>
 </div>
 <div class="mb" id="m-carregamento">
