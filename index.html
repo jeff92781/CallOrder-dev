@@ -138,9 +138,9 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 .ca{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
 .ca>*:last-child:nth-child(odd){grid-column:1/-1}
 .ca>button{width:100%;box-sizing:border-box;height:36px;display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px!important;padding:0 10px!important}
-.bmv{padding:9px 18px;background:#3b82f6;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:13px;cursor:pointer;transition:all .2s;font-weight:700}
+.bmv{padding:6px 14px;background:#3b82f6;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:12px;cursor:pointer;transition:all .2s;font-weight:700}
 .bmv:hover{background:#2563eb;transform:translateY(-1px)}
-.bret{padding:9px 18px;background:#f97316;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:13px;cursor:pointer;transition:all .2s;font-weight:700}
+.bret{padding:6px 14px;background:#f97316;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:12px;cursor:pointer;transition:all .2s;font-weight:700}
 .bret:hover{background:#ea6c08;transform:translateY(-1px)}
 .bfin{padding:6px 14px;background:#22d3a7;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:12px;cursor:pointer;transition:all .2s;font-weight:700}
 .bfin:hover{background:#10b981;transform:translateY(-1px)}
@@ -302,32 +302,32 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 
 
 /* Home sector list */
-.hsl-item{display:flex;align-items:center;gap:14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.hsl-item{display:flex;align-items:center;gap:18px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 24px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
 .hsl-item:hover{border-color:var(--border3);transform:translateX(4px);box-shadow:var(--shadow)}
 .hsl-left{display:flex;flex-direction:column;flex:1}
-.hsl-name{font-family:var(--font-head);font-size:16px;font-weight:700;margin-bottom:2px}
-.hsl-sub{font-size:11px;color:var(--muted)}
-.hsl-count{font-family:var(--font-head);font-size:26px;font-weight:800;min-width:48px;text-align:right}
-.hsl-arrow{color:var(--muted);font-size:18px;margin-left:8px}
+.hsl-name{font-family:var(--font-head);font-size:20px;font-weight:700;margin-bottom:3px}
+.hsl-sub{font-size:13px;color:var(--muted)}
+.hsl-count{font-family:var(--font-head);font-size:32px;font-weight:800;min-width:56px;text-align:right}
+.hsl-arrow{color:var(--muted);font-size:22px;margin-left:8px}
 .hsl-bar{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px}
 .hsl-alert{width:8px;height:8px;border-radius:50%;background:var(--danger);animation:blinkCall 1.2s infinite;margin-left:6px;flex-shrink:0}
 /* Setor order cards */
-.setor-order-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px 26px;margin-bottom:14px;position:relative;transition:all .2s}
+.setor-order-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:10px;position:relative;transition:all .2s}
 .setor-order-card:hover{border-color:var(--border2);box-shadow:var(--shadow)}
-.soc-top{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
-.soc-num{font-family:var(--font-head);font-size:28px;font-weight:800}
-.soc-cli{font-size:15px;font-weight:600}
-.soc-meta{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:14px}
-.soc-timer{font-family:var(--font-mono);font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.soc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.soc-num{font-family:var(--font-head);font-size:22px;font-weight:800}
+.soc-cli{font-size:13px;font-weight:600}
+.soc-meta{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:10px}
+.soc-timer{font-family:var(--font-mono);font-size:20px;font-weight:800;color:#fff;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
 .soc-timer.warn{color:var(--warn)}.soc-timer.danger{color:var(--danger)}
-.soc-timer-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.soc-timer-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
 .soc-transit-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);color:var(--warn);font-size:11px;font-weight:600;animation:blinkCall 1.5s infinite}
-.soc-tipo{font-size:13px;font-weight:700;padding:5px 14px;border-radius:20px;letter-spacing:.04em;flex-shrink:0}
+.soc-tipo{font-size:12px;font-weight:700;padding:3px 12px;border-radius:20px;letter-spacing:.04em;flex-shrink:0}
 .soc-tipo.balcao{color:#ef4444;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);animation:blinkCall 1.2s infinite}
 .soc-tipo.retira{color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2)}
 .soc-tipo.entrega{color:#3b82f6;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3)}
-.soc-hora{font-size:15px;font-weight:700;color:#fff;font-family:var(--font-mono)}
-.soc-fields{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.soc-hora{font-size:13px;font-weight:700;color:#fff;font-family:var(--font-mono)}
+.soc-fields{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 .soc-field{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);cursor:default}
 .soc-field.clickable{cursor:pointer}.soc-field.clickable:hover{border-color:var(--border3)}
 .soc-field.ok{border-color:rgba(34,211,167,.3);color:var(--accent)}
@@ -2787,20 +2787,21 @@ function renderHome(){
   var icons = {atendimento:'📋',estoque:'📦',corte:'✂️',separacao:'🔧',faturamento:'🧾',retira:'📦',balcao:'🏪',entrega:'🚚',canhotos:'📋'};
   list.innerHTML = SETORES.map(function(setor){
     var items, chegando, total, hasAlert, subParts=[];
+    var EXCL_HOME=['finalizado','cancelado','canhoto_ok','pendencia_ativa'];
     if(setor==='retira'){
-      items = PEDIDOS.filter(function(o){return o.setor==='retira'||o.status==='ag_retira';});
+      items = PEDIDOS.filter(function(o){return (o.setor==='retira'||o.status==='ag_retira')&&EXCL_HOME.indexOf(o.status)<0;});
       chegando = [];
       if(items.length) subParts.push(items.length+' aguardando');
       hasAlert = items.some(function(o){ return now()-tsMs(o.setor_entrada_at)>120*60000; });
     } else if(setor==='balcao'){
-      items = PEDIDOS.filter(function(o){return o.setor==='balcao'||(o.status==='pronto_balcao'||o.status==='balcao_chamado');});
+      items = PEDIDOS.filter(function(o){return (o.setor==='balcao'||(o.status==='pronto_balcao'||o.status==='balcao_chamado'))&&EXCL_HOME.indexOf(o.status)<0;});
       chegando = [];
       var chamados=items.filter(function(o){return o.status==='balcao_chamado';}).length;
       if(items.length-chamados) subParts.push((items.length-chamados)+' aguardando');
       if(chamados) subParts.push(chamados+' chamado'+(chamados>1?'s':''));
       hasAlert = items.some(function(o){ return now()-tsMs(o.setor_entrada_at)>30*60000; });
     } else if(setor==='entrega'){
-      items = PEDIDOS.filter(function(o){return o.setor==='entrega'||(o.status==='ag_entrega'||o.status==='em_entrega');});
+      items = PEDIDOS.filter(function(o){return (o.setor==='entrega'||(o.status==='ag_entrega'||o.status==='em_entrega'))&&EXCL_HOME.indexOf(o.status)<0;});
       chegando = [];
       var emRota=items.filter(function(o){return o.status==='em_entrega';}).length;
       if(items.length-emRota) subParts.push((items.length-emRota)+' aguardando');
@@ -2821,7 +2822,7 @@ function renderHome(){
     total = items.length + (chegando?chegando.length:0);
     return '<div class="hsl-item" onclick="abrirSetor(\''+setor+'\')">' +
       '<div class="hsl-bar" style="background:'+(colors[setor]||'var(--accent)')+'"></div>' +
-      '<span style="font-size:22px">'+(icons[setor]||'📁')+'</span>' +
+      '<span style="font-size:32px;line-height:1">'+(icons[setor]||'📁')+'</span>' +
       '<div class="hsl-left">' +
         '<div class="hsl-name">'+SL[setor]+'</div>' +
         '<div class="hsl-sub">'+(subParts.join(' · ')||'nenhum pedido')+'</div>' +
@@ -2834,7 +2835,7 @@ function renderHome(){
   // Expedição row — NF receipt/return only (not part of production flow)
   list.innerHTML += '<div class="hsl-item" onclick="go(\'expedicao\')">' +
     '<div class="hsl-bar" style="background:#34d399"></div>' +
-    '<span style="font-size:22px">📄</span>' +
+    '<span style="font-size:32px;line-height:1">📄</span>' +
     '<div class="hsl-left">' +
       '<div class="hsl-name">Expedição</div>' +
       '<div class="hsl-sub">Recebimento e Devolução de NF</div>' +
