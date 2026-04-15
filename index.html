@@ -1443,6 +1443,7 @@ function renderTransCard(o){
   var canC=podeConfirmarDestino(dest);
   var canR=podeAtuarNoSetor(origem);
   var prio=o.prioridade||'retira',pC=prio==='balcao'?'prio-balcao':prio==='entrega'?'prio-entrega':'';
+  var sC=elapsed>45*60000?'cd':elapsed>25*60000?'cw':'';
   var acoes='';
   if(canC){
     acoes+='<button class="bcon" onclick="confirmarRec(\''+o.id+'\')">Confirmar</button>';
@@ -1452,10 +1453,9 @@ function renderTransCard(o){
   if(canR){
     acoes+='<button class="bret" onclick="openReturnTransit(\''+o.id+'\')">Retornar</button>';
   }
-   if(podeExcluirPedido()){
+  if(podeExcluirPedido()){
     acoes+='<button class="bexc" onclick="openDeletePedido(\''+o.id+'\')">Excluir</button>';
   }
-  // ── MUDANÇA: data-transit-since para atualização in-place ──
   return '<div class="card transito '+pC+' '+sC+'"><div class="tlbl"><span class="dp"></span><span data-transit-since="'+tsMs(o.pendente_desde)+'">'+(alerta?'Aguardando há ':'Aguard. confirmação há ')+fmtT(elapsed)+'</span></div><div class="card-top"><span class="card-num">#'+o.numero+'</span><span style="flex-shrink:0">'+prioBadge(prio)+'</span></div>'+(o.nome_cliente?'<div class="card-cli">'+o.nome_cliente+'</div>':'')+'<div class="card-meta" style="padding-left:2px">'+(SL[origem]||origem)+' → '+(SL[dest]||dest)+'</div><div class="ca">'+acoes+'</div></div>';
 }
 function renderCard(o,setor){
@@ -1464,7 +1464,9 @@ function renderCard(o,setor){
   var totalMs = Math.max(0, (t.freeze || now()) - t.entry);
   var setorMs = Math.max(0, (s.freeze || now()) - s.entry);
   var tC=totalMs>45*60000?'danger':totalMs>25*60000?'warn':'';
-  var prio=o.prioridade||'retira',pC=prio==='balcao'?'prio-balcao':prio==='entrega'?'prio-entrega':'';?new Date(tsMs(o.entrada_at)).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'--';
+  var sC=setorMs>45*60000?'cd':setorMs>25*60000?'cw':'';
+  var prio=o.prioridade||'retira',pC=prio==='balcao'?'prio-balcao':prio==='entrega'?'prio-entrega':'';
+  var hora=o.entrada_at?new Date(tsMs(o.entrada_at)).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'--';
   var canAct=podeAtuarNoSetor(setor);
   var acoes=[];
 
