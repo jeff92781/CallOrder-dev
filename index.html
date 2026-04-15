@@ -268,12 +268,13 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
     <button class="tab" onclick="go('senha')">Minha Senha</button>
     <button class="tab adm-only" onclick="go('config')" style="display:none">Configurações</button>
     <button class="tab" onclick="go('agretira')" id="tab-agretira">Ag. Retira <span id="agretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <button class="tab" onclick="go('agEmbarque')" id="tab-agembarque">Ag. Embarque <span id="agembarque-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('ocorrencias')" id="tab-ocorrencias">Ocorrências <span id="ocorrencias-badge" style="display:none;background:rgba(239,159,39,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('pendencias')" id="tab-pendencias">Pendências <span id="pendencias-badge" style="display:none;background:rgba(239,68,68,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
   </div>
   <div class="nav-right">
-    <span id="nav-nome">—</span>
-    <span id="nav-user" style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:.02em">—</span><span class="badge-r" id="nav-role">—</span>
+    <span id="nav-nome" style="font-size:13px;font-weight:600;color:var(--text)">—</span>
+    <span class="badge-r adm-only" id="nav-role" style="display:none">—</span>
     <span class="badge-s" id="nav-setor" style="display:none">—</span>
     <button class="tab" onclick="logout()">Sair</button>
   </div>
@@ -484,6 +485,49 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
     </div>
     <div id="pend-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhuma pendência de saldo no momento.</div>
   </main>
+</div>
+
+<div class="screen" id="screen-agEmbarque">
+  <main>
+    <div class="ph">
+      <span class="pt">Aguardando Embarque</span>
+      <span style="color:var(--muted);font-size:12px" id="agEmb-count"></span>
+      <div id="agEmb-valor-total" style="font-size:12px;color:#818cf8;font-weight:600;background:rgba(129,140,248,.1);padding:5px 14px;border-radius:20px;border:1px solid rgba(129,140,248,.3)"></div>
+      <button onclick="openM('m-embarque-lote')" style="padding:8px 18px;background:#818cf8;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:12px;font-weight:700;cursor:pointer">📦 Embarcar em lote</button>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
+      <table class="utbl" id="agEmb-table">
+        <thead><tr><th style="width:30px"><input type="checkbox" id="agEmb-checkall" onchange="toggleCheckAllEmbarque(this)" style="accent-color:#818cf8"/></th><th>Pedido</th><th>Cliente</th><th>Nota Fiscal</th><th>Valor NF</th><th>Entrada</th><th>Ações</th></tr></thead>
+        <tbody id="agEmb-tbody"></tbody>
+      </table>
+    </div>
+    <div id="agEmb-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhum pedido aguardando embarque no momento.</div>
+  </main>
+</div>
+
+<div class="mb" id="m-embarque-lote">
+  <div class="mo" style="max-width:560px;width:95vw">
+    <div class="mt">Embarcar em lote</div>
+    <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Selecione as notas para embarque, informe os dados do veículo e registre tudo de uma vez.</p>
+    <div id="lote-notas-lista" style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:14px;background:var(--bg3);font-size:12px;color:var(--muted)">Nenhuma nota selecionada</div>
+    <div class="f"><label class="fl">Chave(s) NF-e * <span style="color:var(--muted)">(uma por linha)</span></label><textarea id="lote-chaves" style="width:100%;min-height:80px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;resize:vertical" placeholder="44 dígitos por linha..."></textarea></div>
+    <div class="f"><label class="fl">Placa do veículo *</label><input type="text" id="lote-placa" placeholder="AAA-0000" style="text-transform:uppercase"/></div>
+    <div class="f"><label class="fl">Transportadora *</label><input type="text" id="lote-transportadora" placeholder="Nome da transportadora"/></div>
+    <div class="f"><label class="fl">Motorista (opcional)</label><input type="text" id="lote-motorista" placeholder="Nome do motorista"/></div>
+    <div class="ma"><button class="bcan" onclick="closeM('m-embarque-lote')">Cancelar</button><button class="bok" style="background:#818cf8" onclick="confirmarEmbarqueLote()">🚚 Embarcar</button></div>
+  </div>
+</div>
+
+<div class="mb" id="m-embarque-unitario">
+  <div class="mo">
+    <div class="mt">Embarcar pedido</div>
+    <p id="emb-uni-desc" style="color:var(--muted);font-size:12px;margin-bottom:14px"></p>
+    <div class="f"><label class="fl">Chave NF-e *</label><input type="text" id="emb-uni-chave" placeholder="44 dígitos"/></div>
+    <div class="f"><label class="fl">Placa do veículo *</label><input type="text" id="emb-uni-placa" placeholder="AAA-0000" style="text-transform:uppercase"/></div>
+    <div class="f"><label class="fl">Transportadora *</label><input type="text" id="emb-uni-transportadora" placeholder="Nome da transportadora"/></div>
+    <div class="f"><label class="fl">Motorista (opcional)</label><input type="text" id="emb-uni-motorista" placeholder="Nome do motorista"/></div>
+    <div class="ma"><button class="bcan" onclick="closeM('m-embarque-unitario')">Cancelar</button><button class="bok" style="background:#818cf8" onclick="confirmarEmbarqueUnitario()">🚚 Embarcar</button></div>
+  </div>
 </div>
 
 <div id="alert-retira-box" class="alert-retira" onclick="go('agretira')">
@@ -891,18 +935,9 @@ function clearSession(){
 }
 function applyLoggedUser(user){
   ME=user;
-  el('nav-nome').textContent=ME.nome||'—';
-  el('nav-role').textContent=ME.role||'—';
-
-  if(temSetorRestrito()){
-    var ss=meusSetores();
-    el('nav-setor').textContent=ss.map(function(s){return SL[s]||s;}).join(' + ');
-    if(el('nav-user'))el('nav-user').textContent=ME&&ME.nome?ME.nome:(ME&&ME.login?ME.login:'');
-    el('nav-setor').style.display='';
-  }else{
-    el('nav-setor').style.display='none';
-  }
-
+  el('nav-nome').textContent=ME.nome||ME.login||'—';
+  if(el('nav-role'))el('nav-role').textContent=ME.role||'—';
+  el('nav-setor').style.display='none';
   el('main-nav').style.display='flex';
   document.querySelectorAll('.adm-only').forEach(function(e){e.style.display = isAdmin() ? '' : 'none';});
   el('btn-novo').style.display = podeCriarPedido() ? 'flex' : 'none';
@@ -1226,7 +1261,7 @@ function startRealtime(){
 }
 async function fetchPedidos(){
   var hoje=new Date();hoje.setHours(0,0,0,0);
-  var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.em_entrega').order('entrada_at',{ascending:false});
+  var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.em_entrega,status.eq.ag_embarque').order('entrada_at',{ascending:false});
   PEDIDOS=res.data||[];
 }
 async function fetchMovs(){
@@ -1315,6 +1350,7 @@ async function go(name){
   if(name==='usuarios'){ov(true);var u=await fetchUsuarios();ov(false);renderUsers(u);}
   if(name==='config'){setTimeout(carregarVozes,100);}
   if(name==='agretira'){ov(true);await fetchPedidos();ov(false);renderAgRetira();}
+  if(name==='agEmbarque'){ov(true);await fetchPedidos();ov(false);renderAgEmbarque();}
   if(name==='ocorrencias'){ov(true);await fetchPedidos();ov(false);renderOcorrencias();}
   if(name==='pendencias'){ov(true);await fetchPedidos();ov(false);renderPendencias();}
 }
@@ -1336,6 +1372,7 @@ function startClock(){
     checkOcorrencias48h();
     renderOcorrenciasBadge();
     renderPendenciasBadge();
+    renderAgEmbarqueBadge();
 
     // Alertas de 10min (raro, não causa render)
     PEDIDOS.forEach(function(o){
@@ -1350,7 +1387,9 @@ function isOperacionalVisivel(o){
   return o.status!=='finalizado' && o.status!=='cancelado' && o.status!=='balcao_chamado' && o.status!=='ag_retira' && o.status!=='em_ocorrencia';
 }
 function isTVVisivel(o){
-  if(o.status==='cancelado' || o.status==='finalizado' || o.status==='balcao_chamado' || o.status==='ag_retira' || o.status==='em_ocorrencia')return false;
+  // TV mostra APENAS pedidos em andamento na operação — exclui retira, entrega e pós-faturamento
+  if(o.status==='cancelado'||o.status==='finalizado'||o.status==='balcao_chamado'||o.status==='ag_retira'||o.status==='em_ocorrencia'||o.status==='ag_embarque')return false;
+  if(o.prioridade==='retira'||o.prioridade==='entrega')return false; // Fix 4: retira e entrega não aparecem na TV
   return true;
 }
 function getTempoTotalPedido(o){
@@ -1443,7 +1482,6 @@ function renderTransCard(o){
   var canC=podeConfirmarDestino(dest);
   var canR=podeAtuarNoSetor(origem);
   var prio=o.prioridade||'retira',pC=prio==='balcao'?'prio-balcao':prio==='entrega'?'prio-entrega':'';
-  var sC=elapsed>45*60000?'cd':elapsed>25*60000?'cw':'';
   var acoes='';
   if(canC){
     acoes+='<button class="bcon" onclick="confirmarRec(\''+o.id+'\')">Confirmar</button>';
@@ -1453,9 +1491,10 @@ function renderTransCard(o){
   if(canR){
     acoes+='<button class="bret" onclick="openReturnTransit(\''+o.id+'\')">Retornar</button>';
   }
-  if(podeExcluirPedido()){
+   if(podeExcluirPedido()){
     acoes+='<button class="bexc" onclick="openDeletePedido(\''+o.id+'\')">Excluir</button>';
   }
+  // ── MUDANÇA: data-transit-since para atualização in-place ──
   return '<div class="card transito '+pC+' '+sC+'"><div class="tlbl"><span class="dp"></span><span data-transit-since="'+tsMs(o.pendente_desde)+'">'+(alerta?'Aguardando há ':'Aguard. confirmação há ')+fmtT(elapsed)+'</span></div><div class="card-top"><span class="card-num">#'+o.numero+'</span><span style="flex-shrink:0">'+prioBadge(prio)+'</span></div>'+(o.nome_cliente?'<div class="card-cli">'+o.nome_cliente+'</div>':'')+'<div class="card-meta" style="padding-left:2px">'+(SL[origem]||origem)+' → '+(SL[dest]||dest)+'</div><div class="ca">'+acoes+'</div></div>';
 }
 function renderCard(o,setor){
@@ -1464,16 +1503,15 @@ function renderCard(o,setor){
   var totalMs = Math.max(0, (t.freeze || now()) - t.entry);
   var setorMs = Math.max(0, (s.freeze || now()) - s.entry);
   var tC=totalMs>45*60000?'danger':totalMs>25*60000?'warn':'';
-  var sC=setorMs>45*60000?'cd':setorMs>25*60000?'cw':'';
   var prio=o.prioridade||'retira',pC=prio==='balcao'?'prio-balcao':prio==='entrega'?'prio-entrega':'';
-  var hora=o.entrada_at?new Date(tsMs(o.entrada_at)).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'--';
+  var hora=tsMs(o.entrada_at)?new Date(tsMs(o.entrada_at)).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'--';
   var canAct=podeAtuarNoSetor(setor);
   var acoes=[];
 
   var etapaPosFaturamento=(o.status==='pronto_balcao'||o.status==='balcao_chamado');
 
-  // Retornar SEMPRE primeiro
-  if(canAct && setor!=='atendimento' && !etapaPosFaturamento && setor!=='expedicao'){
+  // Retornar SEMPRE primeiro (exceto atendimento, pós-faturamento e expedição em rota)
+  if(canAct && setor!=='atendimento' && !etapaPosFaturamento && !(setor==='expedicao'&&o.status==='em_entrega')){
     acoes.push('<button class="bret" onclick="openReturnActive(\''+o.id+'\')">Retornar</button>');
   }
 
@@ -1486,22 +1524,21 @@ function renderCard(o,setor){
     acoes.push('<button class="bfin" onclick="openNota(\''+o.id+'\')">Faturar</button>');
   }else if(setor==='estoque' && canAct){
     acoes.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'corte\')">Corte</button>');
-    acoes.push('<button class="bcon" style="background:#6366f1" onclick="enviar(\''+o.id+'\',\'balcao_op\')">Balcão</button>');
-    acoes.push('<button class="bmv" style="background:#818cf8" onclick="enviar(\''+o.id+'\',\'expedicao\')">Expedição</button>');
+    if(prio!=='entrega') acoes.push('<button class="bcon" style="background:#6366f1" onclick="enviar(\''+o.id+'\',\'balcao_op\')">Balcão</button>');
+    if(prio==='entrega') acoes.push('<button class="bmv" style="background:#818cf8" onclick="enviar(\''+o.id+'\',\'expedicao\')">Expedição</button>');
   }else if(setor==='atendimento' && canAct){
     acoes.push('<button class="bmv" style="background:#c49a6c" onclick="enviar(\''+o.id+'\',\'estoque\')">Estoque</button>');
   }else if(setor==='corte' && canAct){
-    acoes.push('<button class="bcon" style="background:#6366f1" onclick="enviar(\''+o.id+'\',\'balcao_op\')">Balcão</button>');
-    acoes.push('<button class="bmv" style="background:#818cf8" onclick="enviar(\''+o.id+'\',\'expedicao\')">Expedição</button>');
+    if(prio!=='entrega') acoes.push('<button class="bcon" style="background:#6366f1" onclick="enviar(\''+o.id+'\',\'balcao_op\')">Balcão</button>');
+    if(prio==='entrega') acoes.push('<button class="bmv" style="background:#818cf8" onclick="enviar(\''+o.id+'\',\'expedicao\')">Expedição</button>');
   }else if(setor==='balcao_op' && canAct && o.status!=='pronto_balcao'){
-    acoes.push('<button class="bmv" onclick="abrirSelecionarSeparador(\''+o.id+'\',\'faturamento\')">Faturamento</button>');
+    acoes.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">Faturamento</button>');
   }else if(setor==='expedicao' && canAct){
     if(o.status==='em_entrega'){
       acoes.push('<button class="bfin" onclick="marcarEntregue(\''+o.id+'\')">✓ Entregue</button>');
       acoes.push('<button class="boc" onclick="marcarDevolvido(\''+o.id+'\')">Devolvido</button>');
-    }else{
-      acoes.push('<button class="bmv" style="background:#818cf8" onclick="sairParaEntrega(\''+o.id+'\')">Saiu p/ entrega</button>');
-      acoes.push('<button class="bmv" style="background:#f59e0b" onclick="enviarAgRetira(\''+o.id+'\')">Ag. Retira</button>');
+    }else if(o.status!=='ag_embarque'){
+      acoes.push('<button class="bmv" style="background:#818cf8" onclick="enviarAgEmbarque(\''+o.id+'\')">Ag. Embarque</button>');
     }
   }
 
@@ -1509,12 +1546,9 @@ function renderCard(o,setor){
     acoes.push('<button class="bexc" onclick="openDeletePedido(\''+o.id+'\')">Excluir</button>');
   }
 
-  var prontoHtml=o.status==='pronto_balcao'
-    ? '<div class="ready-chip"><span class="ready-dot"></span>Pronto para chamar no balcão</div>'
-    : '';
-  var emEntregaHtml=o.status==='em_entrega'
-    ? '<div class="ready-chip" style="background:rgba(129,140,248,.1);border-color:rgba(129,140,248,.3);color:#818cf8"><span class="ready-dot" style="background:#818cf8"></span>Em rota de entrega</div>'
-    : '';
+  var prontoHtml=o.status==='pronto_balcao'?'<div class="ready-chip"><span class="ready-dot"></span>Pronto para chamar no balcão</div>':'';
+  var emEntregaHtml=o.status==='em_entrega'?'<div class="ready-chip" style="background:rgba(129,140,248,.1);border-color:rgba(129,140,248,.3);color:#818cf8"><span class="ready-dot" style="background:#818cf8"></span>Em rota de entrega</div>':'';
+  var agEmbarqueHtml=o.status==='ag_embarque'?'<div class="ready-chip" style="background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:var(--warn)"><span class="ready-dot" style="background:var(--warn)"></span>Aguardando embarque</div>':'';
 
   var parcialBadge=o.parcial?'<span class="pb-parcial">⚡ PARCIAL</span>':'';
   var vendedorHtml=o.vendedor?'<div style="font-size:11px;color:var(--cyan);margin-bottom:3px">Vendedor: '+o.vendedor+'</div>':'';
@@ -1524,12 +1558,12 @@ function renderCard(o,setor){
   var setorFreezeAttr = s.freeze ? ' data-timer-freeze="'+s.freeze+'"' : '';
   var totalFreezeAttr = t.freeze ? ' data-timer-freeze="'+t.freeze+'"' : '';
 
-  return '<div class="card '+pC+' '+((o.status==='pronto_balcao'||o.status==='em_entrega')?'balcao-ready':'')+'">' +
+  return '<div class="card '+pC+' '+((o.status==='pronto_balcao'||o.status==='em_entrega'||o.status==='ag_embarque')?'balcao-ready':'')+'">' +
     '<div class="card-top"><span class="card-num">#'+o.numero+'</span>'+parcialBadge+'</div>' +
     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">'+(o.nome_cliente?'<span class="card-cli" style="margin-bottom:0">'+o.nome_cliente+'</span>':'')+'<span class="card-meta" style="margin-bottom:0">'+hora+' · '+o.criado_por+'</span>'+prioBadge(prio)+'</div>' +
     vendedorHtml+operadorHtml+separadorHtml +
     (podeCriarPedido()?'<div style="margin-bottom:6px"><button class="bmv" style="padding:2px 10px;font-size:10px;line-height:1.5;border-radius:6px" onclick="togglePrio(\''+o.id+'\',\''+prio+'\')">⇄ Alterar</button></div>':'') +
-    prontoHtml+emEntregaHtml +
+    prontoHtml+emEntregaHtml+agEmbarqueHtml +
     (o.num_nota?'<div class="card-nota">NF: '+o.num_nota+'</div>':'') +
     '<div class="ct">' +
       '<div class="ti"><span class="tl">Neste setor</span><span class="tv '+tC+'" data-timer-entry="'+s.entry+'"'+setorFreezeAttr+'>'+fmtT(setorMs)+'</span></div>' +
@@ -1567,13 +1601,16 @@ async function confirmarRec(id){
     upsertPedidoLocal({id:id,setor:dest,setor_pendente:'',status:'em_andamento',setor_entrada_at:agora,pendente_desde:null,operador_setor_atual:operadorNome});
     _lastPainelSnap='';
     atualizarTelasAtivas();
-    // ── MUDANÇA: inserts de movimentação/confirmação em paralelo ──
     Promise.all([
       sb.from('movimentacoes').insert({pedido_id:id,setor_origem:o.setor,setor_destino:dest,usuario:ME.login,entrada_at:o.setor_entrada_at,saida_at:agora,tempo_ms:tempoSetor,confirmado_por:ME.login,confirmado_at:agora,tempo_confirmacao_ms:tempoConf}),
       sb.from('confirmacoes').insert({pedido_id:id,setor_origem:o.setor,setor_destino:dest,enviado_at:o.pendente_desde,confirmado_at:agora,tempo_confirmacao_ms:tempoConf,confirmado_por:ME.login})
     ]);
     refreshPedidosSoon(500);
     toast('Recebimento confirmado em '+(SL[dest]||dest),'ok');
+    // Fix 7: pede separador ao CONFIRMAR chegada no balcão ou expedição
+    if((dest==='balcao_op'||dest==='expedicao') && SEPARADORES.length>0){
+      setTimeout(function(){abrirSelecionarSeparador(id,'');},400);
+    }
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
 }
@@ -1583,8 +1620,12 @@ function openNota(id){
   el('nota-valor').value='';
   if(el('nota-saldo-preview'))el('nota-saldo-preview').textContent='';
   var pedido=getPedidoById(id);
-  if(pedido&&pedido.valor_pedido>0){
-    if(el('nota-saldo-preview'))el('nota-saldo-preview').textContent='Valor do pedido: '+fmtBRL(pedido.valor_pedido)+'. Se o valor da NF for inferior, haverá saldo em Pendências.';
+  if(pedido){
+    // Fix 8: se é retorno de pendência, usa saldo_pendencia; senão usa valor_pedido
+    var valorRef=parseFloat(pedido.valor_pedido)||0;
+    if(valorRef>0){
+      if(el('nota-saldo-preview'))el('nota-saldo-preview').textContent='Valor do pedido: '+fmtBRL(valorRef)+'. Se o valor da NF for inferior, haverá saldo em Pendências.';
+    }
   }
   openM('m-nota');
 }
@@ -1678,22 +1719,25 @@ async function confirmarSeparador() {
   if(!sep){toast('Selecione o separador.','warn');return;}
   if(!_sepTarget){closeM('m-separador');return;}
   var id=_sepTarget.id, destino=_sepTarget.destino;
-  closeM('m-separador');
+  closeM('m-separador');_sepTarget=null;
   ov(true);
   try{
     var res=await sb.from('pedidos').update({separador:sep}).eq('id',id);
     if(res.error)throw res.error;
     upsertPedidoLocal({id:id,separador:sep});
-    _sepTarget=null;
-    // Agora envia para o destino
-    var agora=new Date().toISOString();
-    var r2=await sb.from('pedidos').update({setor_pendente:destino,status:'aguardando',pendente_desde:agora}).eq('id',id);
-    if(r2.error)throw r2.error;
-    upsertPedidoLocal({id:id,setor_pendente:destino,status:'aguardando',pendente_desde:agora});
+    if(destino){
+      // Enviar para destino (modo antigo)
+      var agora=new Date().toISOString();
+      var r2=await sb.from('pedidos').update({setor_pendente:destino,status:'aguardando',pendente_desde:agora}).eq('id',id);
+      if(r2.error)throw r2.error;
+      upsertPedidoLocal({id:id,setor_pendente:destino,status:'aguardando',pendente_desde:agora});
+      toast('Pedido enviado para '+(SL[destino]||destino)+'. Aguardando confirmação.','move');
+    }else{
+      toast('Separador registrado: '+sep,'ok');
+    }
     _lastPainelSnap='';
     atualizarTelasAtivas();
     refreshPedidosSoon(500);
-    toast('Pedido enviado para '+(SL[destino]||destino)+'. Aguardando confirmação.','move');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
 }
@@ -1710,6 +1754,22 @@ async function sairParaEntrega(id){
     upsertPedidoLocal({id:id,status:'em_entrega',pendente_desde:agora});
     _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(500);
     toast('Pedido #'+pedido.numero+' saiu para entrega.','ok');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
+}
+
+async function enviarAgEmbarque(id){
+  ov(true);
+  try{
+    var pedido=getPedidoById(id);
+    if(!pedido)throw new Error('Pedido não encontrado.');
+    var agora=new Date().toISOString();
+    var res=await sb.from('pedidos').update({status:'ag_embarque',pendente_desde:agora}).eq('id',id);
+    if(res.error)throw res.error;
+    upsertPedidoLocal({id:id,status:'ag_embarque',pendente_desde:agora});
+    _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(500);
+    renderAgEmbarqueBadge();
+    toast('Pedido #'+pedido.numero+' enviado para Ag. Embarque.','ok');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
 }
@@ -2022,8 +2082,7 @@ function renderUsers(users){
       '<td><span class="bar '+(u.role==='admin'?'bar-a':'bar-o')+'">'+u.role+'</span></td>' +
       '<td><span class="'+(u.ativo?'bon':'boff')+'">'+(u.ativo?'Ativo':'Inativo')+'</span></td>' +
       '<td><div style="display:flex;gap:5px">' +
-        '<button class="bmv" onclick="openEditUser(\''+u.id+'\')" style="font-size:10px">Editar</button>' +
-        '<button class="bmv" onclick="toggleUser(\''+u.id+'\','+u.ativo+',\''+u.login+'\')" style="background:'+(u.ativo?'var(--danger)':'var(--accent-dim)')+';font-size:10px">'+(u.ativo?'Desativar':'Ativar')+'</button>' +
+        '<button class="bmv" style="font-size:10px;padding:4px 10px" onclick="toggleUser(\''+u.id+'\','+u.ativo+',\''+u.login+'\')">'+(u.ativo?'Desativar':'Ativar')+'</button>' +
       '</div></td></tr>';
   }).join('');
 }
@@ -2184,7 +2243,7 @@ async function iniciarTVPublica(){
   async function carregarTVPublica(){
     try{
       var hoje=new Date();hoje.setHours(0,0,0,0);
-      var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.em_entrega').order('entrada_at',{ascending:false});
+      var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.em_entrega,status.eq.ag_embarque').order('entrada_at',{ascending:false});
       _tvPub=res.data||[];
       var snap = buildSnapshot(_tvPub);
       if (snap !== _lastTVPubSnap) {
@@ -2415,6 +2474,126 @@ async function occCancelar(id) {
 // ── Render Ag. Retira ──
 
 // ── Pendências de Saldo ──
+// ── Ag. Embarque ──
+var _embarqueSelecionados = [];
+
+function renderAgEmbarqueBadge() {
+  var items = PEDIDOS.filter(function(o){return o.status==='ag_embarque';});
+  var b=el('agembarque-badge');
+  if(b){if(items.length>0){b.textContent=items.length;b.style.display='inline';}else{b.style.display='none';}}
+}
+
+function renderAgEmbarque() {
+  var items = PEDIDOS.filter(function(o){return o.status==='ag_embarque';});
+  renderAgEmbarqueBadge();
+  if(el('agEmb-count'))el('agEmb-count').textContent=items.length+' pedido(s)';
+  if(el('agEmb-empty'))el('agEmb-empty').style.display=items.length?'none':'block';
+  if(el('agEmb-table'))el('agEmb-table').style.display=items.length?'':'none';
+  var totalV=items.reduce(function(s,o){return s+(parseFloat(o.valor_nota_fat)||0);},0);
+  if(el('agEmb-valor-total')){
+    if(totalV>0){el('agEmb-valor-total').textContent='Total: '+fmtBRL(totalV);el('agEmb-valor-total').style.display='';}
+    else{el('agEmb-valor-total').style.display='none';}
+  }
+  if(!el('agEmb-tbody'))return;
+  el('agEmb-tbody').innerHTML=items.map(function(o){
+    var dataEntrada=o.pendente_desde?new Date(o.pendente_desde).toLocaleDateString('pt-BR'):'—';
+    var valorNF=parseFloat(o.valor_nota_fat)||0;
+    var sel=_embarqueSelecionados.indexOf(o.id)>=0;
+    return '<tr>'+
+      '<td><input type="checkbox" class="emb-chk" value="'+o.id+'" '+(sel?'checked':'')+' style="accent-color:#818cf8" onchange="toggleEmbarqueItem(\''+o.id+'\')"/></td>'+
+      '<td style="font-family:var(--font-head);font-size:15px;font-weight:700">#'+o.numero+'</td>'+
+      '<td>'+(o.nome_cliente||'—')+'</td>'+
+      '<td style="color:var(--sep)">'+(o.num_nota||'—')+'</td>'+
+      '<td style="color:#818cf8;font-weight:600">'+(valorNF>0?fmtBRL(valorNF):'—')+'</td>'+
+      '<td style="color:var(--muted)">'+dataEntrada+'</td>'+
+      '<td><button class="bmv" style="background:#818cf8;font-size:11px" onclick="abrirEmbarqueUnitario(\''+o.id+'\')">Embarcar</button></td>'+
+    '</tr>';
+  }).join('');
+}
+
+function toggleEmbarqueItem(id){
+  var idx=_embarqueSelecionados.indexOf(id);
+  if(idx>=0)_embarqueSelecionados.splice(idx,1);else _embarqueSelecionados.push(id);
+  _atualizarLoteLista();
+}
+function toggleCheckAllEmbarque(chk){
+  var items=PEDIDOS.filter(function(o){return o.status==='ag_embarque';});
+  _embarqueSelecionados=chk.checked?items.map(function(o){return o.id;}):[];
+  renderAgEmbarque();
+  _atualizarLoteLista();
+}
+function _atualizarLoteLista(){
+  var lista=el('lote-notas-lista');
+  if(!lista)return;
+  if(_embarqueSelecionados.length===0){lista.textContent='Nenhuma nota selecionada';return;}
+  lista.innerHTML=_embarqueSelecionados.map(function(id){
+    var p=getPedidoById(id);
+    return p?'<div style="padding:3px 0;border-bottom:1px solid var(--border)">#'+p.numero+' — '+(p.nome_cliente||'—')+' — NF '+( p.num_nota||'—')+' — '+fmtBRL(p.valor_nota_fat)+'</div>':'';
+  }).join('');
+}
+
+function abrirEmbarqueUnitario(id){
+  var p=getPedidoById(id);
+  if(!p)return;
+  _embarqueSelecionados=[id];
+  if(el('emb-uni-desc'))el('emb-uni-desc').textContent='Pedido #'+p.numero+' — '+(p.nome_cliente||'—')+' — NF '+(p.num_nota||'—');
+  if(el('emb-uni-chave'))el('emb-uni-chave').value='';
+  if(el('emb-uni-placa'))el('emb-uni-placa').value='';
+  if(el('emb-uni-transportadora'))el('emb-uni-transportadora').value='';
+  if(el('emb-uni-motorista'))el('emb-uni-motorista').value='';
+  openM('m-embarque-unitario');
+}
+
+async function confirmarEmbarqueUnitario(){
+  var chave=(el('emb-uni-chave').value||'').trim();
+  var placa=(el('emb-uni-placa').value||'').trim().toUpperCase();
+  var transp=(el('emb-uni-transportadora').value||'').trim();
+  var motor=(el('emb-uni-motorista').value||'').trim();
+  if(!chave||!placa||!transp){toast('Preencha chave NF-e, placa e transportadora.','err');return;}
+  closeM('m-embarque-unitario');
+  await _executarEmbarque(_embarqueSelecionados,[chave],placa,transp,motor);
+}
+
+async function confirmarEmbarqueLote(){
+  var chaves=(el('lote-chaves').value||'').split('\n').map(function(c){return c.trim();}).filter(Boolean);
+  var placa=(el('lote-placa').value||'').trim().toUpperCase();
+  var transp=(el('lote-transportadora').value||'').trim();
+  var motor=(el('lote-motorista').value||'').trim();
+  if(_embarqueSelecionados.length===0){toast('Selecione pelo menos um pedido.','warn');return;}
+  if(chaves.length===0||!placa||!transp){toast('Preencha as chaves NF-e, placa e transportadora.','err');return;}
+  closeM('m-embarque-lote');
+  await _executarEmbarque(_embarqueSelecionados,chaves,placa,transp,motor);
+}
+
+async function _executarEmbarque(ids,chaves,placa,transp,motor){
+  ov(true);
+  try{
+    var agora=new Date().toISOString();
+    var promises=ids.map(function(id,i){
+      return sb.from('pedidos').update({
+        status:'em_entrega',
+        pendente_desde:agora,
+        chave_nfe:chaves[i]||chaves[0]||'',
+        placa_veiculo:placa,
+        transportadora:transp,
+        motorista:motor||''
+      }).eq('id',id);
+    });
+    await Promise.all(promises);
+    ids.forEach(function(id,i){
+      upsertPedidoLocal({id:id,status:'em_entrega',pendente_desde:agora,chave_nfe:chaves[i]||chaves[0]||'',placa_veiculo:placa,transportadora:transp,motorista:motor||''});
+    });
+    _embarqueSelecionados=[];
+    _lastPainelSnap='';
+    atualizarTelasAtivas();
+    refreshPedidosSoon(500);
+    renderAgEmbarque();
+    toast(ids.length+' pedido(s) embarcado(s) — Placa: '+placa,'ok',5000);
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
+}
+
+// ── Pendências ──
 function renderPendenciasBadge() {
   var items = PEDIDOS.filter(function(o) { return o.tem_pendencia && o.pendencia_status === 'aberta'; });
   var badge = el('pendencias-badge');
@@ -2456,7 +2635,8 @@ function renderPendencias() {
 async function pendenciaRetornar(id) {
   var pedido = getPedidoById(id);
   if (!pedido) { toast('Pedido não encontrado.', 'err'); return; }
-  if (!confirm('Retornar pedido #' + pedido.numero + ' para a operação? Ele voltará ao Atendimento para processar o saldo de ' + fmtBRL(pedido.saldo_pendencia) + '.')) return;
+  var saldo = parseFloat(pedido.saldo_pendencia)||0;
+  if (!confirm('Retornar pedido #' + pedido.numero + ' para a operação? O valor do pedido será ajustado para o saldo restante de ' + fmtBRL(saldo) + '.')) return;
   ov(true);
   try {
     var agora = new Date().toISOString();
@@ -2468,20 +2648,21 @@ async function pendenciaRetornar(id) {
       pendente_desde: null,
       setor_entrada_at: agora,
       finalizado_at: null,
-      num_nota: '',
+      num_nota: '',          // Fix 8: pendência NÃO se vincula à NF anterior
       valor_nota_fat: 0,
+      valor_pedido: saldo,   // Fix 8: valor_pedido passa a ser o saldo restante
       tem_pendencia: false,
       saldo_pendencia: 0
     }).eq('id', id);
     if (res.error) throw res.error;
-    upsertPedidoLocal({id: id, pendencia_status: 'retornada', setor: 'atendimento', status: 'em_andamento', setor_pendente: '', pendente_desde: null, setor_entrada_at: agora, finalizado_at: null, num_nota: '', valor_nota_fat: 0, tem_pendencia: false, saldo_pendencia: 0});
-    var linha = buildOccurrenceLine('PENDÊNCIA', 'Pendências', 'Saldo de ' + fmtBRL(pedido.saldo_pendencia) + ' retornado para a operação.');
+    upsertPedidoLocal({id:id,pendencia_status:'retornada',setor:'atendimento',status:'em_andamento',setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,finalizado_at:null,num_nota:'',valor_nota_fat:0,valor_pedido:saldo,tem_pendencia:false,saldo_pendencia:0});
+    var linha = buildOccurrenceLine('PENDÊNCIA', 'Pendências', 'Saldo de ' + fmtBRL(saldo) + ' retornado para a operação. Valor do pedido ajustado para ' + fmtBRL(saldo) + '.');
     await appendObsPedido(id, linha);
     _lastPainelSnap = '';
     atualizarTelasAtivas();
     refreshPedidosSoon(500);
     renderPendencias();
-    toast('Pedido #' + pedido.numero + ' retornado para Atendimento.', 'ok');
+    toast('Pedido #' + pedido.numero + ' retornado para Atendimento com saldo de ' + fmtBRL(saldo) + '.', 'ok');
   } catch(e) { toast(e.message, 'err'); }
   finally { ov(false); }
 }
