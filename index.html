@@ -269,6 +269,8 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
     <button class="tab adm-only" onclick="go('config')" style="display:none">Configurações</button>
     <button class="tab" onclick="go('agretira')" id="tab-agretira">Ag. Retira <span id="agretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('agEmbarque')" id="tab-agembarque">Ag. Embarque <span id="agembarque-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <button class="tab" onclick="go('emTransito')" id="tab-emtransito">Em Trânsito <span id="emtransito-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <button class="tab" onclick="go('canhotos')" id="tab-canhotos">Canhotos <span id="canhotos-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('ocorrencias')" id="tab-ocorrencias">Ocorrências <span id="ocorrencias-badge" style="display:none;background:rgba(239,159,39,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('pendencias')" id="tab-pendencias">Pendências <span id="pendencias-badge" style="display:none;background:rgba(239,68,68,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
   </div>
@@ -530,6 +532,55 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   </div>
 </div>
 
+<div class="screen" id="screen-emTransito">
+  <main>
+    <div class="ph">
+      <span class="pt">Em Trânsito</span>
+      <span style="color:var(--muted);font-size:12px" id="transit-count"></span>
+      <div id="transit-valor-total" style="font-size:12px;color:#818cf8;font-weight:600;background:rgba(129,140,248,.1);padding:5px 14px;border-radius:20px;border:1px solid rgba(129,140,248,.3)"></div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
+      <table class="utbl" id="transit-table">
+        <thead><tr><th>Pedido</th><th>Cliente</th><th>NF</th><th>Valor</th><th>Transportadora</th><th>Motorista</th><th>Embarque</th><th>Ações</th></tr></thead>
+        <tbody id="transit-tbody"></tbody>
+      </table>
+    </div>
+    <div id="transit-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhuma entrega em trânsito no momento.</div>
+  </main>
+</div>
+
+<div class="screen" id="screen-canhotos">
+  <main>
+    <div class="ph">
+      <span class="pt">Canhotos — Aguardando Confirmação</span>
+      <span style="color:var(--muted);font-size:12px" id="canhoto-count"></span>
+    </div>
+    <div style="background:rgba(34,211,167,.04);border:1px solid rgba(34,211,167,.2);border-radius:var(--radius-lg);padding:12px 18px;margin-bottom:16px;font-size:12px;color:var(--muted)">
+      ✓ Entrega confirmada pelo motorista. Clique em <strong style="color:var(--text)">Ok — Confirmar Canhoto</strong> e informe a chave da NF-e para encerrar o processo.
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
+      <table class="utbl" id="canhoto-table">
+        <thead><tr><th>Pedido</th><th>Cliente</th><th>NF</th><th>Valor</th><th>Transportadora</th><th>Motorista</th><th>Entrega confirmada</th><th>Ações</th></tr></thead>
+        <tbody id="canhoto-tbody"></tbody>
+      </table>
+    </div>
+    <div id="canhoto-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhum canhoto aguardando confirmação.</div>
+  </main>
+</div>
+
+<div class="mb" id="m-canhoto-ok">
+  <div class="mo">
+    <div class="mt">Confirmar canhoto</div>
+    <p id="canhoto-ok-desc" style="color:var(--muted);font-size:12px;margin-bottom:14px"></p>
+    <div class="f">
+      <label class="fl">Chave NF-e * <span style="color:var(--muted)">(44 dígitos — deve ser idêntica à registrada na saída)</span></label>
+      <input type="text" id="canhoto-chave-input" placeholder="Informe a chave de 44 dígitos" maxlength="44"/>
+      <div id="canhoto-chave-feedback" style="margin-top:6px;font-size:11px;min-height:14px"></div>
+    </div>
+    <div class="ma"><button class="bcan" onclick="closeM('m-canhoto-ok');_canhotoTarget=null">Cancelar</button><button class="bok" onclick="confirmarCanhoto()">✓ Encerrar processo</button></div>
+  </div>
+</div>
+
 <div id="alert-retira-box" class="alert-retira" onclick="go('agretira')">
   ⚠ Pedido(s) com 15+ dias em Ag. Retira
 </div>
@@ -664,7 +715,7 @@ const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 const SETORES = ['atendimento','estoque','corte','expedicao','balcao_op','faturamento'];
 const PROXIMO_SETOR = {atendimento:'estoque',estoque:'corte',corte:'balcao_op',balcao_op:'faturamento',expedicao:'faturamento'};
 const RETORNO_PADRAO = {estoque:'atendimento',corte:'estoque',balcao_op:'corte',faturamento:'balcao_op',expedicao:'corte'};
-const SL = {atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',balcao_op:'Balcão',separacao:'Balcão',faturamento:'Faturamento',expedicao:'Expedição',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira',em_ocorrencia:'Ocorrência',em_entrega:'Em Entrega'};
+const SL = {atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',balcao_op:'Balcão',separacao:'Balcão',faturamento:'Faturamento',expedicao:'Expedição',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira',em_ocorrencia:'Ocorrência',em_entrega:'Em Trânsito',ag_embarque:'Ag. Embarque',pronto_expedicao:'Pronto p/ Embarque',aguard_canhoto:'Aguardando Canhoto'};
 const SC = {atendimento:'tag-at',estoque:'tag-es',corte:'tag-co',balcao_op:'tag-se',separacao:'tag-se',faturamento:'tag-fa',expedicao:'tag-ex',pronto_balcao:'tag-rd',balcao_chamado:'tag-rd',finalizado:'tag-do'};
 const SD = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',balcao_op:'#FAC775',separacao:'#FAC775',faturamento:'#ED93B1',expedicao:'#818cf8'};
 const SICONCOLOR = {atendimento:'#a78bfa',estoque:'#c49a6c',corte:'#ef4444',balcao_op:'#f1f5f9',separacao:'#f1f5f9',faturamento:'#22d3a7',expedicao:'#818cf8'};
@@ -1261,7 +1312,7 @@ function startRealtime(){
 }
 async function fetchPedidos(){
   var hoje=new Date();hoje.setHours(0,0,0,0);
-  var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.em_entrega,status.eq.ag_embarque,status.eq.pronto_expedicao').order('entrada_at',{ascending:false});
+  var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.em_entrega,status.eq.ag_embarque,status.eq.pronto_expedicao,status.eq.aguard_canhoto').order('entrada_at',{ascending:false});
   PEDIDOS=res.data||[];
 }
 async function fetchMovs(){
@@ -1351,6 +1402,8 @@ async function go(name){
   if(name==='config'){setTimeout(carregarVozes,100);}
   if(name==='agretira'){ov(true);await fetchPedidos();ov(false);renderAgRetira();}
   if(name==='agEmbarque'){ov(true);await fetchPedidos();ov(false);renderAgEmbarque();}
+  if(name==='emTransito'){ov(true);await fetchPedidos();ov(false);renderEmTransito();}
+  if(name==='canhotos'){ov(true);await fetchPedidos();ov(false);renderCanhotos();}
   if(name==='ocorrencias'){ov(true);await fetchPedidos();ov(false);renderOcorrencias();}
   if(name==='pendencias'){ov(true);await fetchPedidos();ov(false);renderPendencias();}
 }
@@ -1373,6 +1426,8 @@ function startClock(){
     renderOcorrenciasBadge();
     renderPendenciasBadge();
     renderAgEmbarqueBadge();
+    renderEmTransitoBadge();
+    renderCanhotosBadge();
 
     // Alertas de 10min (raro, não causa render)
     PEDIDOS.forEach(function(o){
@@ -1384,7 +1439,7 @@ function startClock(){
   },1000);
 }
 function isOperacionalVisivel(o){
-  return o.status!=='finalizado' && o.status!=='cancelado' && o.status!=='balcao_chamado' && o.status!=='ag_retira' && o.status!=='em_ocorrencia';
+  return o.status!=='finalizado' && o.status!=='cancelado' && o.status!=='balcao_chamado' && o.status!=='ag_retira' && o.status!=='em_ocorrencia' && o.status!=='ag_embarque' && o.status!=='em_entrega' && o.status!=='aguard_canhoto';
 }
 function isTVVisivel(o){
   // TV mostra APENAS pedidos em andamento na operação — exclui retira, entrega e pós-faturamento
@@ -1639,6 +1694,15 @@ async function confirmarNota(){
   var valorNota=parseFloat(el('nota-valor').value)||0;
   if(!nota){toast('Informe o número da nota fiscal.','err');return;}
   if(valorNota<=0){toast('Informe o valor da nota fiscal.','err');return;}
+  // Fix 5: valor da NF não pode ser maior que o valor do pedido
+  var pedidoRef=PEDIDOS.find(function(p){return p.id===_notaTarget;});
+  if(pedidoRef){
+    var valorPedidoRef=parseFloat(pedidoRef.valor_pedido)||0;
+    if(valorPedidoRef>0&&valorNota>valorPedidoRef){
+      toast('⚠ O valor da NF ('+fmtBRL(valorNota)+') não pode ser maior que o valor do pedido ('+fmtBRL(valorPedidoRef)+').','err',6000);
+      return;
+    }
+  }
   // Verificar duplicidade de NF (sem zeros à esquerda)
   var dupNF=(PEDIDOS||[]).find(function(p){
     return p.id!==_notaTarget && p.num_nota && normalizarNumero(p.num_nota)===nota && p.status!=='cancelado';
@@ -1784,11 +1848,14 @@ async function marcarEntregue(id){
     var pedido=getPedidoById(id);
     if(!pedido)throw new Error('Pedido não encontrado.');
     var agora=new Date().toISOString();
-    var res=await sb.from('pedidos').update({status:'finalizado',finalizado_at:agora}).eq('id',id);
+    // Move para Canhotos — aguardando confirmação do canhoto físico
+    var res=await sb.from('pedidos').update({status:'aguard_canhoto',entregue_at:agora}).eq('id',id);
     if(res.error)throw res.error;
-    upsertPedidoLocal({id:id,status:'finalizado',finalizado_at:agora});
+    upsertPedidoLocal({id:id,status:'aguard_canhoto',entregue_at:agora});
     _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(500);
-    toast('Pedido #'+pedido.numero+' entregue!','ok');
+    renderCanhotosBadge();
+    renderEmTransitoBadge();
+    toast('Pedido #'+pedido.numero+' marcado como entregue — aguardando confirmação do canhoto.','ok');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
 }
@@ -2249,7 +2316,7 @@ async function iniciarTVPublica(){
   async function carregarTVPublica(){
     try{
       var hoje=new Date();hoje.setHours(0,0,0,0);
-      var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.em_entrega,status.eq.ag_embarque,status.eq.pronto_expedicao').order('entrada_at',{ascending:false});
+      var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.em_entrega,status.eq.ag_embarque,status.eq.pronto_expedicao,status.eq.aguard_canhoto').order('entrada_at',{ascending:false});
       _tvPub=res.data||[];
       var snap = buildSnapshot(_tvPub);
       if (snap !== _lastTVPubSnap) {
@@ -2479,6 +2546,108 @@ async function occCancelar(id) {
 
 // ── Render Ag. Retira ──
 
+// ── Em Trânsito ──
+function renderEmTransitoBadge(){
+  var items=PEDIDOS.filter(function(o){return o.status==='em_entrega';});
+  var b=el('emtransito-badge');
+  if(b){if(items.length>0){b.textContent=items.length;b.style.display='inline';}else{b.style.display='none';}}
+}
+function renderEmTransito(){
+  var items=PEDIDOS.filter(function(o){return o.status==='em_entrega';});
+  renderEmTransitoBadge();
+  if(el('transit-count'))el('transit-count').textContent=items.length+' pedido(s)';
+  if(el('transit-empty'))el('transit-empty').style.display=items.length?'none':'block';
+  if(el('transit-table'))el('transit-table').style.display=items.length?'':'none';
+  var totalV=items.reduce(function(s,o){return s+(parseFloat(o.valor_nota_fat)||0);},0);
+  if(el('transit-valor-total')){
+    if(totalV>0){el('transit-valor-total').textContent='Total em trânsito: '+fmtBRL(totalV);el('transit-valor-total').style.display='';}
+    else{el('transit-valor-total').style.display='none';}
+  }
+  if(!el('transit-tbody'))return;
+  el('transit-tbody').innerHTML=items.map(function(o){
+    var embarqueAt=o.pendente_desde?new Date(o.pendente_desde):null;
+    var dataEmb=embarqueAt?embarqueAt.toLocaleDateString('pt-BR'):'—';
+    var horaEmb=embarqueAt?embarqueAt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';
+    return '<tr>'+
+      '<td style="font-family:var(--font-head);font-size:15px;font-weight:700">#'+o.numero+'</td>'+
+      '<td>'+(o.nome_cliente||'—')+'</td>'+
+      '<td style="color:var(--sep)">'+(o.num_nota||'—')+'</td>'+
+      '<td style="color:#818cf8;font-weight:600">'+(parseFloat(o.valor_nota_fat)>0?fmtBRL(o.valor_nota_fat):'—')+'</td>'+
+      '<td>'+(o.transportadora||'—')+'</td>'+
+      '<td>'+(o.motorista||'—')+'</td>'+
+      '<td style="color:var(--muted)">'+dataEmb+' '+horaEmb+'</td>'+
+      '<td><div class="act-btns">'+
+        '<button class="bfin" style="font-size:11px" onclick="marcarEntregue(\''+o.id+'\')">✓ Entregue</button>'+
+        '<button class="boc" style="font-size:11px" onclick="marcarDevolvido(\''+o.id+'\')">Devolvida</button>'+
+      '</div></td>'+
+    '</tr>';
+  }).join('');
+}
+
+// ── Canhotos ──
+var _canhotoTarget=null;
+function renderCanhotosBadge(){
+  var items=PEDIDOS.filter(function(o){return o.status==='aguard_canhoto';});
+  var b=el('canhotos-badge');
+  if(b){if(items.length>0){b.textContent=items.length;b.style.display='inline';}else{b.style.display='none';}}
+}
+function renderCanhotos(){
+  var items=PEDIDOS.filter(function(o){return o.status==='aguard_canhoto';});
+  renderCanhotosBadge();
+  if(el('canhoto-count'))el('canhoto-count').textContent=items.length+' aguardando';
+  if(el('canhoto-empty'))el('canhoto-empty').style.display=items.length?'none':'block';
+  if(el('canhoto-table'))el('canhoto-table').style.display=items.length?'':'none';
+  if(!el('canhoto-tbody'))return;
+  el('canhoto-tbody').innerHTML=items.map(function(o){
+    var entregueAt=o.entregue_at?new Date(o.entregue_at):null;
+    var dtEntrega=entregueAt?entregueAt.toLocaleDateString('pt-BR')+' '+entregueAt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';
+    return '<tr>'+
+      '<td style="font-family:var(--font-head);font-size:15px;font-weight:700">#'+o.numero+'</td>'+
+      '<td>'+(o.nome_cliente||'—')+'</td>'+
+      '<td style="color:var(--sep)">'+(o.num_nota||'—')+'</td>'+
+      '<td style="color:#818cf8;font-weight:600">'+(parseFloat(o.valor_nota_fat)>0?fmtBRL(o.valor_nota_fat):'—')+'</td>'+
+      '<td>'+(o.transportadora||'—')+'</td>'+
+      '<td>'+(o.motorista||'—')+'</td>'+
+      '<td style="color:var(--accent)">' + dtEntrega + '</td>'+
+      '<td><button class="bok" style="font-size:11px;padding:5px 12px" onclick="abrirCanhotoOk(\''+o.id+'\')">✓ Ok — Confirmar Canhoto</button></td>'+
+    '</tr>';
+  }).join('');
+}
+function abrirCanhotoOk(id){
+  var p=getPedidoById(id);
+  if(!p)return;
+  _canhotoTarget=id;
+  if(el('canhoto-ok-desc'))el('canhoto-ok-desc').textContent='Pedido #'+p.numero+' — '+(p.nome_cliente||'')+'  NF: '+(p.num_nota||'')+'  Chave registrada na saída: '+(p.chave_nfe||'(não registrada)');
+  if(el('canhoto-chave-input'))el('canhoto-chave-input').value='';
+  if(el('canhoto-chave-feedback'))el('canhoto-chave-feedback').textContent='';
+  openM('m-canhoto-ok');
+}
+async function confirmarCanhoto(){
+  var chave=(el('canhoto-chave-input').value||'').trim();
+  var fb=el('canhoto-chave-feedback');
+  if(!chave||chave.length!==44){if(fb){fb.style.color='var(--danger)';fb.textContent='A chave deve ter exatamente 44 dígitos.';}return;}
+  var pedido=getPedidoById(_canhotoTarget);
+  if(!pedido){toast('Pedido não encontrado.','err');return;}
+  // Fix 3: chave deve ser idêntica à registrada na saída
+  if(pedido.chave_nfe&&chave!==pedido.chave_nfe){
+    if(fb){fb.style.color='var(--danger)';fb.textContent='⚠ Chave diferente da registrada no embarque. Verifique e tente novamente.';}
+    return;
+  }
+  closeM('m-canhoto-ok');
+  ov(true);
+  try{
+    var agora=new Date().toISOString();
+    var res=await sb.from('pedidos').update({status:'finalizado',finalizado_at:agora,canhoto_at:agora}).eq('id',_canhotoTarget);
+    if(res.error)throw res.error;
+    upsertPedidoLocal({id:_canhotoTarget,status:'finalizado',finalizado_at:agora,canhoto_at:agora});
+    _canhotoTarget=null;
+    _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(500);
+    renderCanhotos();renderCanhotosBadge();
+    toast('Canhoto confirmado! Processo encerrado.','ok');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
+}
+
 // ── Pendências de Saldo ──
 // ── Ag. Embarque ──
 var _embarqueSelecionados = [];
@@ -2641,6 +2810,11 @@ function renderPendencias() {
 async function pendenciaRetornar(id) {
   var pedido = getPedidoById(id);
   if (!pedido) { toast('Pedido não encontrado.', 'err'); return; }
+  // Fix 4: se o pedido já está em Ag. Retira, Ag. Embarque ou Em Entrega, não interferir
+  if(['ag_retira','ag_embarque','em_entrega','aguard_canhoto'].indexOf(pedido.status)>=0){
+    toast('Este pedido já está em '+SL[pedido.status||'']+'  — o saldo será gerenciado separadamente quando ele retornar.','warn',5000);
+    return;
+  }
   var saldo = parseFloat(pedido.saldo_pendencia)||0;
   if (!confirm('Retornar pedido #' + pedido.numero + ' para a operação? O valor do pedido será ajustado para o saldo restante de ' + fmtBRL(saldo) + '.')) return;
   ov(true);
@@ -2799,7 +2973,7 @@ function renderAgRetira() {
     var dataEntrada = o.pendente_desde ? new Date(o.pendente_desde).toLocaleDateString('pt-BR') : '—';
     var dotClass = dias >= 15 ? 'dot-red' : dias >= 10 ? 'dot-yellow' : 'dot-green';
     var btnOcc = expired ? '<button class="boc" onclick="enviarParaOcorrencias(\'' + o.id + '\')">Ocorrências</button>' : '';
-    var btnParcial = o.parcial ? '<button class="bmv" style="background:#f59e0b" onclick="agRetiraRetornarOperacao(\'' + o.id + '\')">↩ Retornar Operação</button>' : '';
+    var btnParcial = ''; // Fix 1: botão de retornar removido do Ag. Retira
     var valorNF = parseFloat(o.valor_nota_fat) || 0;
 
     return '<tr>' +
