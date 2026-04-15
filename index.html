@@ -360,6 +360,13 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
         </div>
       </div>
       <div id="rel-sub" style="color:var(--muted);font-size:12px;margin-top:14px"></div>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--muted)">Operação:</span>
+        <button id="rel-op-todos" onclick="setFiltroOp('todos')" class="rel-op-btn active" style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--accent-dim);color:var(--accent);font-family:var(--font-mono)">Todas</button>
+        <button id="rel-op-balcao" onclick="setFiltroOp('balcao')" class="rel-op-btn" style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--glass);color:var(--muted);font-family:var(--font-mono)">Balcão</button>
+        <button id="rel-op-retira" onclick="setFiltroOp('retira')" class="rel-op-btn" style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--glass);color:var(--muted);font-family:var(--font-mono)">Retira</button>
+        <button id="rel-op-entrega" onclick="setFiltroOp('entrega')" class="rel-op-btn" style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--glass);color:var(--muted);font-family:var(--font-mono)">Entrega</button>
+      </div>
     </div>
     <div class="kg" id="kpi-grid"></div>
     <div class="st">Tempo médio por setor</div>
@@ -578,6 +585,23 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
       <div id="canhoto-chave-feedback" style="margin-top:6px;font-size:11px;min-height:14px"></div>
     </div>
     <div class="ma"><button class="bcan" onclick="closeM('m-canhoto-ok');_canhotoTarget=null">Cancelar</button><button class="bok" onclick="confirmarCanhoto()">✓ Encerrar processo</button></div>
+  </div>
+</div>
+
+<div class="mb" id="m-devolucao">
+  <div class="mo">
+    <div class="mt">Registrar devolução</div>
+    <p id="devolucao-desc" style="color:var(--muted);font-size:12px;margin-bottom:14px"></p>
+    <div class="f">
+      <label class="fl">Chave NF-e * <span style="color:var(--muted)">(44 dígitos — deve ser idêntica à registrada no embarque)</span></label>
+      <input type="text" id="devolucao-chave" placeholder="44 dígitos" maxlength="44"/>
+      <div id="devolucao-chave-feedback" style="margin-top:6px;font-size:11px;min-height:14px"></div>
+    </div>
+    <div class="f">
+      <label class="fl">Motivo da devolução *</label>
+      <textarea id="devolucao-motivo" style="width:100%;min-height:90px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;resize:vertical" placeholder="Descreva o motivo da devolução..."></textarea>
+    </div>
+    <div class="ma"><button class="bcan" onclick="closeM('m-devolucao');_devolucaoTarget=null">Cancelar</button><button class="bok" style="background:var(--danger)" onclick="confirmarDevolucao()">Confirmar Devolução</button></div>
   </div>
 </div>
 
@@ -1859,21 +1883,47 @@ async function marcarEntregue(id){
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
 }
-async function marcarDevolvido(id){
+var _devolucaoTarget=null;
+function abrirDevolucao(id){
+  var p=getPedidoById(id);
+  if(!p)return;
+  _devolucaoTarget=id;
+  if(el('devolucao-desc'))el('devolucao-desc').textContent='Pedido #'+p.numero+' — '+(p.nome_cliente||'')+'  NF: '+(p.num_nota||'')+'  Chave do embarque: '+(p.chave_nfe||'(não registrada)');
+  if(el('devolucao-chave'))el('devolucao-chave').value='';
+  if(el('devolucao-motivo'))el('devolucao-motivo').value='';
+  if(el('devolucao-chave-feedback'))el('devolucao-chave-feedback').textContent='';
+  openM('m-devolucao');
+}
+async function confirmarDevolucao(){
+  var chave=(el('devolucao-chave').value||'').trim();
+  var motivo=(el('devolucao-motivo').value||'').trim();
+  var fb=el('devolucao-chave-feedback');
+  if(!chave||chave.length!==44){if(fb){fb.style.color='var(--danger)';fb.textContent='A chave deve ter exatamente 44 dígitos.';}return;}
+  if(!motivo||motivo.length<5){toast('Informe o motivo da devolução (mínimo 5 caracteres).','warn');return;}
+  var pedido=getPedidoById(_devolucaoTarget);
+  if(!pedido){toast('Pedido não encontrado.','err');return;}
+  if(pedido.chave_nfe&&chave!==pedido.chave_nfe){
+    if(fb){fb.style.color='var(--danger)';fb.textContent='⚠ Chave diferente da registrada no embarque. Verifique e tente novamente.';}
+    return;
+  }
+  closeM('m-devolucao');
   ov(true);
   try{
-    var pedido=getPedidoById(id);
-    if(!pedido)throw new Error('Pedido não encontrado.');
     var agora=new Date().toISOString();
-    var res=await sb.from('pedidos').update({status:'ag_retira',pendente_desde:agora}).eq('id',id);
+    var res=await sb.from('pedidos').update({status:'ag_retira',pendente_desde:agora}).eq('id',_devolucaoTarget);
     if(res.error)throw res.error;
-    upsertPedidoLocal({id:id,status:'ag_retira',pendente_desde:agora});
-    var linha=buildOccurrenceLine('DEVOLUÇÃO','Expedição','Pedido devolvido. Aguardando nova instrução.');
-    await appendObsPedido(id,linha);
+    upsertPedidoLocal({id:_devolucaoTarget,status:'ag_retira',pendente_desde:agora});
+    var linha=buildOccurrenceLine('DEVOLUÇÃO','Em Trânsito','Chave NF-e: '+chave+' | Motivo: '+motivo);
+    await appendObsPedido(_devolucaoTarget,linha);
     _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(500);
-    toast('Pedido #'+pedido.numero+' marcado como devolvido — movido para Ag. Retira.','warn');
+    _devolucaoTarget=null;
+    toast('Devolução registrada. Pedido movido para Ag. Retira.','warn');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
+}
+
+async function marcarDevolvido(id){
+  abrirDevolucao(id);
 }
 
 async function chamarBalcao(id){
@@ -2032,7 +2082,8 @@ function buildTVRows(pedidos) {
   }).join('');
 
   var hoje=new Date();hoje.setHours(0,0,0,0);var hojeMs=hoje.getTime();
-  var done=pedidos.filter(function(o){return o.status!=='cancelado' && !!o.finalizado_at && tsMs(o.entrada_at)>=hojeMs;});
+  // Fix 4: concluídos e tempo médio apenas pela operação Balcão
+  var done=pedidos.filter(function(o){return o.prioridade==='balcao' && o.status!=='cancelado' && !!o.finalizado_at && tsMs(o.entrada_at)>=hojeMs;});
   var avgMs=done.length?done.reduce(function(s,o){return s+businessMs(tsMs(o.entrada_at),tsMs(o.finalizado_at));},0)/done.length:0;
 
   return { html: html, avgMs: avgMs, doneCount: done.length, activeCount: active.length };
@@ -2050,6 +2101,17 @@ function renderTV(){
 
 var _relFiltroPedido = '';
 var _relFiltroNota = '';
+var _relFiltroOp = 'todos';
+function setFiltroOp(op){
+  _relFiltroOp=op;
+  document.querySelectorAll('.rel-op-btn').forEach(function(b){
+    var isActive=b.id==='rel-op-'+op;
+    b.style.background=isActive?'var(--accent-dim)':'var(--glass)';
+    b.style.color=isActive?'var(--accent)':'var(--muted)';
+    b.style.borderColor=isActive?'rgba(34,211,167,.4)':'var(--border2)';
+  });
+  aplicarFiltroRelatorios();
+}
 function aplicarTodosFiltros() {
   _relFiltroPedido = (el('rel-pedido-num') ? el('rel-pedido-num').value : '').trim();
   _relFiltroNota   = (el('rel-nota-num')   ? el('rel-nota-num').value   : '').trim();
@@ -2058,12 +2120,14 @@ function aplicarTodosFiltros() {
 function limparTodosFiltros() {
   _relFiltroPedido = '';
   _relFiltroNota   = '';
+  _relFiltroOp = 'todos';
   if(el('rel-pedido-num')) el('rel-pedido-num').value = '';
   if(el('rel-nota-num'))   el('rel-nota-num').value   = '';
   REPORT_DATE_START = '';
   REPORT_DATE_END   = '';
   if(el('rel-date-start')) el('rel-date-start').value = '';
   if(el('rel-date-end'))   el('rel-date-end').value   = '';
+  setFiltroOp('todos');
   aplicarFiltroRelatorios();
 }
 function filtrarPorPedido() { aplicarTodosFiltros(); }
@@ -2072,6 +2136,8 @@ function renderRelatorios(){
   var all=(PEDIDOS||[]).slice();
   if(_relFiltroPedido){all=all.filter(function(o){return o.numero && o.numero.indexOf(_relFiltroPedido)>=0;});}
   if(_relFiltroNota){all=all.filter(function(o){return o.num_nota && o.num_nota.indexOf(_relFiltroNota)>=0;});}
+  if(_relFiltroOp&&_relFiltroOp!=='todos'){all=all.filter(function(o){return o.prioridade===_relFiltroOp;});}
+  // Fix 2: incluir todos os pedidos no processo (não só os finalizados no faturamento)
   var done=all.filter(function(o){return !!o.finalizado_at;});
   var active=all.filter(function(o){return !o.finalizado_at && o.status!=='cancelado';});
   var times=done.map(function(o){return businessMs(tsMs(o.entrada_at),tsMs(o.finalizado_at));}).filter(function(t){return t>0;});
@@ -2810,41 +2876,57 @@ function renderPendencias() {
 async function pendenciaRetornar(id) {
   var pedido = getPedidoById(id);
   if (!pedido) { toast('Pedido não encontrado.', 'err'); return; }
-  // Fix 4: se o pedido já está em Ag. Retira, Ag. Embarque ou Em Entrega, não interferir
-  if(['ag_retira','ag_embarque','em_entrega','aguard_canhoto'].indexOf(pedido.status)>=0){
-    toast('Este pedido já está em '+SL[pedido.status||'']+'  — o saldo será gerenciado separadamente quando ele retornar.','warn',5000);
-    return;
-  }
   var saldo = parseFloat(pedido.saldo_pendencia)||0;
-  if (!confirm('Retornar pedido #' + pedido.numero + ' para a operação? O valor do pedido será ajustado para o saldo restante de ' + fmtBRL(saldo) + '.')) return;
+  if(saldo<=0){toast('Saldo já zerado para este pedido.','warn');return;}
+
+  // Fix 3: se pedido está em aba de saída, cria NOVO registro para o saldo
+  // sem mexer no pedido original que está em ag_retira/ag_embarque/em_entrega
+  var statusBloqueado=['ag_retira','ag_embarque','em_entrega','aguard_canhoto','finalizado'];
+  var criarNovo=statusBloqueado.indexOf(pedido.status)>=0;
+
+  if(criarNovo){
+    if(!confirm('O pedido #'+pedido.numero+' está em "'+SL[pedido.status]+'" e NÃO será movido.\n\nUm NOVO registro será criado no Atendimento para o saldo restante de '+fmtBRL(saldo)+'.\nO mesmo número de pedido será usado mas com nova NF. Continuar?'))return;
+  }else{
+    if(!confirm('Retornar pedido #'+pedido.numero+' para o Atendimento com o saldo de '+fmtBRL(saldo)+'?'))return;
+  }
+
   ov(true);
-  try {
-    var agora = new Date().toISOString();
-    var res = await sb.from('pedidos').update({
-      pendencia_status: 'retornada',
-      setor: 'atendimento',
-      status: 'em_andamento',
-      setor_pendente: '',
-      pendente_desde: null,
-      setor_entrada_at: agora,
-      finalizado_at: null,
-      num_nota: '',          // Fix 8: pendência NÃO se vincula à NF anterior
-      valor_nota_fat: 0,
-      valor_pedido: saldo,   // Fix 8: valor_pedido passa a ser o saldo restante
-      tem_pendencia: false,
-      saldo_pendencia: 0
-    }).eq('id', id);
-    if (res.error) throw res.error;
-    upsertPedidoLocal({id:id,pendencia_status:'retornada',setor:'atendimento',status:'em_andamento',setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,finalizado_at:null,num_nota:'',valor_nota_fat:0,valor_pedido:saldo,tem_pendencia:false,saldo_pendencia:0});
-    var linha = buildOccurrenceLine('PENDÊNCIA', 'Pendências', 'Saldo de ' + fmtBRL(saldo) + ' retornado para a operação. Valor do pedido ajustado para ' + fmtBRL(saldo) + '.');
-    await appendObsPedido(id, linha);
-    _lastPainelSnap = '';
-    atualizarTelasAtivas();
-    refreshPedidosSoon(500);
-    renderPendencias();
-    toast('Pedido #' + pedido.numero + ' retornado para Atendimento com saldo de ' + fmtBRL(saldo) + '.', 'ok');
-  } catch(e) { toast(e.message, 'err'); }
-  finally { ov(false); }
+  try{
+    var agora=new Date().toISOString();
+    if(criarNovo){
+      // Cria novo registro de pedido para o saldo — pedido original inalterado
+      var novoRes=await sb.from('pedidos').insert({
+        numero:pedido.numero,
+        setor:'atendimento',setor_pendente:'',status:'em_andamento',
+        criado_por:ME?ME.login:'',entrada_at:agora,setor_entrada_at:agora,
+        nome_cliente:pedido.nome_cliente,prioridade:pedido.prioridade,
+        vendedor:pedido.vendedor||'',num_nota:'',
+        valor_pedido:saldo,
+        parcial:true,  // saldo é sempre parcial
+        obs:'['+new Date().toLocaleString('pt-BR')+'] SALDO PARCIAL — Retorno do saldo de '+fmtBRL(saldo)+' do pedido original ('+pedido.status+'). NF anterior: '+(pedido.num_nota||'—')
+      });
+      if(novoRes.error)throw novoRes.error;
+      // Encerra pendência no pedido original sem mexer no status dele
+      await sb.from('pedidos').update({tem_pendencia:false,saldo_pendencia:0,pendencia_status:'retornada_parcial'}).eq('id',id);
+      upsertPedidoLocal({id:id,tem_pendencia:false,saldo_pendencia:0,pendencia_status:'retornada_parcial'});
+      toast('Novo registro criado no Atendimento para o saldo de '+fmtBRL(saldo)+'. Pedido original permanece em '+SL[pedido.status]+'.','ok',6000);
+    }else{
+      // Pedido não está bloqueado: retorna o próprio pedido
+      var res=await sb.from('pedidos').update({
+        pendencia_status:'retornada',setor:'atendimento',status:'em_andamento',
+        setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,
+        finalizado_at:null,num_nota:'',valor_nota_fat:0,
+        valor_pedido:saldo,tem_pendencia:false,saldo_pendencia:0
+      }).eq('id',id);
+      if(res.error)throw res.error;
+      upsertPedidoLocal({id:id,pendencia_status:'retornada',setor:'atendimento',status:'em_andamento',setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,finalizado_at:null,num_nota:'',valor_nota_fat:0,valor_pedido:saldo,tem_pendencia:false,saldo_pendencia:0});
+      var linha=buildOccurrenceLine('PENDÊNCIA','Pendências','Saldo de '+fmtBRL(saldo)+' retornado para a operação.');
+      await appendObsPedido(id,linha);
+      toast('Pedido #'+pedido.numero+' retornado para Atendimento com saldo de '+fmtBRL(saldo)+'.','ok');
+    }
+    _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(500);renderPendencias();
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
 }
 
 async function pendenciaEncerrar(id) {
