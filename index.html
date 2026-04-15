@@ -1482,6 +1482,7 @@ function renderTransCard(o){
   var canC=podeConfirmarDestino(dest);
   var canR=podeAtuarNoSetor(origem);
   var prio=o.prioridade||'retira',pC=prio==='balcao'?'prio-balcao':prio==='entrega'?'prio-entrega':'';
+  var sC=alerta?'cd':elapsed>3*60000?'cw':'';
   var acoes='';
   if(canC){
     acoes+='<button class="bcon" onclick="confirmarRec(\''+o.id+'\')">Confirmar</button>';
@@ -1494,7 +1495,6 @@ function renderTransCard(o){
    if(podeExcluirPedido()){
     acoes+='<button class="bexc" onclick="openDeletePedido(\''+o.id+'\')">Excluir</button>';
   }
-  // ── MUDANÇA: data-transit-since para atualização in-place ──
   return '<div class="card transito '+pC+' '+sC+'"><div class="tlbl"><span class="dp"></span><span data-transit-since="'+tsMs(o.pendente_desde)+'">'+(alerta?'Aguardando há ':'Aguard. confirmação há ')+fmtT(elapsed)+'</span></div><div class="card-top"><span class="card-num">#'+o.numero+'</span><span style="flex-shrink:0">'+prioBadge(prio)+'</span></div>'+(o.nome_cliente?'<div class="card-cli">'+o.nome_cliente+'</div>':'')+'<div class="card-meta" style="padding-left:2px">'+(SL[origem]||origem)+' → '+(SL[dest]||dest)+'</div><div class="ca">'+acoes+'</div></div>';
 }
 function renderCard(o,setor){
