@@ -661,9 +661,9 @@ applyTheme(getStoredTheme());
 const SUPA_URL = 'https://lpjyrmkgjgehfaosagxl.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwanlybWtnamdlaGZhb3NhZ3hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDgwOTIsImV4cCI6MjA5MTA4NDA5Mn0.c0EweQ387mQI5Fh1auNaCwTNTBLZulRFdg0cjUSvnSU';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
-const SETORES = ['atendimento','estoque','corte','balcao_op','faturamento','expedicao'];
-const PROXIMO_SETOR = {atendimento:'estoque',estoque:'corte',corte:'balcao_op',balcao_op:'faturamento'};
-const RETORNO_PADRAO = {estoque:'atendimento',corte:'estoque',balcao_op:'corte',faturamento:'balcao_op',expedicao:'faturamento'};
+const SETORES = ['atendimento','estoque','corte','expedicao','balcao_op','faturamento'];
+const PROXIMO_SETOR = {atendimento:'estoque',estoque:'corte',corte:'balcao_op',balcao_op:'faturamento',expedicao:'faturamento'};
+const RETORNO_PADRAO = {estoque:'atendimento',corte:'estoque',balcao_op:'corte',faturamento:'balcao_op',expedicao:'corte'};
 const SL = {atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',balcao_op:'Balcão',separacao:'Balcão',faturamento:'Faturamento',expedicao:'Expedição',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira',em_ocorrencia:'Ocorrência',em_entrega:'Em Entrega'};
 const SC = {atendimento:'tag-at',estoque:'tag-es',corte:'tag-co',balcao_op:'tag-se',separacao:'tag-se',faturamento:'tag-fa',expedicao:'tag-ex',pronto_balcao:'tag-rd',balcao_chamado:'tag-rd',finalizado:'tag-do'};
 const SD = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',balcao_op:'#FAC775',separacao:'#FAC775',faturamento:'#ED93B1',expedicao:'#818cf8'};
@@ -1261,7 +1261,7 @@ function startRealtime(){
 }
 async function fetchPedidos(){
   var hoje=new Date();hoje.setHours(0,0,0,0);
-  var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.em_entrega,status.eq.ag_embarque').order('entrada_at',{ascending:false});
+  var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.em_entrega,status.eq.ag_embarque,status.eq.pronto_expedicao').order('entrada_at',{ascending:false});
   PEDIDOS=res.data||[];
 }
 async function fetchMovs(){
@@ -1448,14 +1448,14 @@ function getSetorClassTV(o){
 
 // ── Helpers de tempo com data-attributes para atualização in-place ──
 function calcSetorMs(o) {
-  var congelar = o.finalizado_at && (o.status==='pronto_balcao' || o.status==='balcao_chamado' || o.status==='finalizado');
+  var congelar = o.finalizado_at && (o.status==='pronto_balcao' || o.status==='pronto_expedicao' || o.status==='balcao_chamado' || o.status==='finalizado');
   var entry = tsMs(o.setor_entrada_at);
   var freeze = congelar ? tsMs(o.finalizado_at) : null;
   return { entry: entry, freeze: freeze };
 }
 
 function calcTotalMs(o) {
-  var congelar = o.finalizado_at && (o.status==='pronto_balcao' || o.status==='balcao_chamado' || o.status==='finalizado');
+  var congelar = o.finalizado_at && (o.status==='pronto_balcao' || o.status==='pronto_expedicao' || o.status==='balcao_chamado' || o.status==='finalizado');
   var entry = tsMs(o.entrada_at);
   var freeze = congelar ? tsMs(o.finalizado_at) : null;
   return { entry: entry, freeze: freeze };
@@ -1508,7 +1508,7 @@ function renderCard(o,setor){
   var canAct=podeAtuarNoSetor(setor);
   var acoes=[];
 
-  var etapaPosFaturamento=(o.status==='pronto_balcao'||o.status==='balcao_chamado');
+  var etapaPosFaturamento=(o.status==='pronto_balcao'||o.status==='pronto_expedicao'||o.status==='balcao_chamado');
 
   // Retornar SEMPRE primeiro (exceto atendimento, pós-faturamento e expedição em rota)
   if(canAct && setor!=='atendimento' && !etapaPosFaturamento && !(setor==='expedicao'&&o.status==='em_entrega')){
@@ -1534,11 +1534,15 @@ function renderCard(o,setor){
   }else if(setor==='balcao_op' && canAct && o.status!=='pronto_balcao'){
     acoes.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">Faturamento</button>');
   }else if(setor==='expedicao' && canAct){
-    if(o.status==='em_entrega'){
+    if(o.status==='pronto_expedicao'){
+      // Segunda vez: NF emitida, pronto para embarque
+      acoes.push('<button class="bmv" style="background:#818cf8" onclick="enviarAgEmbarque(\''+o.id+'\')">Ag. Embarque</button>');
+    }else if(o.status==='em_entrega'){
       acoes.push('<button class="bfin" onclick="marcarEntregue(\''+o.id+'\')">✓ Entregue</button>');
       acoes.push('<button class="boc" onclick="marcarDevolvido(\''+o.id+'\')">Devolvido</button>');
     }else if(o.status!=='ag_embarque'){
-      acoes.push('<button class="bmv" style="background:#818cf8" onclick="enviarAgEmbarque(\''+o.id+'\')">Ag. Embarque</button>');
+      // Primeira vez: veio do corte/estoque, envia para faturamento
+      acoes.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">Faturamento</button>');
     }
   }
 
@@ -1547,6 +1551,7 @@ function renderCard(o,setor){
   }
 
   var prontoHtml=o.status==='pronto_balcao'?'<div class="ready-chip"><span class="ready-dot"></span>Pronto para chamar no balcão</div>':'';
+  var prontoExpHtml=o.status==='pronto_expedicao'?'<div class="ready-chip" style="background:rgba(129,140,248,.1);border-color:rgba(129,140,248,.3);color:#818cf8"><span class="ready-dot" style="background:#818cf8"></span>Pronto — NF emitida, aguardar embarque</div>':'';
   var emEntregaHtml=o.status==='em_entrega'?'<div class="ready-chip" style="background:rgba(129,140,248,.1);border-color:rgba(129,140,248,.3);color:#818cf8"><span class="ready-dot" style="background:#818cf8"></span>Em rota de entrega</div>':'';
   var agEmbarqueHtml=o.status==='ag_embarque'?'<div class="ready-chip" style="background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:var(--warn)"><span class="ready-dot" style="background:var(--warn)"></span>Aguardando embarque</div>':'';
 
@@ -1558,12 +1563,12 @@ function renderCard(o,setor){
   var setorFreezeAttr = s.freeze ? ' data-timer-freeze="'+s.freeze+'"' : '';
   var totalFreezeAttr = t.freeze ? ' data-timer-freeze="'+t.freeze+'"' : '';
 
-  return '<div class="card '+pC+' '+((o.status==='pronto_balcao'||o.status==='em_entrega'||o.status==='ag_embarque')?'balcao-ready':'')+'">' +
+  return '<div class="card '+pC+' '+((o.status==='pronto_balcao'||o.status==='pronto_expedicao'||o.status==='em_entrega'||o.status==='ag_embarque')?'balcao-ready':'')+'">' +
     '<div class="card-top"><span class="card-num">#'+o.numero+'</span>'+parcialBadge+'</div>' +
     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">'+(o.nome_cliente?'<span class="card-cli" style="margin-bottom:0">'+o.nome_cliente+'</span>':'')+'<span class="card-meta" style="margin-bottom:0">'+hora+' · '+o.criado_por+'</span>'+prioBadge(prio)+'</div>' +
     vendedorHtml+operadorHtml+separadorHtml +
     (podeCriarPedido()?'<div style="margin-bottom:6px"><button class="bmv" style="padding:2px 10px;font-size:10px;line-height:1.5;border-radius:6px" onclick="togglePrio(\''+o.id+'\',\''+prio+'\')">⇄ Alterar</button></div>':'') +
-    prontoHtml+emEntregaHtml+agEmbarqueHtml +
+    prontoHtml+prontoExpHtml+emEntregaHtml+agEmbarqueHtml +
     (o.num_nota?'<div class="card-nota">NF: '+o.num_nota+'</div>':'') +
     '<div class="ct">' +
       '<div class="ti"><span class="tl">Neste setor</span><span class="tv '+tC+'" data-timer-entry="'+s.entry+'"'+setorFreezeAttr+'>'+fmtT(setorMs)+'</span></div>' +
@@ -1657,17 +1662,17 @@ async function confirmarNota(){
     var valorPedido=parseFloat(o.valor_pedido)||0;
     var saldo=valorPedido>0?Math.max(0,Math.round((valorPedido-valorNota)*100)/100):0;
     var temPendencia=saldo>0.01;
-    // Roteamento: entrega → expedicao; balcao/retira → balcao_op (pronto_balcao)
+    // Roteamento: entrega → expedicao (espelha fluxo do balcão); balcao/retira → balcao_op
     var isEntrega=(o.prioridade==='entrega');
     var setorDestino=isEntrega?'expedicao':'balcao_op';
-    var novoStatus=isEntrega?'em_andamento':'pronto_balcao';
+    var novoStatus=isEntrega?'pronto_expedicao':'pronto_balcao';
     var res=await sb.from('pedidos').update({
       setor:setorDestino,
       status:novoStatus,
       setor_pendente:'',
       pendente_desde:null,
       setor_entrada_at:agora,
-      finalizado_at:isEntrega?null:agora,
+      finalizado_at:agora,
       num_nota:nota,
       valor_nota_fat:valorNota,
       tem_pendencia:temPendencia,
@@ -1675,7 +1680,7 @@ async function confirmarNota(){
       pendencia_status:temPendencia?'aberta':''
     }).eq('id',_notaTarget);
     if(res.error)throw res.error;
-    upsertPedidoLocal({id:_notaTarget,setor:setorDestino,status:novoStatus,setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,finalizado_at:isEntrega?null:agora,num_nota:nota,valor_nota_fat:valorNota,tem_pendencia:temPendencia,saldo_pendencia:temPendencia?saldo:0,pendencia_status:temPendencia?'aberta':''});
+    upsertPedidoLocal({id:_notaTarget,setor:setorDestino,status:novoStatus,setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,finalizado_at:agora,num_nota:nota,valor_nota_fat:valorNota,tem_pendencia:temPendencia,saldo_pendencia:temPendencia?saldo:0,pendencia_status:temPendencia?'aberta':''});
     _lastPainelSnap='';
     atualizarTelasAtivas();
     sb.from('movimentacoes').insert({
@@ -1692,7 +1697,7 @@ async function confirmarNota(){
     });
     refreshPedidosSoon(500);
     if(isEntrega){
-      toast('Faturado! Pedido enviado para Expedição.','move');
+      toast('Faturado! NF emitida. Pedido retornou para Expedição.','move');
     }else if(temPendencia){
       toast('Faturado! Saldo de '+fmtBRL(saldo)+' registrado em Pendências.','warn',5000);
     }else{
@@ -2089,7 +2094,7 @@ function renderUsers(users){
 async function toggleUser(id,ativo,login){if(login==='admin'){toast('Não é possível desativar o admin principal.','err');return;}ov(true);try{await sb.from('usuarios').update({ativo:!ativo}).eq('id',id);var u=await fetchUsuarios();renderUsers(u);toast('Usuário atualizado.','ok');}catch(e){toast(e.message,'err');}finally{ov(false);}}
 
 function _getSetoresCheckados(){
-  var TODOS_SETORES=['atendimento','estoque','corte','balcao_op','faturamento','expedicao'];
+  var TODOS_SETORES=['atendimento','estoque','corte','expedicao','balcao_op','faturamento'];
   if(el('nu-s-todos')&&el('nu-s-todos').checked)return['todos'];
   var arr=[];
   TODOS_SETORES.forEach(function(s){var c=el('nu-s-'+s);if(c&&c.checked)arr.push(s);});
@@ -2227,7 +2232,8 @@ function anunciarTVPublica(listaAtual) {
 
     toast('🔔 Chamada no balcão: '+(o.nome_cliente || 'cliente')+' · Pedido #'+o.numero,'ok',8500);
     tocarAlertaTV();
-    enfileirarChamadaTV('Por favor, ' + (o.nome_cliente || 'cliente') + ', dirija-se ao balcão para retirada do seu pedido ' + o.numero + (o.nome_retirada ? '. ' + o.nome_retirada + ', por favor.' : '.'));
+    var nomeParaChamar = o.nome_retirada || o.nome_cliente || 'cliente';
+    enfileirarChamadaTV('Por favor, ' + nomeParaChamar + ', dirija-se ao balcão para retirada do seu pedido ' + o.numero + '.');
   });
 }
 
@@ -2243,7 +2249,7 @@ async function iniciarTVPublica(){
   async function carregarTVPublica(){
     try{
       var hoje=new Date();hoje.setHours(0,0,0,0);
-      var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.em_entrega,status.eq.ag_embarque').order('entrada_at',{ascending:false});
+      var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.em_entrega,status.eq.ag_embarque,status.eq.pronto_expedicao').order('entrada_at',{ascending:false});
       _tvPub=res.data||[];
       var snap = buildSnapshot(_tvPub);
       if (snap !== _lastTVPubSnap) {
