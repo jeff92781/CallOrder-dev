@@ -2423,7 +2423,7 @@ function renderRowCard(o,setor,transito){
 
   /* ── COL 1: número + parcial + hora ── */
   var col1='<div class="orc-col orc-id">'+
-    '<div class="orc-num">#'+o.numero+'</div>'+
+    '<div class="orc-num">'+o.numero+'</div>'+
     (o.parcial?'<div class="orc-badge-parcial">⚡ Parcial</div>':'')+
     '<div class="orc-time">'+hora+' · '+o.criado_por+'</div>'+
   '</div>';
@@ -2556,7 +2556,7 @@ function renderTransCard(o){
    if(podeExcluirPedido()){
     acoes+='<button class="bexc" onclick="openDeletePedido(\''+o.id+'\')">Excluir</button>';
   }
-  return '<div class="card transito '+pC+' '+sC+'"><div class="tlbl"><span class="dp"></span><span data-transit-since="'+tsMs(o.pendente_desde)+'">'+(alerta?'Aguardando há ':'Aguard. confirmação há ')+fmtT(elapsed)+'</span></div><div class="card-top"><span class="card-num">#'+o.numero+'</span><span style="flex-shrink:0">'+prioBadge(prio)+'</span></div>'+(o.nome_cliente?'<div class="card-cli">'+o.nome_cliente+'</div>':'')+'<div class="card-meta" style="padding-left:2px">'+(SL[origem]||origem)+' → '+(SL[dest]||dest)+'</div><div class="ca">'+acoes+'</div></div>';
+  return '<div class="card transito '+pC+' '+sC+'"><div class="tlbl"><span class="dp"></span><span data-transit-since="'+tsMs(o.pendente_desde)+'">'+(alerta?'Aguardando há ':'Aguard. confirmação há ')+fmtT(elapsed)+'</span></div><div class="card-top"><span class="card-num">'+o.numero+'</span><span style="flex-shrink:0">'+prioBadge(prio)+'</span></div>'+(o.nome_cliente?'<div class="card-cli">'+o.nome_cliente+'</div>':'')+'<div class="card-meta" style="padding-left:2px">'+(SL[origem]||origem)+' → '+(SL[dest]||dest)+'</div><div class="ca">'+acoes+'</div></div>';
 }
 function renderCard(o,setor){
   var t = calcTotalMs(o);
@@ -2624,7 +2624,7 @@ function renderCard(o,setor){
   var totalFreezeAttr = t.freeze ? ' data-timer-freeze="'+t.freeze+'"' : '';
 
   return '<div class="card '+pC+' '+((o.status==='pronto_balcao'||o.status==='pronto_expedicao'||o.status==='em_entrega'||o.status==='ag_embarque')?'balcao-ready':'')+'">' +
-    '<div class="card-top"><span class="card-num">#'+o.numero+'</span>'+parcialBadge+'</div>' +
+    '<div class="card-top"><span class="card-num">'+o.numero+'</span>'+parcialBadge+'</div>' +
     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">'+(o.nome_cliente?'<span class="card-cli" style="margin-bottom:0">'+o.nome_cliente+'</span>':'')+'<span class="card-meta" style="margin-bottom:0">'+hora+' · '+o.criado_por+'</span>'+prioBadge(prio)+'</div>' +
     vendedorHtml+operadorHtml+separadorHtml +
     (podeCriarPedido()?'<div style="margin-bottom:6px"><button class="bmv" style="padding:2px 10px;font-size:10px;line-height:1.5;border-radius:6px" onclick="togglePrio(\''+o.id+'\',\''+prio+'\')">⇄ Alterar</button></div>':'') +
