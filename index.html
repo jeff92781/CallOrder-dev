@@ -115,11 +115,11 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 .card.prio-entrega{background:rgba(129,140,248,.05);border-color:rgba(129,140,248,.3)}
 
 /* ── Painel lista ── */
-.fchip{padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--glass);color:var(--muted);font-family:var(--font-mono);transition:all .15s}
+.fchip{padding:7px 18px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--glass);color:var(--muted);font-family:var(--font-mono);transition:all .15s}
 .fchip:hover{border-color:var(--border3);color:var(--text)}
 .fchip.active{background:var(--accent-dim);color:var(--accent);border-color:rgba(34,211,167,.4)}
-.order-row{display:grid;grid-template-columns:200px minmax(220px,1.2fr) minmax(180px,1fr) 200px minmax(280px,1fr);gap:16px;align-items:center;padding:16px 20px;border-radius:16px;background:var(--bg2);border:1px solid var(--border);position:relative;overflow:hidden;transition:border .3s}
-.order-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--border2)}
+.order-row{display:grid;grid-template-columns:220px minmax(240px,1.2fr) minmax(190px,1fr) 220px minmax(300px,1fr);gap:18px;align-items:center;padding:20px 24px;border-radius:16px;background:var(--bg2);border:1px solid var(--border);position:relative;overflow:hidden;transition:border .3s}
+.order-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--border2)}
 .order-row:hover{border-color:var(--border2)}
 .order-row.or-priority{border-color:rgba(239,68,68,.45);animation:rowBlinkRed 1.1s infinite}
 .order-row.or-priority::before{background:linear-gradient(180deg,var(--danger),rgba(239,68,68,.1))}
@@ -127,6 +127,17 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 .order-row.or-transit::before{background:var(--blue)}
 .order-row.or-pronto{border-color:rgba(34,211,167,.4)}
 .order-row.or-pronto::before{background:linear-gradient(180deg,var(--accent),rgba(34,211,167,.1))}
+.or-num{font-family:var(--font-head);font-size:32px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.or-cli{font-size:17px;font-weight:700;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.or-setor-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:20px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border:1px solid rgba(34,211,167,.35);background:rgba(34,211,167,.1);color:var(--accent)}
+.or-sub{font-size:12px;color:var(--muted);margin-top:5px}
+.or-timer-box{padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.02);text-align:center}
+.or-timer-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:4px}
+.or-timer-val{font-family:var(--font-head);font-size:26px;font-weight:700;letter-spacing:-.03em}
+.or-timer-val.warn{color:var(--warn)}.or-timer-val.danger{color:var(--danger)}.or-timer-val.ok{color:var(--accent)}
+.or-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.or-actions>button{width:100%;box-sizing:border-box;min-height:42px;display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px!important;padding:0 10px!important;border-radius:10px!important}
+.or-actions>button:only-child,.or-actions>button.full{grid-column:1/-1}
 @keyframes rowBlinkRed{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}50%{box-shadow:0 0 0 3px rgba(239,68,68,.15),0 0 20px rgba(239,68,68,.08)}}
 .or-num{font-family:var(--font-head);font-size:28px;font-weight:800;letter-spacing:-.04em;line-height:1}
 .or-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
@@ -295,11 +306,12 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 <nav id="main-nav" style="display:none">
   <span class="logo" onclick="go('painel')" style="cursor:pointer">Call <span>Order</span></span>
   <div class="nav-tabs">
-    <button class="tab" onclick="go('relatorios')">Relatórios</button>
+    <button class="tab adm-only" onclick="go('relatorios')" style="display:none">Relatórios</button>
     <button class="tab adm-only" onclick="go('usuarios')" style="display:none">Usuários</button>
     <button class="tab" onclick="go('senha')">Minha Senha</button>
     <button class="tab adm-only" onclick="go('config')" style="display:none">Configurações</button>
     <button class="tab" onclick="go('recebimento')" id="tab-recebimento">Recebimento <span id="recebimento-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <button class="tab" onclick="go('devolucoes')" id="tab-devolucoes">Devoluções <span id="devolucoes-badge" style="display:none;background:rgba(245,158,11,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('agretira')" id="tab-agretira">Ag. Retira <span id="agretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('agEmbarque')" id="tab-agembarque">Ag. Embarque <span id="agembarque-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('emTransito')" id="tab-emtransito">Em Trânsito <span id="emtransito-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
@@ -403,7 +415,7 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
     </div>
   </div>
 </div>
-<div class="screen" id="screen-relatorios">
+<div class="screen adm-only" id="screen-relatorios" style="display:none">
   <main>
     <div class="rt">Relatórios</div>
     <div class="sc" style="max-width:none;margin-bottom:24px;padding:20px 24px">
@@ -456,7 +468,7 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
     <div id="bars-conf" class="adm-only" style="margin-bottom:28px;display:none"></div>
     <div class="st">Registro dos pedidos</div>
     <table class="rkt">
-      <thead><tr><th>Entrada</th><th>Pedido</th><th>Cliente</th><th>NF</th><th>Valor Faturado</th><th>Tempo total</th><th>Operação</th></tr></thead>
+      <thead><tr><th>Entrada</th><th>Pedido</th><th>Cliente</th><th>NF</th><th>Valor Faturado</th><th>Separador</th><th>Tempo total</th><th>Operação</th></tr></thead>
       <tbody id="pedidos-dia-body"></tbody>
       <tfoot id="pedidos-dia-tfoot"></tfoot>
     </table>
@@ -525,6 +537,7 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
       <span class="pt">Recebimento de Notas Fiscais</span>
       <span style="color:var(--muted);font-size:12px" id="rec-count"></span>
       <button class="bok" style="padding:8px 18px;font-size:12px" onclick="abrirRegistrarNF()">+ Registrar NF</button>
+      <button class="bmv" style="padding:8px 18px;font-size:12px;background:#f59e0b" onclick="abrirRegistrarDevolucaoRec()">↩ Registrar Devolução</button>
     </div>
     <!-- Bipe rápido no topo -->
     <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
@@ -567,6 +580,67 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
     </div>
     <div class="ma"><button class="bcan" onclick="closeM('m-registrar-nf')">Cancelar</button><button class="bok" onclick="confirmarRegistrarNF()">✓ Registrar</button></div>
   </div>
+</div>
+
+<div class="mb" id="m-registrar-devolucao-rec">
+  <div class="mo" style="max-width:520px">
+    <div class="mt">Registrar Devolução</div>
+    <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Informe a chave NF-e da nota devolvida. Os dados do pedido de origem serão buscados automaticamente.</p>
+    <div class="f">
+      <label class="fl">Chave NF-e da nota devolvida * (44 dígitos)</label>
+      <input type="text" id="dev-rec-chave" placeholder="Bipe ou cole a chave aqui" maxlength="44" oninput="devRecCheck(this.value)"/>
+      <div id="dev-rec-preview" style="margin-top:8px;font-size:12px;color:var(--accent);min-height:32px"></div>
+    </div>
+    <div class="ma"><button class="bcan" onclick="closeM('m-registrar-devolucao-rec')">Cancelar</button><button class="bok" style="background:#f59e0b" onclick="confirmarRegistrarDevolucaoRec()">↩ Registrar Devolução</button></div>
+  </div>
+</div>
+
+<div class="mb" id="m-confirmar-entrada-dev">
+  <div class="mo" style="max-width:520px">
+    <div class="mt">Confirmar entrada — Nota de devolução</div>
+    <p id="conf-dev-desc" style="color:var(--muted);font-size:12px;margin-bottom:14px"></p>
+    <div class="f">
+      <label class="fl">Chave NF-e de entrada * (44 dígitos)</label>
+      <input type="text" id="conf-dev-chave" placeholder="Chave da nota de entrada" maxlength="44"/>
+    </div>
+    <div class="f">
+      <label class="fl">Valor da NF de entrada (R$) *</label>
+      <input type="number" id="conf-dev-valor" placeholder="0.00" step="0.01" min="0"/>
+    </div>
+    <div class="ma"><button class="bcan" onclick="closeM('m-confirmar-entrada-dev');_devEntradaTarget=null">Cancelar</button><button class="bok" onclick="confirmarEntradaDevolucao()">✓ Confirmar Entrada</button></div>
+  </div>
+</div>
+
+<div class="screen" id="screen-devolucoes">
+  <main>
+    <div class="ph">
+      <span class="pt">Devoluções</span>
+      <span style="color:var(--muted);font-size:12px" id="dev-count"></span>
+      <div id="dev-valor-total" style="font-size:12px;color:var(--warn);font-weight:700;background:rgba(245,158,11,.1);padding:5px 14px;border-radius:20px;border:1px solid rgba(245,158,11,.3)"></div>
+      <button onclick="exportarDevolucoesExcel()" style="padding:8px 16px;background:#10b981;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Exportar
+      </button>
+    </div>
+    <!-- Filtros -->
+    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px">
+      <div class="f" style="margin:0;min-width:130px"><label class="fl">Data inicial</label><input type="date" id="dev-date-start"/></div>
+      <div class="f" style="margin:0;min-width:130px"><label class="fl">Data final</label><input type="date" id="dev-date-end"/></div>
+      <div class="f" style="margin:0;min-width:130px"><label class="fl">NF Origem</label><input type="text" id="dev-filtro-nf-orig" placeholder="Ex: 000123"/></div>
+      <div class="f" style="margin:0;min-width:130px"><label class="fl">NF Entrada</label><input type="text" id="dev-filtro-nf-entr" placeholder="Ex: 000456"/></div>
+      <div class="f" style="margin:0;min-width:130px"><label class="fl">Nº Pedido</label><input type="text" id="dev-filtro-pedido" placeholder="Ex: 60515"/></div>
+      <div class="f" style="margin:0;min-width:130px"><label class="fl">Vendedor</label><input type="text" id="dev-filtro-vendedor" placeholder="Nome"/></div>
+      <button onclick="filtrarDevolucoes()" style="padding:9px 16px;background:#3b82f6;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:12px;font-weight:700;cursor:pointer">Buscar</button>
+      <button onclick="limparFiltrosDevolucoes()" style="padding:9px 14px;background:var(--bg4);border:1px solid var(--border2);border-radius:var(--radius);color:var(--muted);font-family:var(--font-mono);font-size:12px;cursor:pointer">Limpar</button>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
+      <table class="utbl" id="dev-table">
+        <thead><tr><th>Recebimento</th><th>Usuário</th><th>NF Origem</th><th>Pedido</th><th>Vendedor</th><th>Chave NF devolvida</th><th>Status</th><th>NF Entrada</th><th>Valor Entrada</th><th>Ações</th></tr></thead>
+        <tbody id="dev-tbody"></tbody>
+      </table>
+    </div>
+    <div id="dev-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhuma devolução registrada no período.</div>
+  </main>
 </div>
 
 <div class="screen" id="screen-agretira">
@@ -1397,16 +1471,30 @@ async function submitOccurrenceModal(){
     }
 
     if(_occCtx.modo==='exclusao'){
-      // Delete related records so pedido number can be reused
-      await Promise.all([
-        sb.from('ocorrencias').delete().eq('pedido_id',_occCtx.id),
-        sb.from('movimentacoes').delete().eq('pedido_id',_occCtx.id),
-        sb.from('confirmacoes').delete().eq('pedido_id',_occCtx.id)
-      ]);
-      var res3=await sb.from('pedidos').delete().eq('id',_occCtx.id);
+      // Marca como cancelado preservando o registro (aparece no relatório e rastreamento)
+      var agora2=new Date().toISOString();
+      var res3=await sb.from('pedidos').update({
+        status:'cancelado',
+        finalizado_at:agora2,
+        setor_pendente:'',
+        pendente_desde:null
+      }).eq('id',_occCtx.id);
       if(res3.error)throw res3.error;
-      PEDIDOS=PEDIDOS.filter(function(p){return p.id!==_occCtx.id;});
-      toast('Pedido #'+pedido.numero+' excluído permanentemente.','warn');
+      upsertPedidoLocal({id:_occCtx.id,status:'cancelado',finalizado_at:agora2,setor_pendente:'',pendente_desde:null});
+      // Registra também na movimentação para aparecer na timeline
+      await sb.from('movimentacoes').insert({
+        pedido_id:_occCtx.id,
+        setor_origem:pedido.setor||'atendimento',
+        setor_destino:'cancelado',
+        usuario:ME.login,
+        entrada_at:pedido.setor_entrada_at||agora2,
+        saida_at:agora2,
+        tempo_ms:0,
+        confirmado_por:ME.login,
+        confirmado_at:agora2,
+        tempo_confirmacao_ms:0
+      });
+      toast('Pedido #'+pedido.numero+' cancelado e registrado no relatório.','warn');
     }
 
     // ── MUDANÇA: só marca dirty + schedule em vez de render direto ──
@@ -1630,6 +1718,7 @@ async function go(name){
   if(name==='config'){setTimeout(carregarVozes,100);}
   if(name==='agretira'){ov(true);await fetchPedidos();ov(false);renderAgRetira();}
   if(name==='recebimento'){ov(true);await fetchRecebimentos();ov(false);renderRecebimentos();}
+  if(name==='devolucoes'){ov(true);await fetchDevolucoes();ov(false);renderDevolucoes();}
   if(name==='agEmbarque'){ov(true);await fetchPedidos();ov(false);renderAgEmbarque();}
   if(name==='emTransito'){ov(true);await fetchPedidos();ov(false);renderEmTransito();}
   if(name==='canhotos'){ov(true);await fetchPedidos();ov(false);renderCanhotos();}
@@ -1706,31 +1795,41 @@ function getTipoEntregaHTML(o) {
 
 // ── Destino final para relatório ──
 function getDestinoFinal(o) {
-  if(o.status==='finalizado'&&o.canhoto_at)return '<span style="color:var(--accent);font-weight:600">✓ OK — Canhoto confirmado</span>';
-  if(o.status==='finalizado'&&o.prioridade==='entrega')return '<span style="color:var(--accent);font-weight:500">Entregue</span>';
-  if(o.status==='finalizado'||o.status==='aguard_canhoto')return '<span style="color:var(--accent);font-weight:500">Retirado</span>';
-  if(o.status==='ag_retira')return '<span style="color:var(--warn);font-weight:500">Ag. Retira</span>';
-  if(o.status==='ag_embarque')return '<span style="color:#818cf8;font-weight:500">Ag. Embarque</span>';
-  if(o.status==='em_entrega')return '<span style="color:#818cf8;font-weight:500">Em Trânsito</span>';
-  if(o.status==='em_ocorrencia')return '<span style="color:var(--warn);font-weight:500">Ocorrência</span>';
+  var prio=o.prioridade||'retira';
   if(o.status==='cancelado'&&o.num_nota)return '<span style="color:var(--danger);font-weight:500">Cancelado (pós NF)</span>';
-  if(o.status==='cancelado')return '<span style="color:var(--danger);font-weight:500">Excluído (pré NF)</span>';
-  if(o.status==='pronto_balcao')return '<span style="color:var(--accent)">Aguard. balcão</span>';
+  if(o.status==='cancelado')return '<span style="color:var(--danger);font-weight:500">Cancelado (pré NF)</span>';
+  if(prio==='balcao'||prio==='retira'){
+    if(o.status==='finalizado'||o.status==='aguard_canhoto')return '<span style="color:var(--accent);font-weight:600">Retirado</span>';
+    if(o.status==='ag_retira')return '<span style="color:var(--warn);font-weight:500">Ag. Retira</span>';
+    if(o.status==='pronto_balcao')return '<span style="color:var(--accent)">Aguard. balcão</span>';
+    return '<span style="color:var(--muted)">Em andamento</span>';
+  }
+  if(o.status==='finalizado'&&o.canhoto_at)return '<span style="color:var(--accent);font-weight:600">✓ OK — Canhoto confirmado</span>';
+  if(o.status==='finalizado')return '<span style="color:var(--accent);font-weight:500">Entregue</span>';
+  if(o.status==='aguard_canhoto')return '<span style="color:var(--accent)">Aguard. canhoto</span>';
+  if(o.status==='em_entrega')return '<span style="color:#818cf8;font-weight:500">Em Trânsito</span>';
+  if(o.status==='ag_embarque')return '<span style="color:#818cf8">Ag. Embarque</span>';
   if(o.status==='pronto_expedicao')return '<span style="color:#818cf8">Aguard. embarque</span>';
+  if(o.status==='em_ocorrencia')return '<span style="color:var(--warn);font-weight:500">Ocorrência</span>';
   return '<span style="color:var(--muted)">Em andamento</span>';
 }
 function getDestinoFinalTexto(o) {
-  if(o.status==='finalizado'&&o.canhoto_at)return 'OK — Canhoto confirmado';
-  if(o.status==='finalizado'&&o.prioridade==='entrega')return 'Entregue';
-  if(o.status==='finalizado'||o.status==='aguard_canhoto')return 'Retirado';
-  if(o.status==='ag_retira')return 'Ag. Retira';
-  if(o.status==='ag_embarque')return 'Ag. Embarque';
-  if(o.status==='em_entrega')return 'Em Trânsito';
-  if(o.status==='em_ocorrencia')return 'Ocorrência';
+  var prio=o.prioridade||'retira';
   if(o.status==='cancelado'&&o.num_nota)return 'Cancelado (pós NF)';
-  if(o.status==='cancelado')return 'Excluído (pré NF)';
-  if(o.status==='pronto_balcao')return 'Aguard. balcão';
+  if(o.status==='cancelado')return 'Cancelado (pré NF)';
+  if(prio==='balcao'||prio==='retira'){
+    if(o.status==='finalizado'||o.status==='aguard_canhoto')return 'Retirado';
+    if(o.status==='ag_retira')return 'Ag. Retira';
+    if(o.status==='pronto_balcao')return 'Aguard. balcão';
+    return 'Em andamento';
+  }
+  if(o.status==='finalizado'&&o.canhoto_at)return 'OK — Canhoto confirmado';
+  if(o.status==='finalizado')return 'Entregue';
+  if(o.status==='aguard_canhoto')return 'Aguard. canhoto';
+  if(o.status==='em_entrega')return 'Em Trânsito';
+  if(o.status==='ag_embarque')return 'Ag. Embarque';
   if(o.status==='pronto_expedicao')return 'Aguard. embarque';
+  if(o.status==='em_ocorrencia')return 'Ocorrência';
   return 'Em andamento';
 }
 
@@ -2323,6 +2422,32 @@ async function confirmarDevolucao(){
 async function marcarDevolvido(id){
   abrirDevolucao(id);
 }
+async function retornarParaEmbarque(id){
+  var pedido=getPedidoById(id);
+  if(!pedido)return;
+  if(!confirm('Registrar retorno do pedido #'+pedido.numero+'? Ele voltará para Ag. Embarque para ser re-embarcado.'))return;
+  ov(true);
+  try{
+    var agora=new Date().toISOString();
+    var res=await sb.from('pedidos').update({
+      status:'ag_embarque',
+      pendente_desde:agora,
+      // Limpa dados do embarque anterior para re-embarque
+      placa_veiculo:'',
+      transportadora:'',
+      motorista:'',
+      chave_nfe:''
+    }).eq('id',id);
+    if(res.error)throw res.error;
+    upsertPedidoLocal({id:id,status:'ag_embarque',pendente_desde:agora,placa_veiculo:'',transportadora:'',motorista:'',chave_nfe:''});
+    var linha=buildOccurrenceLine('RETORNO','Em Trânsito','Motorista retornou sem concluir a entrega. Pedido voltou para Ag. Embarque.');
+    await appendObsPedido(id,linha);
+    _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(500);
+    renderEmTransito();renderAgEmbarqueBadge();
+    toast('Pedido #'+pedido.numero+' retornou para Ag. Embarque.','warn');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
+}
 
 var _chamaBalcaoTarget=null;
 function abrirChamaBalcao(id){
@@ -2343,6 +2468,12 @@ async function confirmarChamaBalcao(){
   }
   var pedido=getPedidoById(_chamaBalcaoTarget);
   if(!pedido){toast('Pedido não encontrado.','err');return;}
+  // Fix 5: chave duplicada — permite re-uso só se o pedido pertence ao mesmo ID
+  var dup=await _verificarChaveDuplicada(chave,_chamaBalcaoTarget);
+  if(dup){
+    if(fb){fb.style.color='var(--danger)';fb.textContent='⚠ Chave já registrada no pedido #'+dup.numero+'. Verifique a chave.';}
+    return;
+  }
   closeM('m-chama-balcao');
   ov(true);
   try{
@@ -2357,7 +2488,6 @@ async function confirmarChamaBalcao(){
     upsertPedidoLocal({id:_chamaBalcaoTarget,status:'aguard_canhoto',pendente_desde:agora,entregue_at:agora,chave_nfe:chave});
     _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(500);
     renderCanhotosBadge();
-    // Narração na TV
     var nomeParaChamar=pedido.nome_retirada||pedido.nome_cliente||'cliente';
     enfileirarChamadaTV('Por favor, '+nomeParaChamar+', dirija-se ao balcão para retirada do seu pedido '+pedido.numero+'.');
     toast('Pedido #'+pedido.numero+' chamado no balcão. Aguardando canhoto.','ok');
@@ -2618,7 +2748,7 @@ function renderRelatorios(){
     var t=(o.finalizado_at?tsMs(o.finalizado_at):now())-tsMs(o.entrada_at);
     var destino=getDestinoFinal(o);
     var valorNF=parseFloat(o.valor_nota_fat)||0;
-    return '<tr><td>'+(o.entrada_at?new Date(o.entrada_at).toLocaleString('pt-BR'):'—')+'</td><td style="font-family:var(--font-head);font-size:16px;font-weight:700">#'+o.numero+'</td><td>'+(o.nome_cliente||'—')+'</td><td>'+(o.num_nota||'—')+'</td><td style="color:var(--accent);font-weight:600">'+(valorNF>0?fmtBRL(valorNF):'—')+'</td><td>'+fmtT(Math.max(0,t))+'</td><td>'+destino+'</td></tr>';
+    return '<tr><td>'+(o.entrada_at?new Date(o.entrada_at).toLocaleString('pt-BR'):'—')+'</td><td style="font-family:var(--font-head);font-size:16px;font-weight:700">#'+o.numero+'</td><td>'+(o.nome_cliente||'—')+'</td><td>'+(o.num_nota||'—')+'</td><td style="color:var(--accent);font-weight:600">'+(valorNF>0?fmtBRL(valorNF):'—')+'</td><td style="color:var(--sep)">'+(o.separador||'—')+'</td><td>'+fmtT(Math.max(0,t))+'</td><td>'+destino+'</td></tr>';
   }).join(''):'<tr><td colspan="7" style="color:var(--muted);text-align:center">Nenhum pedido registrado no período selecionado.</td></tr>';
 
   if(el('pedidos-dia-tfoot')){
@@ -2777,11 +2907,15 @@ function tocarAlertaTV() {
 
 function anunciarTVPublica(listaAtual) {
   listaAtual.forEach(function(o) {
-    if (o.status !== 'balcao_chamado') return;
-    if (!o.pendente_desde) return;
-     if (now()-tsMs(o.pendente_desde) > JANELA_NARRACAO_BALCAO_MS) return;
+    // Narração é disparada quando status muda para aguard_canhoto (balcão chamado)
+    // ou balcao_chamado (compatibilidade retroativa)
+    if (o.status !== 'aguard_canhoto' && o.status !== 'balcao_chamado') return;
+    if (o.prioridade === 'entrega') return; // entregas não narram balcão
+    if (!o.entregue_at && !o.pendente_desde) return;
+    var refTime = o.entregue_at || o.pendente_desde;
+    if (now()-tsMs(refTime) > JANELA_NARRACAO_BALCAO_MS) return;
 
-    var memoria = 'tv_call_' + o.id + '_' + (o.pendente_desde || '');
+    var memoria = 'tv_call_' + o.id + '_' + (refTime || '');
     if (sessionStorage.getItem(memoria)) return;
     sessionStorage.setItem(memoria, '1');
 
@@ -2985,7 +3119,7 @@ function renderTimeline(p, movs){
       '<div>'+
         '<div style="font-family:var(--font-head);font-size:22px;font-weight:800">#'+p.numero+'</div>'+
         '<div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:2px">'+(p.nome_cliente||'—')+'</div>'+
-        (p.num_nota?'<div style="font-size:11px;color:#f59e0b;margin-top:4px">NF: '+p.num_nota+' · '+fmtBRL(p.valor_nota_fat)+'</div>':'')+
+        (p.num_nota?'<div style="font-size:11px;color:#f59e0b;margin-top:4px">NF: '+p.num_nota+'</div>':'')+
       '</div>'+
       '<span style="padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700;background:'+badgeBg+';color:'+badgeColor+'">'+statusAtual+'</span>'+
     '</div>'+
@@ -3289,6 +3423,193 @@ async function confirmarRegistrarNF(){
   finally{ov(false);}
 }
 
+// ── Devoluções ──
+var DEVOLUCOES = [];
+var _devEntradaTarget = null;
+
+async function fetchDevolucoes(){
+  var r=getPeriodRange(
+    el('dev-date-start')&&el('dev-date-start').value?el('dev-date-start').value:fmtDateInput(new Date()),
+    el('dev-date-end')&&el('dev-date-end').value?el('dev-date-end').value:fmtDateInput(new Date())
+  );
+  var res=await sb.from('devolucoes').select('*').gte('recebido_at',r.startIso).lte('recebido_at',r.endIso).order('recebido_at',{ascending:false});
+  DEVOLUCOES=res.data||[];
+}
+
+function renderDevolucoesBadge(){
+  var b=el('devolucoes-badge');
+  if(!b)return;
+  var pend=DEVOLUCOES.filter(function(d){return d.status==='pendente';});
+  if(pend.length>0){b.textContent=pend.length;b.style.display='inline';}else{b.style.display='none';}
+}
+
+function renderDevolucoes(){
+  var items=DEVOLUCOES.slice();
+  // Filtros
+  var filtNfOrig=(el('dev-filtro-nf-orig')?el('dev-filtro-nf-orig').value:'').trim();
+  var filtNfEntr=(el('dev-filtro-nf-entr')?el('dev-filtro-nf-entr').value:'').trim();
+  var filtPed=(el('dev-filtro-pedido')?el('dev-filtro-pedido').value:'').trim();
+  var filtVend=(el('dev-filtro-vendedor')?el('dev-filtro-vendedor').value:'').trim().toLowerCase();
+  if(filtNfOrig)items=items.filter(function(d){return (d.num_nota_origem||'').indexOf(filtNfOrig)>=0;});
+  if(filtNfEntr)items=items.filter(function(d){return (d.num_nota_entrada||'').indexOf(filtNfEntr)>=0;});
+  if(filtPed)items=items.filter(function(d){return (d.numero_pedido||'').indexOf(filtPed)>=0;});
+  if(filtVend)items=items.filter(function(d){return (d.vendedor||'').toLowerCase().indexOf(filtVend)>=0;});
+
+  renderDevolucoesBadge();
+  if(el('dev-count'))el('dev-count').textContent=items.length+' registro(s)';
+  if(el('dev-empty'))el('dev-empty').style.display=items.length?'none':'block';
+  if(el('dev-table'))el('dev-table').style.display=items.length?'':'none';
+
+  var totalVal=items.reduce(function(s,d){return s+(parseFloat(d.valor_entrada)||0);},0);
+  if(el('dev-valor-total')){
+    if(totalVal>0){el('dev-valor-total').textContent='Total devolvido: '+fmtBRL(totalVal);el('dev-valor-total').style.display='';}
+    else{el('dev-valor-total').style.display='none';}
+  }
+
+  if(!el('dev-tbody'))return;
+  el('dev-tbody').innerHTML=items.map(function(d){
+    var dt=d.recebido_at?new Date(d.recebido_at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    var chaveShort=d.chave_nfe_origem?d.chave_nfe_origem.substring(0,10)+'...'+d.chave_nfe_origem.substring(34):'—';
+    var statusBadge=d.status==='confirmado'
+      ?'<span style="color:var(--accent);font-size:11px;font-weight:700">✓ Confirmado</span>'
+      :'<span style="color:var(--warn);font-size:11px;font-weight:700">Pendente</span>';
+    var acoes=d.status==='pendente'
+      ?'<button class="bok" style="font-size:11px;padding:5px 12px" onclick="abrirConfirmarEntradaDev(\''+d.id+'\')">✓ Confirmar entrada</button>'
+      :'<span style="font-size:11px;color:var(--muted)">Encerrado</span>';
+    return '<tr>'+
+      '<td style="color:var(--muted)">'+dt+'</td>'+
+      '<td>'+(d.usuario||'—')+'</td>'+
+      '<td style="color:var(--sep);font-weight:700">'+(d.num_nota_origem||'—')+'</td>'+
+      '<td style="font-family:var(--font-head);font-size:14px;font-weight:700">'+(d.numero_pedido?'#'+d.numero_pedido:'—')+'</td>'+
+      '<td>'+(d.vendedor||'—')+'</td>'+
+      '<td style="font-family:var(--font-mono);font-size:11px;color:var(--muted)" title="'+(d.chave_nfe_origem||'')+'">'+chaveShort+'</td>'+
+      '<td>'+statusBadge+'</td>'+
+      '<td style="color:var(--sep)">'+(d.num_nota_entrada||'—')+'</td>'+
+      '<td style="color:var(--warn);font-weight:600">'+(parseFloat(d.valor_entrada)>0?fmtBRL(d.valor_entrada):'—')+'</td>'+
+      '<td>'+acoes+'</td>'+
+    '</tr>';
+  }).join('');
+}
+
+async function filtrarDevolucoes(){
+  ov(true);await fetchDevolucoes();ov(false);renderDevolucoes();
+}
+function limparFiltrosDevolucoes(){
+  ['dev-date-start','dev-date-end','dev-filtro-nf-orig','dev-filtro-nf-entr','dev-filtro-pedido','dev-filtro-vendedor'].forEach(function(id){
+    if(el(id))el(id).value='';
+  });
+  filtrarDevolucoes();
+}
+
+function abrirRegistrarDevolucaoRec(){
+  if(el('dev-rec-chave'))el('dev-rec-chave').value='';
+  if(el('dev-rec-preview'))el('dev-rec-preview').textContent='';
+  openM('m-registrar-devolucao-rec');
+  setTimeout(function(){if(el('dev-rec-chave'))el('dev-rec-chave').focus();},200);
+}
+
+async function devRecCheck(val){
+  var prev=el('dev-rec-preview');
+  if(!prev)return;
+  var v=val.replace(/\D/g,'');
+  if(v.length<44){prev.style.color='var(--muted)';prev.textContent=v.length>0?v.length+' / 44 dígitos':'';return;}
+  var num=_extrairNumNotaChave(v);
+  prev.style.color='var(--accent)';
+  prev.textContent='Nº da nota: '+(num||'—')+' · Buscando pedido...';
+  // Buscar pedido vinculado à chave
+  try{
+    var res=await sb.from('pedidos').select('numero,nome_cliente,vendedor,num_nota').eq('chave_nfe',v).limit(1);
+    var p=res.data&&res.data[0];
+    if(p){
+      prev.textContent='Nº da nota: '+(num||'—')+' · Pedido #'+p.numero+' — '+(p.nome_cliente||'')+(p.vendedor?' · Vendedor: '+p.vendedor:'');
+    }else{
+      prev.textContent='Nº da nota: '+(num||'—')+' · Pedido não encontrado nos registros';
+    }
+  }catch(e){prev.textContent='Nº da nota: '+(num||'—');}
+}
+
+async function confirmarRegistrarDevolucaoRec(){
+  var chave=(el('dev-rec-chave')?el('dev-rec-chave').value:'').replace(/\D/g,'').trim();
+  if(chave.length!==44){toast('Informe a chave de 44 dígitos.','warn');return;}
+  var numOrigem=_extrairNumNotaChave(chave);
+  // Buscar vendedor e pedido da chave
+  var pedRes=await sb.from('pedidos').select('numero,vendedor,num_nota').eq('chave_nfe',chave).limit(1);
+  var ped=pedRes.data&&pedRes.data[0];
+  closeM('m-registrar-devolucao-rec');ov(true);
+  try{
+    var agora=new Date().toISOString();
+    var ins=await sb.from('devolucoes').insert({
+      chave_nfe_origem:chave,
+      num_nota_origem:numOrigem,
+      numero_pedido:ped?ped.numero:'',
+      vendedor:ped?ped.vendedor:'',
+      usuario:ME?ME.login:'',
+      recebido_at:agora,
+      status:'pendente',
+      num_nota_entrada:'',
+      chave_nfe_entrada:'',
+      valor_entrada:0
+    });
+    if(ins.error)throw ins.error;
+    await fetchDevolucoes();renderDevolucoes();
+    toast('Devolução da NF '+numOrigem+' registrada. Aguardando entrada.','warn');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
+}
+
+function abrirConfirmarEntradaDev(id){
+  _devEntradaTarget=id;
+  var d=DEVOLUCOES.find(function(x){return x.id===id;});
+  if(el('conf-dev-desc'))el('conf-dev-desc').textContent=d?'Devolução: NF '+( d.num_nota_origem||'—')+' · Pedido #'+(d.numero_pedido||'—')+' · Vendedor: '+(d.vendedor||'—'):'';
+  if(el('conf-dev-chave'))el('conf-dev-chave').value='';
+  if(el('conf-dev-valor'))el('conf-dev-valor').value='';
+  openM('m-confirmar-entrada-dev');
+}
+
+async function confirmarEntradaDevolucao(){
+  var chave=(el('conf-dev-chave')?el('conf-dev-chave').value:'').replace(/\D/g,'').trim();
+  var valor=parseFloat(el('conf-dev-valor')?el('conf-dev-valor').value:0)||0;
+  if(chave.length!==44){toast('Informe a chave de 44 dígitos.','warn');return;}
+  if(valor<=0){toast('Informe o valor da nota de entrada.','warn');return;}
+  var numEntrada=_extrairNumNotaChave(chave);
+  closeM('m-confirmar-entrada-dev');ov(true);
+  try{
+    var agora=new Date().toISOString();
+    var res=await sb.from('devolucoes').update({
+      chave_nfe_entrada:chave,
+      num_nota_entrada:numEntrada,
+      valor_entrada:valor,
+      status:'confirmado',
+      confirmado_at:agora,
+      confirmado_por:ME?ME.login:''
+    }).eq('id',_devEntradaTarget);
+    if(res.error)throw res.error;
+    _devEntradaTarget=null;
+    await fetchDevolucoes();renderDevolucoes();
+    toast('Entrada da NF '+numEntrada+' confirmada no valor de '+fmtBRL(valor)+'.','ok');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
+}
+
+function exportarDevolucoesExcel(){
+  if(!DEVOLUCOES.length){toast('Nenhuma devolução para exportar.','warn');return;}
+  var rows=[['Recebimento','Usuário','NF Origem','Pedido','Vendedor','Chave NF Devolvida','Status','NF Entrada','Chave NF Entrada','Valor Entrada']];
+  DEVOLUCOES.forEach(function(d){
+    rows.push([
+      d.recebido_at?new Date(d.recebido_at).toLocaleString('pt-BR'):'',
+      d.usuario||'',d.num_nota_origem||'',d.numero_pedido?'#'+d.numero_pedido:'',
+      d.vendedor||'',d.chave_nfe_origem||'',d.status||'',
+      d.num_nota_entrada||'',d.chave_nfe_entrada||'',
+      parseFloat(d.valor_entrada)||0
+    ]);
+  });
+  var csv=rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='devolucoes_'+fmtDateInput(new Date())+'.csv';a.click();
+  URL.revokeObjectURL(url);
+}
+
 // ── Em Trânsito ──
 function renderEmTransitoBadge(){
   var items=PEDIDOS.filter(function(o){return o.status==='em_entrega';});
@@ -3321,7 +3642,7 @@ function renderEmTransito(){
       '<td style="color:var(--muted)">'+dataEmb+' '+horaEmb+'</td>'+
       '<td><div class="act-btns">'+
         '<button class="bfin" style="font-size:11px" onclick="marcarEntregue(\''+o.id+'\')">✓ Entregue</button>'+
-        '<button class="boc" style="font-size:11px" onclick="marcarDevolvido(\''+o.id+'\')">Devolvida</button>'+
+        '<button class="bmv" style="font-size:11px;background:#f59e0b" onclick="retornarParaEmbarque(\''+o.id+'\')">↩ Retorno</button>'+
       '</div></td>'+
     '</tr>';
   }).join('');
@@ -3504,9 +3825,34 @@ async function confirmarEmbarqueLote(){
   await _executarEmbarque(_embarqueSelecionados,chaves,placa,transp,motor);
 }
 
+async function _verificarChaveDuplicada(chave, ignorarId){
+  // Verifica no cache local primeiro
+  var dup=PEDIDOS.find(function(p){
+    return p.chave_nfe===chave && p.id!==ignorarId &&
+      ['em_entrega','ag_embarque','aguard_canhoto','finalizado'].indexOf(p.status)>=0;
+  });
+  if(dup)return dup;
+  // Confirma no banco
+  var q=sb.from('pedidos').select('id,numero,nome_cliente,status').eq('chave_nfe',chave).in('status',['em_entrega','ag_embarque','aguard_canhoto','finalizado']);
+  if(ignorarId)q=q.neq('id',ignorarId);
+  var r=await q.limit(1);
+  return (r.data&&r.data.length>0)?r.data[0]:null;
+}
+
 async function _executarEmbarque(ids,chaves,placa,transp,motor){
   ov(true);
   try{
+    // Fix 5: verificar chaves duplicadas antes de embarcar
+    for(var ci=0;ci<chaves.length;ci++){
+      var c=chaves[ci];
+      if(!c)continue;
+      // Permite re-embarque de pedidos que retornaram (ag_embarque com mesma chave já limpa)
+      var dup=await _verificarChaveDuplicada(c, ids[ci]||null);
+      if(dup){
+        toast('⚠ Chave NF-e já registrada no pedido #'+dup.numero+' ('+SL[dup.status]||dup.status+'). Verifique e tente novamente.','err',7000);
+        ov(false);return;
+      }
+    }
     var agora=new Date().toISOString();
     var promises=ids.map(function(id,i){
       return sb.from('pedidos').update({
