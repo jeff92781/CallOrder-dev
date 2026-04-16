@@ -1,3 +1,36 @@
+Skip to content
+jeff92781
+CallOrder-dev
+Repository navigation
+Code
+Issues
+Pull requests
+Agents
+Actions
+Projects
+Wiki
+Security and quality
+Insights
+Settings
+Files
+Go to file
+t
+T
+icon.svg
+index.html
+CallOrder-dev
+/index.html
+jeff92781
+jeff92781
+Update index.html
+d6d7e18
+ · 
+now
+
+Code
+
+Blame
+4829 lines (4524 loc) · 257 KB
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -3102,9 +3135,7 @@ function renderPesquisaAvancada(items){
   el('adv-tbody').innerHTML=items.map(function(p){
     var obs=p.obs||'';
     var hasOcc=obs.indexOf('OCORRÊNCIA')>=0;
-    var occMotivo=hasOcc?obs.split('OCORRÊNCIA').filter(function(s,i){return i>0;}).map(function(s){return s.substring(0,80).replace(/[
-
-]/g,' ');}).join(' / '):'—';
+    var occMotivo=hasOcc?obs.split('OCORRÊNCIA').filter(function(s,i){return i>0;}).map(function(s){return s.substring(0,80).replace(/[\n\r]+/g,' ');}).join(' / '):'—';
     var canceladoPor='—';
     if(p.status==='cancelado'&&obs.indexOf('EXCLUSÃO')>=0){
       var excIdx=obs.indexOf('EXCLUSÃO');
@@ -3177,7 +3208,7 @@ function exportarPesquisaAvancada(){
   });
   var csv=rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('
 ');
-  var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');a.href=url;a.download='pesquisa_avancada_'+fmtDateInput(new Date())+'.csv';a.click();
   URL.revokeObjectURL(url);
@@ -4953,8 +4984,8 @@ function renderAgRetiraBadge() {
 }
 
 </script>
-</body>
-</html><div class="screen" id="screen-pesquisa-avancada">
+
+<div class="screen" id="screen-pesquisa-avancada">
   <main>
     <div class="ph">
       <span class="pt">Pesquisa Avançada</span>
@@ -5011,5 +5042,5 @@ function renderAgRetiraBadge() {
     <div id="adv-timeline-area" style="margin-top:18px"></div>
   </main>
 </div>
-
-
+</body>
+</html>
