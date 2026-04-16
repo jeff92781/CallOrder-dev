@@ -115,19 +115,19 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 .card.prio-entrega{background:rgba(129,140,248,.05);border-color:rgba(129,140,248,.3)}
 
 /* ── Painel lista ── */
-/* ── Card Row: layout fluido, sem espaço vazio ── */
+/* ── Card Row: # | info | ações | timer | tipo ── */
 .order-row{
   display:grid;
   grid-template-columns:
-    minmax(250px, .95fr)
-    minmax(520px, 1.75fr)
-    minmax(250px, 1.05fr)
-    minmax(180px, .78fr)
-    minmax(170px, .72fr);
+    minmax(280px, 1fr)
+    minmax(640px, 2.1fr)
+    minmax(250px, 1fr)
+    minmax(190px, .78fr)
+    minmax(180px, .78fr);
   gap:0;
   align-items:stretch;
   width:100%;
-  min-height:148px;
+  min-height:156px;
   border-radius:14px;
   background:var(--bg2);
   border:1px solid var(--border);
@@ -174,117 +174,124 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   background:linear-gradient(180deg,var(--accent),rgba(34,211,167,.15));
 }
 
-/* base das colunas */
+/* base */
 .orc-col{
   border-left:1px solid var(--border);
   min-width:0;
 }
 .orc-col:first-child{border-left:none}
 
-/* Coluna 1 */
+/* ── Coluna 1 ── */
 .orc-id{
   display:flex;
   flex-direction:column;
   justify-content:flex-start;
   min-width:0;
   background:rgba(0,0,0,.20);
-  padding:16px 16px 16px 22px;
+  padding:16px 18px 16px 24px;
 }
 
 .orc-num{
   font-family:var(--font-head);
-  font-size:38px;
+  font-size:42px;
   font-weight:800;
   letter-spacing:-.04em;
-  line-height:.95;
+  line-height:.92;
   color:var(--text);
   word-break:break-word;
   max-width:100%;
 }
 
-/* badge PARCIAL mais para baixo e maior */
+/* PARCIAL maior e mais para baixo */
 .orc-badge-parcial{
-  margin-top:16px;
+  margin-top:22px;
   display:inline-flex;
   align-items:center;
   align-self:flex-start;
-  font-size:10px;
+  font-size:11px;
   font-weight:800;
   text-transform:uppercase;
-  letter-spacing:.07em;
-  padding:5px 12px;
-  border-radius:6px;
+  letter-spacing:.08em;
+  padding:6px 14px;
+  border-radius:7px;
   background:rgba(245,158,11,.18);
   color:var(--warn);
   border:1px solid rgba(245,158,11,.42);
+  box-shadow:0 0 0 1px rgba(245,158,11,.08) inset;
 }
 
 .orc-time{
-  font-size:10px;
-  color:var(--muted);
+  font-size:13px;
+  color:rgba(232,237,245,.62);
+  font-weight:600;
   margin-top:auto;
-  padding-top:14px;
+  padding-top:18px;
+  letter-spacing:.02em;
 }
 
-/* Coluna 2 */
+/* ── Coluna 2 ── */
 .orc-info{
   display:flex;
   flex-direction:column;
   justify-content:center;
   min-width:0;
-  padding:16px 26px;
-  gap:9px;
+  padding:16px 28px;
+  gap:10px;
 }
 
+/* ESTOQUE maior, central e ocupando a largura útil */
 .orc-setor-chip{
-  display:inline-block;
-  align-self:flex-start;
-  margin-bottom:4px;
-  padding:9px 22px;
-  border-radius:8px;
-  font-size:17px;
-  font-weight:700;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  text-align:center;
+  padding:12px 20px;
+  border-radius:10px;
+  font-size:18px;
+  font-weight:800;
   text-transform:uppercase;
-  letter-spacing:.05em;
+  letter-spacing:.08em;
   background:rgba(34,211,167,.14);
   border:1.5px solid rgba(34,211,167,.45);
   color:var(--accent);
+  margin-bottom:8px;
 }
 
 .orc-cli-name{
   font-size:32px;
   font-weight:800;
-  line-height:1.08;
+  line-height:1.05;
   color:var(--text);
   letter-spacing:-.02em;
-  margin-bottom:4px;
+  margin-bottom:6px;
   word-break:break-word;
 }
 
 .orc-grid{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:8px 18px;
+  gap:10px 22px;
   margin-top:2px;
 }
 
 .orc-lbl{
   font-size:12px;
   text-transform:uppercase;
-  letter-spacing:.07em;
-  color:rgba(232,237,245,.58);
+  letter-spacing:.08em;
+  color:rgba(232,237,245,.56);
   font-weight:700;
 }
 
 .orc-val{
-  font-size:16px;
+  font-size:18px;
   color:var(--text);
   font-weight:700;
   line-height:1.35;
   word-break:break-word;
 }
 
-/* Coluna 3 */
+/* ── Coluna 3 ── */
 .orc-actions{
   display:flex;
   flex-direction:column;
@@ -327,7 +334,7 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   justify-content:center !important;
 }
 
-/* Coluna 4 */
+/* ── Coluna 4 ── */
 .orc-right{
   display:flex;
   flex-direction:column;
@@ -369,7 +376,7 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 .orc-tval.warn{color:var(--warn)}
 .orc-tval.danger{color:var(--danger)}
 
-/* Coluna 5 */
+/* ── Coluna 5 ── */
 .orc-type-col{
   display:flex;
   flex-direction:column;
@@ -428,42 +435,47 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   padding:5px 6px;
 }
 
-/* responsivo */
 @media(max-width:1600px){
   .order-row{
     grid-template-columns:
+      minmax(240px, 1fr)
+      minmax(520px, 1.8fr)
       minmax(220px, .95fr)
-      minmax(440px, 1.6fr)
-      minmax(220px, 1fr)
-      minmax(170px, .8fr)
-      minmax(150px, .7fr);
+      minmax(175px, .72fr)
+      minmax(160px, .72fr);
   }
-  .orc-num{font-size:32px}
+
+  .orc-num{font-size:36px}
   .orc-cli-name{font-size:28px}
+  .orc-val{font-size:17px}
   .orc-type-tag{font-size:17px}
 }
 
 @media(max-width:1300px){
   .order-row{
     grid-template-columns:
+      minmax(210px, .95fr)
+      minmax(420px, 1.6fr)
       minmax(200px, .95fr)
-      minmax(360px, 1.45fr)
-      minmax(200px, 1fr)
-      minmax(160px, .8fr)
-      minmax(140px, .7fr);
+      minmax(160px, .72fr)
+      minmax(140px, .68fr);
   }
-  .orc-num{font-size:28px}
+
+  .orc-num{font-size:30px}
   .orc-cli-name{font-size:24px}
-  .orc-grid{gap:6px 12px}
+  .orc-val{font-size:16px}
+  .orc-grid{gap:8px 14px}
   .orc-type-tag{font-size:14px}
 }
 
 @media(max-width:900px){
   .order-row{grid-template-columns:1fr}
+
   .orc-col{
     border-left:none;
     border-top:1px solid var(--border);
   }
+
   .orc-col:first-child{border-top:none}
 }
 .fchip{padding:7px 18px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--glass);color:var(--muted);font-family:var(--font-mono);transition:all .15s}
