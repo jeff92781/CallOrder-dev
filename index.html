@@ -152,11 +152,12 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 .orc-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px 20px;margin-top:4px}
 .orc-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
 .orc-val{font-size:12px;color:var(--text);font-weight:600;line-height:1.3}
-/* Col 3: Actions — full-width column buttons */
-.orc-actions{width:260px;min-width:260px;display:flex;flex-direction:column;gap:7px;padding:12px 14px;justify-content:center}
-.orc-actions-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.orc-actions button{min-height:42px;width:100%;border:none;border-radius:10px;font-size:12.5px;font-weight:700;font-family:var(--font-mono);cursor:pointer;padding:0 14px;display:flex;align-items:center;gap:7px;transition:opacity .15s}
-.orc-actions button:hover{opacity:.88}
+/* Col 3: Actions — clean flex column */
+.orc-actions{width:260px;min-width:260px;display:flex;flex-direction:column;gap:6px;padding:12px 14px;justify-content:center}
+.orc-row2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.orc-actions button{min-height:42px;width:100%;border:none;border-radius:10px;font-size:12px;font-weight:700;font-family:var(--font-mono);cursor:pointer;padding:0 14px;display:flex;align-items:center;justify-content:flex-start;gap:7px;transition:opacity .15s;box-sizing:border-box}
+.orc-actions button:hover{opacity:.85}
+.orc-row2 button{min-height:36px;font-size:11px!important;padding:0 10px!important;justify-content:center!important}
 /* Col 4: Type tag top, then timers */
 .orc-right{width:130px;min-width:130px;max-width:130px;background:rgba(0,0,0,.2);gap:0;padding:0}
 .orc-type-area{padding:9px 10px;border-bottom:1px solid var(--border)}
@@ -2048,139 +2049,129 @@ function renderRowCard(o,setor,transito){
   var canAct=podeAtuarNoSetor(setor);
   var isPrio=_prioList.indexOf(normalizarNumero(o.numero||''))>=0;
   var etapaPosFaturamento=(o.status==='pronto_balcao'||o.status==='pronto_expedicao'||o.status==='balcao_chamado');
+  var setorFreezeAttr=s.freeze?' data-timer-freeze="'+s.freeze+'"':'';
+  var totalFreezeAttr=t.freeze?' data-timer-freeze="'+t.freeze+'"':'';
 
-  // Row classes
   var rowClass='order-row';
   if(isPrio)rowClass+=' or-priority';
   else if(transito)rowClass+=' or-transit';
   else if(etapaPosFaturamento)rowClass+=' or-pronto';
-
-  // Data attrs for CSS
   var dataAttrs='data-setor="'+setor+'" data-operacao="'+prio+'" data-prioridade="'+(isPrio?'sim':'nao')+'"';
 
-  // Tags
-  var tags='';
-  if(o.parcial)tags+='<span class="pb-parcial">⚡ Parcial</span>';
-  if(isPrio)tags+='<span class="pb-parcial" style="background:rgba(239,68,68,.12);color:var(--danger);border-color:rgba(239,68,68,.4)">🔴 Prioridade</span>';
-  tags+=prioBadge(prio);
-
-  // Setor chip
-  var setorLabel=transito?(SL[o.setor]||o.setor)+' → '+(SL[o.setor_pendente]||o.setor_pendente):(SL[setor]||setor);
-  var statusLabel='';
-  if(o.status==='pronto_balcao')statusLabel='<span style="font-size:10px;color:var(--accent)">Pronto p/ chamar</span>';
-  else if(o.status==='pronto_expedicao')statusLabel='<span style="font-size:10px;color:#818cf8">Pronto p/ embarque</span>';
-  else if(transito)statusLabel='<span style="font-size:10px;color:var(--blue)" data-transit-since="'+tsMs(o.pendente_desde)+'">Aguard. confirmação</span>';
-
-  // Info col
-  var infoLines='';
-  if(o.vendedor)infoLines+='<div class="or-sub" style="color:var(--cyan)">Vendedor: '+o.vendedor+'</div>';
-  if(o.operador_setor_atual)infoLines+='<div class="or-sub">Operador: '+o.operador_setor_atual+'</div>';
-  if(o.separador)infoLines+='<div class="or-sub" style="color:var(--sep)">Sep.: '+o.separador+'</div>';
-  if(o.num_nota)infoLines+='<div class="or-sub" style="color:var(--sep)">NF: '+o.num_nota+'</div>';
-  if(o.nome_retirada)infoLines+='<div class="or-sub">Retirada: '+o.nome_retirada+'</div>';
-
-  // Actions — same logic as renderCard
-  var acoes=[];
-  if(podeCriarPedido())acoes.push('<button class="bmv" style="padding:2px 10px;font-size:10px;line-height:1.5;border-radius:6px" onclick="togglePrio(\''+o.id+'\',\''+prio+'\')">⇄</button>');
-  if(canAct&&!etapaPosFaturamento)acoes.push('<button class="bmv" style="padding:2px 10px;font-size:10px;line-height:1.5;border-radius:6px;background:'+(o.parcial?'rgba(245,158,11,.3)':'var(--glass)')+';border-color:'+(o.parcial?'var(--warn)':'var(--border2)')+';color:'+(o.parcial?'var(--warn)':'var(--muted)') +'" onclick="toggleParcialCard(\''+o.id+'\','+!!o.parcial+')">'+(o.parcial?'⚡ PARCIAL':'Parcial?')+'</button>');
-  if(transito){
-    if(podeConfirmarDestino(o.setor_pendente))acoes.push('<button class="bcon" onclick="confirmarRec(\''+o.id+'\')">Confirmar</button>');
-    if(podeAtuarNoSetor(o.setor))acoes.push('<button class="bret" onclick="openReturnTransit(\''+o.id+'\')">Retornar</button>');
-    if(podeExcluirPedido())acoes.push('<button class="bexc" onclick="openDeletePedido(\''+o.id+'\')">Excluir</button>');
-  }else{
-    if(canAct&&setor!=='atendimento'&&!etapaPosFaturamento&&!(setor==='expedicao'&&o.status==='em_entrega'))
-      acoes.push('<button class="bret" onclick="openReturnActive(\''+o.id+'\')">Retornar</button>');
-    if(o.status==='pronto_balcao'&&setor==='balcao_op'&&canAct){
-      // Fix 6: pronto_balcao no balcao → apenas Ag. Retira (chamada veio do faturamento, segue daqui)
-      acoes.push('<button class="bmv" style="background:#f59e0b" onclick="enviarAgRetira(\''+o.id+'\')">Ag. Retira</button>');
-    }else if(setor==='faturamento'&&podeFaturar()){
-      acoes.push('<button class="bfin" onclick="openNota(\''+o.id+'\')">Faturar</button>');
-    }else if(setor==='estoque'&&canAct){
-      acoes.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'corte\')">Corte</button>');
-      if(prio!=='entrega')acoes.push('<button class="bcon" style="background:#6366f1" onclick="enviar(\''+o.id+'\',\'balcao_op\')">Balcão</button>');
-      if(prio==='entrega')acoes.push('<button class="bmv" style="background:#818cf8" onclick="enviar(\''+o.id+'\',\'expedicao\')">Expedição</button>');
-    }else if(setor==='atendimento'&&canAct){
-      acoes.push('<button class="bmv" style="background:#c49a6c" onclick="enviar(\''+o.id+'\',\'estoque\')">Estoque</button>');
-    }else if(setor==='corte'&&canAct){
-      if(prio!=='entrega')acoes.push('<button class="bcon" style="background:#6366f1" onclick="enviar(\''+o.id+'\',\'balcao_op\')">Balcão</button>');
-      if(prio==='entrega')acoes.push('<button class="bmv" style="background:#818cf8" onclick="enviar(\''+o.id+'\',\'expedicao\')">Expedição</button>');
-    }else if(setor==='balcao_op'&&canAct&&o.status!=='pronto_balcao'){
-      acoes.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">Faturamento</button>');
-    }else if(setor==='expedicao'&&canAct){
-      if(o.status==='pronto_expedicao')acoes.push('<button class="bmv" style="background:#818cf8" onclick="enviarAgEmbarque(\''+o.id+'\')">Ag. Embarque</button>');
-      else if(o.status==='em_entrega'){acoes.push('<button class="bfin" onclick="marcarEntregue(\''+o.id+'\')">✓ Entregue</button>');acoes.push('<button class="boc" onclick="marcarDevolvido(\''+o.id+'\')">Devolvida</button>');}
-      else if(o.status!=='ag_embarque')acoes.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">Faturamento</button>');
-    }
-    if(podeExcluirPedido()&&!etapaPosFaturamento)acoes.push('<button class="bexc" onclick="openDeletePedido(\''+o.id+'\')">Excluir</button>');
-    // Fix 1: Botão Ocorrência disponível em qualquer setor, qualquer momento (não pós-faturamento)
-    if(canAct&&!etapaPosFaturamento&&o.status!=='em_ocorrencia')
-      acoes.push('<button class="boc" style="font-size:11px" onclick="openOcorrenciaCard(\''+o.id+'\')">⚠ Ocorrência</button>');
-  }
-
-  var setorFreezeAttr=s.freeze?' data-timer-freeze="'+s.freeze+'"':'';
-  var totalFreezeAttr=t.freeze?' data-timer-freeze="'+t.freeze+'"':'';
-
-  // Col 1 ID: 160px, 40px font, parcial below num, time at bottom
-  var col1=
-    '<div class="orc orc-id">'+
-      '<div class="orc-num">#'+o.numero+'</div>'+
-      (o.parcial?'<div class="orc-badge-parcial">⚡ Parcial</div>':'')+
-      '<div class="orc-time">'+hora+' · '+o.criado_por+'</div>'+
-    '</div>';
-
-  // Col 2 Info: setor chip above client, no setor-atual
-  var setorLabel=transito?(SL[o.setor]||o.setor)+' → '+(SL[o.setor_pendente]||o.setor_pendente):(SL[setor]||setor);
-  var statusExtra='';
-  if(o.status==='pronto_balcao')statusExtra='<span style="font-size:10px;color:var(--accent);font-weight:600;margin-left:6px">● Pronto p/ retirada</span>';
-  else if(o.status==='pronto_expedicao')statusExtra='<span style="font-size:10px;color:#818cf8;font-weight:600;margin-left:6px">● Pronto p/ embarque</span>';
-  else if(transito)statusExtra='<span style="font-size:10px;color:var(--blue);font-weight:600;margin-left:6px" data-transit-since="'+tsMs(o.pendente_desde)+'">● Aguardando confirmação</span>';
-
-  var col2=
-    '<div class="orc orc-info">'+
-      '<span class="orc-setor-chip">'+setorLabel+'</span>'+
-      statusExtra+
-      '<div class="orc-cli-name">'+(o.nome_cliente||'—')+'</div>'+
-      '<div class="orc-grid">'+
-        '<div><div class="orc-lbl">Cliente</div><div class="orc-val">'+(o.nome_cliente||'—')+'</div></div>'+
-        (o.nome_retirada?'<div><div class="orc-lbl">Retirada</div><div class="orc-val">'+o.nome_retirada+'</div></div>':'<div><div class="orc-lbl">Vendedor</div><div class="orc-val" style="color:var(--cyan)">'+(o.vendedor||'—')+'</div></div>')+
-        '<div><div class="orc-lbl">Operador</div><div class="orc-val">'+(o.operador_setor_atual||'—')+'</div></div>'+
-        (o.num_nota?'<div><div class="orc-lbl">NF</div><div class="orc-val" style="color:var(--sep)">'+o.num_nota+'</div></div>':o.separador?'<div><div class="orc-lbl">Separador</div><div class="orc-val" style="color:var(--sep)">'+o.separador+'</div></div>':'<div></div>')+
-      '</div>'+
-    '</div>';
-
-  // Col 3 Actions: utility row on top, main buttons below
-  var topRow=[];
-  if(podeCriarPedido())topRow.push('<button class="bmv" style="font-size:11px;padding:0 10px!important;min-height:38px" onclick="togglePrio(\''+o.id+'\',\''+prio+'\')">⇄ Alterar</button>');
-  if(canAct&&!etapaPosFaturamento&&o.status!=='em_ocorrencia')topRow.push('<button class="boc" style="font-size:11px;padding:0 10px!important;min-height:38px" onclick="openOcorrenciaCard(\''+o.id+'\')">⚠ Ocorrência</button>');
-  if(canAct&&!etapaPosFaturamento)topRow.push('<button style="font-size:11px;padding:0 10px!important;min-height:38px;border:1px solid rgba(245,158,11,'+(o.parcial?'.4':'.25')+');background:'+(o.parcial?'rgba(245,158,11,.2)':'var(--glass)')+';color:'+(o.parcial?'var(--warn)':'var(--muted)')+';border-radius:10px;cursor:pointer;font-family:var(--font-mono);font-weight:700" onclick="toggleParcialCard(\''+o.id+'\','+!!o.parcial+')">'+(o.parcial?'⚡ Parcial':'Parcial?')+'</button>');
-
-  var col3='<div class="orc-actions">'+
-    (topRow.length?'<div class="orc-actions-row">'+topRow.join('')+'</div>':'')+
-    acoes.join('')+
+  /* ── COL 1: número + parcial + hora ── */
+  var col1='<div class="orc orc-id">'+
+    '<div class="orc-num">#'+o.numero+'</div>'+
+    (o.parcial?'<div class="orc-badge-parcial">⚡ Parcial</div>':'')+
+    '<div class="orc-time">'+hora+' · '+o.criado_por+'</div>'+
   '</div>';
 
-  // Col 4: type tag ABOVE timers
+  /* ── COL 2: setor chip > cliente > grid de info ── */
+  var setorLabel=transito?(SL[o.setor]||o.setor)+' → '+(SL[o.setor_pendente]||o.setor_pendente):(SL[setor]||setor);
+  var statusExtra='';
+  if(o.status==='pronto_balcao')statusExtra='<span style="font-size:10px;color:var(--accent);font-weight:600;margin-left:8px">● Pronto p/ retirada</span>';
+  else if(o.status==='pronto_expedicao')statusExtra='<span style="font-size:10px;color:#818cf8;font-weight:600;margin-left:8px">● Pronto p/ embarque</span>';
+  else if(transito)statusExtra='<span style="font-size:10px;color:var(--blue);font-weight:600;margin-left:8px" data-transit-since="'+tsMs(o.pendente_desde)+'">● Aguardando confirmação</span>';
+
+  var col2='<div class="orc orc-info">'+
+    '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:6px">'+
+      '<span class="orc-setor-chip">'+setorLabel+'</span>'+statusExtra+
+    '</div>'+
+    '<div class="orc-cli-name">'+(o.nome_cliente||'—')+'</div>'+
+    '<div class="orc-grid">'+
+      '<div><div class="orc-lbl">Cliente</div><div class="orc-val">'+(o.nome_cliente||'—')+'</div></div>'+
+      (o.nome_retirada
+        ?'<div><div class="orc-lbl">Retirada</div><div class="orc-val">'+o.nome_retirada+'</div></div>'
+        :'<div><div class="orc-lbl">Vendedor</div><div class="orc-val" style="color:var(--cyan)">'+(o.vendedor||'—')+'</div></div>')+
+      '<div><div class="orc-lbl">Operador</div><div class="orc-val">'+(o.operador_setor_atual||'—')+'</div></div>'+
+      (o.num_nota
+        ?'<div><div class="orc-lbl">NF</div><div class="orc-val" style="color:var(--sep)">'+o.num_nota+'</div></div>'
+        :o.separador
+          ?'<div><div class="orc-lbl">Separador</div><div class="orc-val" style="color:var(--sep)">'+o.separador+'</div></div>'
+          :'<div></div>')+
+    '</div>'+
+  '</div>';
+
+  /* ── COL 3: botões de ação ──
+     Linha topo (utilitários): ⇄ Alterar | Parcial?
+     Linha principal: botões de fluxo
+     Linha fundo: Excluir | Ocorrência
+  ─────────────────────────────────── */
+  var utilBtns=[];
+  var flowBtns=[];
+  var dangerBtns=[];
+
+  // Utilitários (linha topo, 2 col)
+  if(podeCriarPedido())utilBtns.push('<button class="bmv" style="min-height:36px;font-size:11px" onclick="togglePrio(\''+o.id+'\',\''+prio+'\')">⇄ Alterar</button>');
+  if(canAct&&!etapaPosFaturamento){
+    var parcialStyle='min-height:36px;font-size:11px;background:'+(o.parcial?'rgba(245,158,11,.2)':'var(--glass)')+';color:'+(o.parcial?'var(--warn)':'var(--muted)')+';border:1px solid rgba(245,158,11,'+(o.parcial?'.45':'.2')+')';
+    utilBtns.push('<button style="'+parcialStyle+'" onclick="toggleParcialCard(\''+o.id+'\','+!!o.parcial+')">'+(o.parcial?'⚡ Parcial':'Parcial?')+'</button>');
+  }
+
+  // Botões de fluxo (largura total)
+  if(transito){
+    if(podeConfirmarDestino(o.setor_pendente))flowBtns.push('<button class="bcon" onclick="confirmarRec(\''+o.id+'\')">✓ Confirmar recebimento</button>');
+    if(podeAtuarNoSetor(o.setor))flowBtns.push('<button class="bret" onclick="openReturnTransit(\''+o.id+'\')">↩ Retornar envio</button>');
+  }else{
+    if(canAct&&setor!=='atendimento'&&!etapaPosFaturamento&&!(setor==='expedicao'&&o.status==='em_entrega'))
+      flowBtns.push('<button class="bret" onclick="openReturnActive(\''+o.id+'\')">↩ Retornar etapa</button>');
+    if(o.status==='pronto_balcao'&&setor==='balcao_op'&&canAct){
+      flowBtns.push('<button class="bmv" style="background:#f59e0b" onclick="enviarAgRetira(\''+o.id+'\')">Ag. Retira</button>');
+    }else if(setor==='faturamento'&&podeFaturar()){
+      flowBtns.push('<button class="bfin" onclick="openNota(\''+o.id+'\')">Faturar nota</button>');
+    }else if(setor==='estoque'&&canAct){
+      flowBtns.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'corte\')">→ Corte</button>');
+      if(prio!=='entrega')flowBtns.push('<button class="bcon" style="background:#6366f1" onclick="enviar(\''+o.id+'\',\'balcao_op\')">→ Balcão</button>');
+      if(prio==='entrega')flowBtns.push('<button class="bmv" style="background:#818cf8" onclick="enviar(\''+o.id+'\',\'expedicao\')">→ Expedição</button>');
+    }else if(setor==='atendimento'&&canAct){
+      flowBtns.push('<button class="bmv" style="background:#c49a6c" onclick="enviar(\''+o.id+'\',\'estoque\')">→ Estoque</button>');
+    }else if(setor==='corte'&&canAct){
+      if(prio!=='entrega')flowBtns.push('<button class="bcon" style="background:#6366f1" onclick="enviar(\''+o.id+'\',\'balcao_op\')">→ Balcão</button>');
+      if(prio==='entrega')flowBtns.push('<button class="bmv" style="background:#818cf8" onclick="enviar(\''+o.id+'\',\'expedicao\')">→ Expedição</button>');
+    }else if(setor==='balcao_op'&&canAct&&o.status!=='pronto_balcao'){
+      flowBtns.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">→ Faturamento</button>');
+    }else if(setor==='expedicao'&&canAct){
+      if(o.status==='pronto_expedicao')flowBtns.push('<button class="bmv" style="background:#818cf8" onclick="enviarAgEmbarque(\''+o.id+'\')">Ag. Embarque</button>');
+      else if(o.status==='em_entrega'){flowBtns.push('<button class="bfin" onclick="marcarEntregue(\''+o.id+'\')">✓ Entregue</button>');flowBtns.push('<button class="boc" onclick="marcarDevolvido(\''+o.id+'\')">↩ Retorno</button>');}
+      else if(o.status!=='ag_embarque')flowBtns.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">→ Faturamento</button>');
+    }
+  }
+
+  // Perigos (linha fundo, 2 col)
+  if(!transito){
+    if(podeExcluirPedido()&&!etapaPosFaturamento)dangerBtns.push('<button class="bexc" onclick="openDeletePedido(\''+o.id+'\')">Excluir</button>');
+    if(canAct&&!etapaPosFaturamento&&o.status!=='em_ocorrencia')dangerBtns.push('<button class="boc" onclick="openOcorrenciaCard(\''+o.id+'\')">⚠ Ocorrência</button>');
+  }else{
+    if(podeExcluirPedido())dangerBtns.push('<button class="bexc" onclick="openDeletePedido(\''+o.id+'\')">Excluir</button>');
+  }
+
+  var col3='<div class="orc-actions">'+
+    (utilBtns.length?'<div class="orc-row2">'+utilBtns.join('')+'</div>':'')+
+    flowBtns.join('')+
+    (dangerBtns.length?'<div class="orc-row2">'+dangerBtns.join('')+'</div>':'')+
+  '</div>';
+
+  /* ── COL 4: tipo em cima + timers ── */
   var prioLabel=prio==='balcao'?'Balcão':prio==='entrega'?'Entrega':'Retira';
   var prioClass=prio==='balcao'?'tt-balcao':prio==='entrega'?'tt-entrega':'tt-retira';
-  var col4=
-    '<div class="orc orc-right">'+
-      '<div class="orc-type-area">'+
-        '<span class="orc-type-tag '+prioClass+'">'+prioLabel+'</span>'+
-        (isPrio?'<span class="orc-type-tag tt-prio">Prioridade</span>':'')+
-        (etapaPosFaturamento?'<span class="orc-type-tag tt-pronto">Pronto</span>':'')+
-      '</div>'+
-      '<div class="orc-timer-cell">'+
-        '<div class="orc-tlbl">Neste setor</div>'+
-        '<div class="orc-tval '+tC+'" data-timer-entry="'+s.entry+'"'+setorFreezeAttr+'>'+fmtT(setorMs)+'</div>'+
-      '</div>'+
-      '<div class="orc-timer-cell">'+
-        '<div class="orc-tlbl">Tempo total</div>'+
-        '<div class="orc-tval '+tC+'" data-timer-entry="'+t.entry+'"'+totalFreezeAttr+'>'+fmtT(totalMs)+'</div>'+
-      '</div>'+
-    '</div>';
+  var col4='<div class="orc orc-right">'+
+    '<div class="orc-type-area">'+
+      '<span class="orc-type-tag '+prioClass+'">'+prioLabel+'</span>'+
+      (isPrio?'<span class="orc-type-tag tt-prio">Prioridade</span>':'')+
+      (etapaPosFaturamento?'<span class="orc-type-tag tt-pronto">Pronto</span>':'')+
+    '</div>'+
+    '<div class="orc-timer-cell">'+
+      '<div class="orc-tlbl">Neste setor</div>'+
+      '<div class="orc-tval '+tC+'" data-timer-entry="'+s.entry+'"'+setorFreezeAttr+'>'+fmtT(setorMs)+'</div>'+
+    '</div>'+
+    '<div class="orc-timer-cell">'+
+      '<div class="orc-tlbl">Tempo total</div>'+
+      '<div class="orc-tval '+tC+'" data-timer-entry="'+t.entry+'"'+totalFreezeAttr+'>'+fmtT(totalMs)+'</div>'+
+    '</div>'+
+  '</div>';
 
   return '<div class="'+rowClass+'" '+dataAttrs+'>'+col1+col2+col3+col4+'</div>';
 }
+
 function renderTransCard(o){
   var elapsed=now()-tsMs(o.pendente_desde),alerta=elapsed>ALERT_MS;
   var dest=o.setor_pendente||'',origem=o.setor||'';
