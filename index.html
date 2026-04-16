@@ -3106,13 +3106,12 @@ function renderPesquisaAvancada(items){
     var canceladoPor='—';
     if(p.status==='cancelado'&&obs.indexOf('EXCLUSÃO')>=0){
       var excIdx=obs.indexOf('EXCLUSÃO');
-      canceladoPor=obs.substring(excIdx,excIdx+120).split('
-')[0]||'—';
+      canceladoPor=obs.substring(excIdx,excIdx+120).split('\n')[0]||'—';
     }
     var dt=p.entrada_at?new Date(p.entrada_at).toLocaleDateString('pt-BR'):'—';
     var dtFin=p.finalizado_at?new Date(p.finalizado_at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
     var statusColor=p.status==='cancelado'?'var(--danger)':p.status==='finalizado'?'var(--accent)':p.status==='em_ocorrencia'?'var(--warn)':'var(--text)';
-    return '<tr style="cursor:pointer" onclick="verTimelineAdv(''+p.id+'')">'+
+    return '<tr style="cursor:pointer" onclick="verTimelineAdv(\''+p.id+'\')">'+
       '<td style="font-family:var(--font-head);font-size:14px;font-weight:700">#'+p.numero+'</td>'+
       '<td>'+(p.nome_cliente||'—')+'</td>'+
       '<td style="color:var(--cyan)">'+(p.vendedor||'—')+'</td>'+
@@ -3169,12 +3168,10 @@ function exportarPesquisaAvancada(){
       SL[p.setor]||p.setor||'',
       p.parcial?'Sim':'Não',
       (p.obs||'').indexOf('OCORRÊNCIA')>=0?'Sim':'Não',
-      (p.obs||'').replace(/
-/g,' ').substring(0,200)
+      (p.obs||'').replace(/[\r\n]+/g,' ').substring(0,200)
     ]);
   });
-  var csv=rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('
-');
+  var csv=rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
   var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');a.href=url;a.download='pesquisa_avancada_'+fmtDateInput(new Date())+'.csv';a.click();
