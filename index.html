@@ -299,6 +299,7 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
     <button class="tab adm-only" onclick="go('usuarios')" style="display:none">Usuários</button>
     <button class="tab" onclick="go('senha')">Minha Senha</button>
     <button class="tab adm-only" onclick="go('config')" style="display:none">Configurações</button>
+    <button class="tab" onclick="go('recebimento')" id="tab-recebimento">Recebimento <span id="recebimento-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('agretira')" id="tab-agretira">Ag. Retira <span id="agretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('agEmbarque')" id="tab-agembarque">Ag. Embarque <span id="agembarque-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('emTransito')" id="tab-emtransito">Em Trânsito <span id="emtransito-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
@@ -442,10 +443,10 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
       <div id="rel-sub" style="color:var(--muted);font-size:12px;margin-top:14px"></div>
       <div style="margin-top:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <span style="font-size:11px;color:var(--muted)">Operação:</span>
-        <button id="rel-op-todos" onclick="setFiltroOp('todos')" class="rel-op-btn active" style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--accent-dim);color:var(--accent);font-family:var(--font-mono)">Todas</button>
-        <button id="rel-op-balcao" onclick="setFiltroOp('balcao')" class="rel-op-btn" style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--glass);color:var(--muted);font-family:var(--font-mono)">Balcão</button>
-        <button id="rel-op-retira" onclick="setFiltroOp('retira')" class="rel-op-btn" style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--glass);color:var(--muted);font-family:var(--font-mono)">Retira</button>
-        <button id="rel-op-entrega" onclick="setFiltroOp('entrega')" class="rel-op-btn" style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--glass);color:var(--muted);font-family:var(--font-mono)">Entrega</button>
+        <button id="rel-op-balcao" onclick="toggleFiltroOp('balcao',this)" class="rel-op-btn" style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--glass);color:var(--muted);font-family:var(--font-mono)">Balcão</button>
+        <button id="rel-op-retira" onclick="toggleFiltroOp('retira',this)" class="rel-op-btn" style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--glass);color:var(--muted);font-family:var(--font-mono)">Retira</button>
+        <button id="rel-op-entrega" onclick="toggleFiltroOp('entrega',this)" class="rel-op-btn" style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--glass);color:var(--muted);font-family:var(--font-mono)">Entrega</button>
+        <button onclick="limparFiltroOp()" style="padding:4px 12px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:var(--font-mono)">Todas</button>
       </div>
     </div>
     <div class="kg" id="kpi-grid"></div>
@@ -455,7 +456,7 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
     <div id="bars-conf" class="adm-only" style="margin-bottom:28px;display:none"></div>
     <div class="st">Registro dos pedidos</div>
     <table class="rkt">
-      <thead><tr><th>Entrada</th><th>Pedido</th><th>Cliente</th><th>NF</th><th>Valor Faturado</th><th>Tempo total</th><th>Destino</th></tr></thead>
+      <thead><tr><th>Entrada</th><th>Pedido</th><th>Cliente</th><th>NF</th><th>Valor Faturado</th><th>Tempo total</th><th>Operação</th></tr></thead>
       <tbody id="pedidos-dia-body"></tbody>
       <tfoot id="pedidos-dia-tfoot"></tfoot>
     </table>
@@ -517,6 +518,56 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   </main>
 </div>
 
+
+<div class="screen" id="screen-recebimento">
+  <main>
+    <div class="ph">
+      <span class="pt">Recebimento de Notas Fiscais</span>
+      <span style="color:var(--muted);font-size:12px" id="rec-count"></span>
+      <button class="bok" style="padding:8px 18px;font-size:12px" onclick="abrirRegistrarNF()">+ Registrar NF</button>
+    </div>
+    <!-- Bipe rápido no topo -->
+    <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap">Bipe rápido:</span>
+      <input type="text" id="rec-scan-input" maxlength="44"
+        placeholder="Bipe ou cole a chave NF-e de 44 dígitos..."
+        style="flex:1;min-width:260px;padding:10px 14px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"
+        oninput="recScanCheck(this.value)"
+        onkeydown="if(event.key==='Enter')recScanRegistrar()"/>
+      <button class="bok" style="padding:9px 18px;font-size:12px;white-space:nowrap" onclick="recScanRegistrar()">Registrar</button>
+      <span id="rec-scan-feedback" style="font-size:11px;color:var(--muted);min-width:160px"></span>
+    </div>
+    <!-- Filtros -->
+    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px">
+      <div class="f" style="margin:0;min-width:140px"><label class="fl">Data inicial</label><input type="date" id="rec-date-start"/></div>
+      <div class="f" style="margin:0;min-width:140px"><label class="fl">Data final</label><input type="date" id="rec-date-end"/></div>
+      <div class="f" style="margin:0;min-width:140px"><label class="fl">Nº Nota Fiscal</label><input type="text" id="rec-filtro-nf" placeholder="Ex: 000123" onkeydown="if(event.key==='Enter')filtrarRecebimentos()"/></div>
+      <button onclick="filtrarRecebimentos()" style="padding:9px 16px;background:#3b82f6;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:12px;font-weight:700;cursor:pointer">Buscar</button>
+      <button onclick="limparFiltrosRecebimento()" style="padding:9px 14px;background:var(--bg4);border:1px solid var(--border2);border-radius:var(--radius);color:var(--muted);font-family:var(--font-mono);font-size:12px;cursor:pointer">Limpar</button>
+    </div>
+    <!-- Tabela -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
+      <table class="utbl" id="rec-table">
+        <thead><tr><th>Data / Hora</th><th>Usuário</th><th>Nº Nota</th><th>Chave NF-e</th></tr></thead>
+        <tbody id="rec-tbody"></tbody>
+      </table>
+    </div>
+    <div id="rec-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhum recebimento registrado no período.</div>
+  </main>
+</div>
+
+<div class="mb" id="m-registrar-nf">
+  <div class="mo">
+    <div class="mt">Registrar recebimento de NF</div>
+    <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Informe a chave NF-e da nota recebida. O número da nota será extraído automaticamente.</p>
+    <div class="f">
+      <label class="fl">Chave NF-e * (44 dígitos)</label>
+      <input type="text" id="m-rec-chave" placeholder="Bipe ou cole a chave aqui" maxlength="44" oninput="recModalCheck(this.value)"/>
+      <div id="m-rec-preview" style="margin-top:8px;font-size:12px;color:var(--accent);min-height:16px"></div>
+    </div>
+    <div class="ma"><button class="bcan" onclick="closeM('m-registrar-nf')">Cancelar</button><button class="bok" onclick="confirmarRegistrarNF()">✓ Registrar</button></div>
+  </div>
+</div>
 
 <div class="screen" id="screen-agretira">
   <main>
@@ -639,15 +690,25 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 <div class="screen" id="screen-canhotos">
   <main>
     <div class="ph">
-      <span class="pt">Canhotos — Aguardando Confirmação</span>
+      <span class="pt">Canhotos — Confirmação de Entrega</span>
       <span style="color:var(--muted);font-size:12px" id="canhoto-count"></span>
     </div>
-    <div style="background:rgba(34,211,167,.04);border:1px solid rgba(34,211,167,.2);border-radius:var(--radius-lg);padding:12px 18px;margin-bottom:16px;font-size:12px;color:var(--muted)">
-      ✓ Entrega confirmada pelo motorista. Clique em <strong style="color:var(--text)">Ok — Confirmar Canhoto</strong> e informe a chave da NF-e para encerrar o processo.
+    <!-- Campo de bipagem única -->
+    <div style="background:rgba(34,211,167,.04);border:1px solid rgba(34,211,167,.25);border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:18px">
+      <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">🔔 Bipe a chave NF-e para confirmar o canhoto</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="canhoto-scan-input" maxlength="44"
+          placeholder="Bipe ou cole a chave de 44 dígitos aqui..."
+          style="flex:1;padding:11px 16px;background:var(--bg3);border:1.5px solid rgba(34,211,167,.35);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"
+          oninput="canhotoScanCheck(this.value)"
+          onkeydown="if(event.key==='Enter')canhotoScanConfirmar()"/>
+        <button class="bok" style="padding:10px 20px;white-space:nowrap" onclick="canhotoScanConfirmar()">Confirmar</button>
+      </div>
+      <div id="canhoto-scan-feedback" style="font-size:11px;min-height:16px;margin-top:8px;color:var(--muted)"></div>
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
       <table class="utbl" id="canhoto-table">
-        <thead><tr><th>Pedido</th><th>Cliente</th><th>NF</th><th>Valor</th><th>Transportadora</th><th>Motorista</th><th>Entrega confirmada</th><th>Ações</th></tr></thead>
+        <thead><tr><th>Pedido</th><th>Cliente</th><th>NF</th><th>Valor</th><th>Transportadora</th><th>Motorista</th><th>Entrega confirmada</th><th>Chave NF-e</th></tr></thead>
         <tbody id="canhoto-tbody"></tbody>
       </table>
     </div>
@@ -693,10 +754,21 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
     <span style="font-family:var(--font-head);font-size:24px;font-weight:800;background:linear-gradient(135deg,#22d3a7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Call Order</span>
     <span style="color:rgba(255,255,255,0.5);font-size:14px">Rastreamento de Pedido</span>
   </div>
-  <div style="max-width:680px;margin:0 auto">
-    <div style="display:flex;gap:8px;margin-bottom:20px">
-      <input id="trk-input" type="text" placeholder="Nº pedido, NF ou CNPJ (11 dígitos da chave NF-e)" style="flex:1;padding:12px 16px;background:#111827;border:1px solid rgba(99,179,237,0.2);border-radius:10px;color:#e8edf5;font-family:var(--font-mono);font-size:13px;outline:none" onkeydown="if(event.key==='Enter')buscarRastreamento()"/>
-      <button onclick="buscarRastreamento()" style="padding:12px 22px;background:#22d3a7;border:none;border-radius:10px;color:#04342C;font-family:var(--font-mono);font-size:13px;font-weight:700;cursor:pointer">Buscar</button>
+  <div style="max-width:700px;margin:0 auto">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-bottom:20px;align-items:end">
+      <div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">Nº do Pedido</div>
+        <input id="trk-pedido" type="text" placeholder="Ex: 60515" style="width:100%;padding:10px 14px;background:#111827;border:1px solid rgba(99,179,237,0.2);border-radius:10px;color:#e8edf5;font-family:var(--font-mono);font-size:13px;outline:none" onkeydown="if(event.key==='Enter')buscarRastreamento()"/>
+      </div>
+      <div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">Nº da NF</div>
+        <input id="trk-nf" type="text" placeholder="Ex: 000123" style="width:100%;padding:10px 14px;background:#111827;border:1px solid rgba(99,179,237,0.2);border-radius:10px;color:#e8edf5;font-family:var(--font-mono);font-size:13px;outline:none" onkeydown="if(event.key==='Enter')buscarRastreamento()"/>
+      </div>
+      <div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">CNPJ (14 dígitos)</div>
+        <input id="trk-cnpj" type="text" placeholder="Ex: 12345678000199" style="width:100%;padding:10px 14px;background:#111827;border:1px solid rgba(99,179,237,0.2);border-radius:10px;color:#e8edf5;font-family:var(--font-mono);font-size:13px;outline:none" onkeydown="if(event.key==='Enter')buscarRastreamento()"/>
+      </div>
+      <button onclick="buscarRastreamento()" style="padding:10px 20px;background:#22d3a7;border:none;border-radius:10px;color:#04342C;font-family:var(--font-mono);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Buscar</button>
     </div>
     <div id="trk-result"></div>
   </div>
@@ -1142,6 +1214,18 @@ function upsertPedidoLocal(partial){
   var idx=PEDIDOS.findIndex(function(p){return p.id===partial.id;});
   if(idx>=0){
     PEDIDOS[idx]=Object.assign({}, PEDIDOS[idx], partial);
+    // Fix 4: remove from priority list when faturado/finalizado
+    if(partial.status&&['pronto_balcao','pronto_expedicao','finalizado','aguard_canhoto'].indexOf(partial.status)>=0){
+      var p=PEDIDOS[idx];
+      var numNorm=normalizarNumero(p.numero||'');
+      var prevLen=_prioList.length;
+      _prioList=_prioList.filter(function(n){return n!==numNorm;});
+      if(_prioList.length!==prevLen){
+        try{localStorage.setItem('co_priolist',JSON.stringify(_prioList));}catch(e){}
+        if(typeof renderPriorityBox==='function')renderPriorityBox();
+        if(typeof renderPainelBoard==='function')renderPainelBoard();
+      }
+    }
   }
 }
 
@@ -1545,6 +1629,7 @@ async function go(name){
   if(name==='usuarios'){ov(true);var u=await fetchUsuarios();ov(false);renderUsers(u);}
   if(name==='config'){setTimeout(carregarVozes,100);}
   if(name==='agretira'){ov(true);await fetchPedidos();ov(false);renderAgRetira();}
+  if(name==='recebimento'){ov(true);await fetchRecebimentos();ov(false);renderRecebimentos();}
   if(name==='agEmbarque'){ov(true);await fetchPedidos();ov(false);renderAgEmbarque();}
   if(name==='emTransito'){ov(true);await fetchPedidos();ov(false);renderEmTransito();}
   if(name==='canhotos'){ov(true);await fetchPedidos();ov(false);renderCanhotos();}
@@ -1586,9 +1671,9 @@ function isOperacionalVisivel(o){
   return o.status!=='finalizado' && o.status!=='cancelado' && o.status!=='balcao_chamado' && o.status!=='ag_retira' && o.status!=='em_ocorrencia' && o.status!=='ag_embarque' && o.status!=='em_entrega' && o.status!=='aguard_canhoto';
 }
 function isTVVisivel(o){
-  // TV mostra APENAS pedidos em andamento na operação — exclui retira, entrega e pós-faturamento
-  if(o.status==='cancelado'||o.status==='finalizado'||o.status==='balcao_chamado'||o.status==='ag_retira'||o.status==='em_ocorrencia'||o.status==='ag_embarque')return false;
-  if(o.prioridade==='retira'||o.prioridade==='entrega')return false; // Fix 4: retira e entrega não aparecem na TV
+  // TV mostra APENAS pedidos balcão em andamento — sai quando aguard_canhoto
+  if(o.status==='cancelado'||o.status==='finalizado'||o.status==='balcao_chamado'||o.status==='ag_retira'||o.status==='em_ocorrencia'||o.status==='ag_embarque'||o.status==='aguard_canhoto')return false;
+  if(o.prioridade==='retira'||o.prioridade==='entrega')return false;
   return true;
 }
 function getTempoTotalPedido(o){
@@ -1621,21 +1706,31 @@ function getTipoEntregaHTML(o) {
 
 // ── Destino final para relatório ──
 function getDestinoFinal(o) {
-  if(o.status==='balcao_chamado' || o.status==='finalizado')return '<span style="color:var(--accent);font-weight:500">Retirado (balcão)</span>';
+  if(o.status==='finalizado'&&o.canhoto_at)return '<span style="color:var(--accent);font-weight:600">✓ OK — Canhoto confirmado</span>';
+  if(o.status==='finalizado'&&o.prioridade==='entrega')return '<span style="color:var(--accent);font-weight:500">Entregue</span>';
+  if(o.status==='finalizado'||o.status==='aguard_canhoto')return '<span style="color:var(--accent);font-weight:500">Retirado</span>';
   if(o.status==='ag_retira')return '<span style="color:var(--warn);font-weight:500">Ag. Retira</span>';
+  if(o.status==='ag_embarque')return '<span style="color:#818cf8;font-weight:500">Ag. Embarque</span>';
+  if(o.status==='em_entrega')return '<span style="color:#818cf8;font-weight:500">Em Trânsito</span>';
   if(o.status==='em_ocorrencia')return '<span style="color:var(--warn);font-weight:500">Ocorrência</span>';
-  if(o.status==='cancelado' && o.num_nota)return '<span style="color:var(--danger);font-weight:500">Cancelado (pós NF)</span>';
+  if(o.status==='cancelado'&&o.num_nota)return '<span style="color:var(--danger);font-weight:500">Cancelado (pós NF)</span>';
   if(o.status==='cancelado')return '<span style="color:var(--danger);font-weight:500">Excluído (pré NF)</span>';
   if(o.status==='pronto_balcao')return '<span style="color:var(--accent)">Aguard. balcão</span>';
+  if(o.status==='pronto_expedicao')return '<span style="color:#818cf8">Aguard. embarque</span>';
   return '<span style="color:var(--muted)">Em andamento</span>';
 }
 function getDestinoFinalTexto(o) {
-  if(o.status==='balcao_chamado' || o.status==='finalizado')return 'Retirado (balcão)';
+  if(o.status==='finalizado'&&o.canhoto_at)return 'OK — Canhoto confirmado';
+  if(o.status==='finalizado'&&o.prioridade==='entrega')return 'Entregue';
+  if(o.status==='finalizado'||o.status==='aguard_canhoto')return 'Retirado';
   if(o.status==='ag_retira')return 'Ag. Retira';
+  if(o.status==='ag_embarque')return 'Ag. Embarque';
+  if(o.status==='em_entrega')return 'Em Trânsito';
   if(o.status==='em_ocorrencia')return 'Ocorrência';
-  if(o.status==='cancelado' && o.num_nota)return 'Cancelado (pós NF)';
+  if(o.status==='cancelado'&&o.num_nota)return 'Cancelado (pós NF)';
   if(o.status==='cancelado')return 'Excluído (pré NF)';
   if(o.status==='pronto_balcao')return 'Aguard. balcão';
+  if(o.status==='pronto_expedicao')return 'Aguard. embarque';
   return 'Em andamento';
 }
 
@@ -2427,15 +2522,16 @@ function renderTV(){
 
 var _relFiltroPedido = '';
 var _relFiltroNota = '';
-var _relFiltroOp = 'todos';
-function setFiltroOp(op){
-  _relFiltroOp=op;
-  document.querySelectorAll('.rel-op-btn').forEach(function(b){
-    var isActive=b.id==='rel-op-'+op;
-    b.style.background=isActive?'var(--accent-dim)':'var(--glass)';
-    b.style.color=isActive?'var(--accent)':'var(--muted)';
-    b.style.borderColor=isActive?'rgba(34,211,167,.4)':'var(--border2)';
-  });
+var _relFiltroOps = []; // array of selected ops — empty = all
+function toggleFiltroOp(op, btn){
+  var idx=_relFiltroOps.indexOf(op);
+  if(idx>=0){_relFiltroOps.splice(idx,1);btn.style.background='var(--glass)';btn.style.color='var(--muted)';btn.style.borderColor='var(--border2)';}
+  else{_relFiltroOps.push(op);btn.style.background='var(--accent-dim)';btn.style.color='var(--accent)';btn.style.borderColor='rgba(34,211,167,.4)';}
+  aplicarFiltroRelatorios();
+}
+function limparFiltroOp(){
+  _relFiltroOps=[];
+  document.querySelectorAll('.rel-op-btn').forEach(function(b){b.style.background='var(--glass)';b.style.color='var(--muted)';b.style.borderColor='var(--border2)';});
   aplicarFiltroRelatorios();
 }
 function aplicarTodosFiltros() {
@@ -2446,14 +2542,14 @@ function aplicarTodosFiltros() {
 function limparTodosFiltros() {
   _relFiltroPedido = '';
   _relFiltroNota   = '';
-  _relFiltroOp = 'todos';
+  _relFiltroOps = [];
   if(el('rel-pedido-num')) el('rel-pedido-num').value = '';
   if(el('rel-nota-num'))   el('rel-nota-num').value   = '';
   REPORT_DATE_START = '';
   REPORT_DATE_END   = '';
   if(el('rel-date-start')) el('rel-date-start').value = '';
   if(el('rel-date-end'))   el('rel-date-end').value   = '';
-  setFiltroOp('todos');
+  limparFiltroOp();
   aplicarFiltroRelatorios();
 }
 function filtrarPorPedido() { aplicarTodosFiltros(); }
@@ -2462,7 +2558,7 @@ function renderRelatorios(){
   var all=(PEDIDOS||[]).slice();
   if(_relFiltroPedido){all=all.filter(function(o){return o.numero && o.numero.indexOf(_relFiltroPedido)>=0;});}
   if(_relFiltroNota){all=all.filter(function(o){return o.num_nota && o.num_nota.indexOf(_relFiltroNota)>=0;});}
-  if(_relFiltroOp&&_relFiltroOp!=='todos'){all=all.filter(function(o){return o.prioridade===_relFiltroOp;});}
+  if(_relFiltroOps&&_relFiltroOps.length>0){all=all.filter(function(o){return _relFiltroOps.indexOf(o.prioridade||'retira')>=0;});}
   // Fix 2: incluir todos os pedidos no processo (não só os finalizados no faturamento)
   var done=all.filter(function(o){return !!o.finalizado_at;});
   var active=all.filter(function(o){return !o.finalizado_at && o.status!=='cancelado';});
@@ -2748,30 +2844,24 @@ if(window.location.search.indexOf('rastreamento=1')>=0){
 }
 
 async function buscarRastreamento(){
-  var q=(el('trk-input').value||'').trim();
+  var qPedido=normalizarNumero((el('trk-pedido')?el('trk-pedido').value:'').trim());
+  var qNF=normalizarNumero((el('trk-nf')?el('trk-nf').value:'').trim());
+  var qCNPJ=(el('trk-cnpj')?el('trk-cnpj').value:'').replace(/\D/g,'').trim();
   var res=el('trk-result');
-  if(!q){if(res)res.innerHTML='<p style="color:rgba(255,255,255,.4);text-align:center;padding:40px 0">Digite o número do pedido, nota fiscal ou CNPJ.</p>';return;}
+  if(!qPedido&&!qNF&&!qCNPJ){if(res)res.innerHTML='<p style="color:rgba(255,255,255,.4);text-align:center;padding:40px 0">Preencha pelo menos um campo de busca.</p>';return;}
   if(res)res.innerHTML='<p style="color:rgba(255,255,255,.5);padding:20px 0">Buscando...</p>';
   try{
-    var numNorm=normalizarNumero(q);
-    // Tenta extrair CNPJ (posições 7-20 da chave NF-e = 14 dígitos) se for chave longa
-    var filtro;
-    if(q.replace(/\D/g,'').length===44){
-      var cnpjChave=q.replace(/\D/g,'').substring(6,20);
-      filtro='num_nota.eq.'+numNorm+',chave_nfe.eq.'+q.replace(/\D/g,'');
-    }else if(q.replace(/\D/g,'').length===14){
-      // CNPJ — busca em chave_nfe
-      filtro='chave_nfe.ilike.*'+q.replace(/\D/g,'')+'*';
-    }else{
-      filtro='numero.eq.'+numNorm+',num_nota.eq.'+numNorm;
-    }
-    var pedRes=await sb.from('pedidos').select('*').or(filtro).order('entrada_at',{ascending:false}).limit(10);
+    var filtros=[];
+    if(qPedido)filtros.push('numero.eq.'+qPedido);
+    if(qNF)filtros.push('num_nota.eq.'+qNF);
+    if(qCNPJ&&qCNPJ.length===14)filtros.push('chave_nfe.ilike.*'+qCNPJ+'*');
+    if(!filtros.length){if(res)res.innerHTML='<p style="color:#ef4444">Preencha pelo menos um campo válido.</p>';return;}
+    var pedRes=await sb.from('pedidos').select('*').or(filtros.join(',')).order('entrada_at',{ascending:false}).limit(20);
     var pedidos=pedRes.data||[];
     if(!pedidos.length){
-      if(res)res.innerHTML='<div style="text-align:center;padding:60px 0;color:rgba(255,255,255,.4)"><div style="font-size:40px;margin-bottom:12px">📦</div><div>Nenhum pedido encontrado para "'+q+'"</div></div>';
+      if(res)res.innerHTML='<div style="text-align:center;padding:60px 0;color:rgba(255,255,255,.4)"><div style="font-size:40px;margin-bottom:12px">📦</div><div>Nenhum pedido encontrado para os critérios informados.</div></div>';
       return;
     }
-    // Buscar movimentações para todos os pedidos
     var ids=pedidos.map(function(p){return p.id;});
     var movRes=await sb.from('movimentacoes').select('*').in('pedido_id',ids).order('saida_at',{ascending:true});
     var movs=movRes.data||[];
@@ -2782,32 +2872,60 @@ async function buscarRastreamento(){
 function renderTimeline(p, movs){
   var statusAtual=SL[p.status]||p.status||'Em andamento';
   var concluido=p.status==='finalizado';
+  var cancelado=p.status==='cancelado';
   var steps=[];
+  var SL_SETOR={atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',balcao_op:'Balcão',separacao:'Balcão',faturamento:'Faturamento',expedicao:'Expedição'};
 
   // Passo 1: Criação
   steps.push({
     label:'Pedido criado — Atendimento',
-    sub:'Por '+p.criado_por+(p.vendedor?' · Vendedor: '+p.vendedor:'')+' · Tipo: '+(p.prioridade==='balcao'?'Balcão':p.prioridade==='entrega'?'Entrega CIF':'Retira'),
-    time:p.entrada_at,done:true,icon:'📋'
+    sub:'Por '+p.criado_por+(p.vendedor?' · Vendedor: '+p.vendedor:'')+' · Tipo: '+(p.prioridade==='balcao'?'Balcão':p.prioridade==='entrega'?'Entrega CIF':'Retira')+(p.valor_pedido?' · Valor: '+fmtBRL(p.valor_pedido):''),
+    time:p.entrada_at,done:true,icon:'📋',color:'#22d3a7'
   });
 
+  // Cancelado ANTES da NF
+  if(cancelado && !p.num_nota){
+    steps.push({label:'Pedido cancelado/excluído',sub:'Cancelado antes da emissão da nota fiscal',time:p.finalizado_at,done:true,icon:'❌',color:'#ef4444'});
+  }
+
   // Movimentações
-  var SL_SETOR={atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',balcao_op:'Balcão',separacao:'Balcão',faturamento:'Faturamento',expedicao:'Expedição'};
   movs.forEach(function(m){
     steps.push({
-      label:'Movido para '+( SL_SETOR[m.setor_destino]||m.setor_destino),
-      sub:'Por '+(m.confirmado_por||m.usuario||'—'),
-      time:m.saida_at,done:true,icon:'➡️'
+      label:'Movido para '+(SL_SETOR[m.setor_destino]||m.setor_destino),
+      sub:'Por '+(m.confirmado_por||m.usuario||'—')+(m.setor_origem?' · De: '+(SL_SETOR[m.setor_origem]||m.setor_origem):''),
+      time:m.saida_at,done:true,icon:'➡️',color:'#22d3a7'
     });
   });
+
+  // Ag. Retira
+  if(p.status==='ag_retira'){
+    steps.push({label:'Aguardando retirada',sub:'Nota emitida: '+(p.num_nota||'—')+' — aguardando cliente retirar',time:p.pendente_desde,done:true,icon:'🏪',color:'#f59e0b'});
+  }
+
+  // Devolução (lida do campo obs)
+  if(p.obs){
+    var obsLines=(p.obs||'').split('\n');
+    obsLines.forEach(function(linha){
+      if(linha.indexOf('DEVOLUÇÃO')>=0){
+        var parts=linha.split('|');
+        var motivo=parts.length>1?parts[1].replace('Motivo:','').trim():'—';
+        steps.push({label:'Devolução registrada',sub:'Motivo: '+motivo,time:null,done:true,icon:'↩️',color:'#ef4444'});
+      }
+    });
+  }
 
   // Faturamento / NF
   if(p.num_nota){
     steps.push({
       label:'Nota Fiscal emitida — NF '+p.num_nota,
       sub:'Valor: '+fmtBRL(p.valor_nota_fat)+(p.separador?' · Separador: '+p.separador:''),
-      time:p.finalizado_at,done:true,icon:'🧾'
+      time:p.finalizado_at,done:true,icon:'🧾',color:'#22d3a7'
     });
+  }
+
+  // Cancelado APÓS a NF
+  if(cancelado && p.num_nota){
+    steps.push({label:'Pedido cancelado após emissão da NF',sub:'NF: '+p.num_nota,time:p.finalizado_at,done:true,icon:'❌',color:'#ef4444'});
   }
 
   // Embarque
@@ -2815,57 +2933,52 @@ function renderTimeline(p, movs){
     steps.push({
       label:'Pedido embarcado',
       sub:(p.transportadora||'—')+(p.placa_veiculo?' · Placa: '+p.placa_veiculo:'')+(p.motorista?' · Motorista: '+p.motorista:''),
-      time:p.pendente_desde,done:true,icon:'🚚'
+      time:p.pendente_desde,done:true,icon:'🚚',color:'#818cf8'
     });
   }
 
   // Entrega confirmada
   if(p.entregue_at&&p.status!=='ag_retira'){
-    steps.push({
-      label:'Entrega confirmada',
-      sub:'Aguardando validação do canhoto',
-      time:p.entregue_at,done:true,icon:'✅'
-    });
+    steps.push({label:'Entrega confirmada',sub:'Aguardando validação do canhoto',time:p.entregue_at,done:true,icon:'✅',color:'#22d3a7'});
   }
 
   // Canhoto / Finalizado
-  if(p.canhoto_at||p.status==='finalizado'){
-    steps.push({
-      label:'Processo encerrado — Canhoto confirmado',
-      sub:'Entrega concluída com sucesso',
-      time:p.canhoto_at||p.finalizado_at,done:true,icon:'🏁'
-    });
+  if(p.canhoto_at||(concluido&&p.prioridade==='entrega')){
+    steps.push({label:'Canhoto confirmado — Processo encerrado',sub:'Entrega concluída com sucesso',time:p.canhoto_at||p.finalizado_at,done:true,icon:'🏁',color:'#22d3a7'});
+  }else if(concluido&&p.prioridade==='balcao'){
+    steps.push({label:'Retirado no balcão',sub:'Processo encerrado',time:p.finalizado_at,done:true,icon:'🏁',color:'#22d3a7'});
   }
 
   // Status atual se não finalizado
-  if(!concluido&&p.status!=='cancelado'){
+  if(!concluido&&!cancelado){
     var statusLabel={
       em_andamento:'Em processamento',aguardando:'Aguardando próximo setor',
-      pronto_balcao:'Pronto — aguardando chamada',ag_retira:'Aguardando retirada',
-      pronto_expedicao:'Pronto — aguardando embarque',ag_embarque:'Aguardando embarque',
-      em_entrega:'Em trânsito',aguard_canhoto:'Entregue — aguardando canhoto'
+      pronto_balcao:'Pronto — aguardando chamada no balcão',ag_retira:'Aguardando retirada pelo cliente',
+      pronto_expedicao:'NF emitida — aguardando embarque',ag_embarque:'Aguardando embarque',
+      em_entrega:'Em trânsito',aguard_canhoto:'Entregue — aguardando confirmação do canhoto'
     };
-    steps.push({
-      label:statusLabel[p.status]||statusAtual,sub:'Status atual',time:null,done:false,current:true,icon:'📍'
-    });
+    steps.push({label:statusLabel[p.status]||statusAtual,sub:'Status atual',time:null,done:false,current:true,icon:'📍',color:'#818cf8'});
   }
 
   var stepsHtml=steps.map(function(s,i){
-    var dtStr=s.time?new Date(s.time).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
-    var lineColor=s.done?'#22d3a7':s.current?'#818cf8':'rgba(99,179,237,.2)';
-    var dotBg=s.done?'#22d3a7':s.current?'#818cf8':'rgba(99,179,237,.2)';
-    return '<div style="display:flex;gap:14px;padding-bottom:'+(i<steps.length-1?'20px':'0')+';position:relative">'+
+    var dtStr=s.time?new Date(s.time).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+    var dotBg=s.current?'#818cf8':(s.color||'#22d3a7');
+    var lineColor=s.done?(s.color||'#22d3a7'):'rgba(99,179,237,.15)';
+    return '<div style="display:flex;gap:14px;padding-bottom:'+(i<steps.length-1?'20px':'0')+'">'+
       '<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">'+
-        '<div style="width:32px;height:32px;border-radius:50%;background:'+dotBg+';display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">'+s.icon+'</div>'+
-        (i<steps.length-1?'<div style="width:2px;flex:1;background:'+lineColor+';margin-top:4px;min-height:16px"></div>':'')+
+        '<div style="width:32px;height:32px;border-radius:50%;background:'+(s.done||s.current?dotBg+'22':'rgba(99,179,237,.1)')+';border:2px solid '+dotBg+';display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">'+s.icon+'</div>'+
+        (i<steps.length-1?'<div style="width:2px;flex:1;background:'+lineColor+';margin-top:4px;min-height:14px;opacity:.5"></div>':'')+
       '</div>'+
       '<div style="padding-top:4px;flex:1">'+
-        '<div style="font-size:13px;font-weight:600;color:'+(s.current?'#818cf8':s.done?'#e8edf5':'rgba(232,237,245,.5)')+'">'+s.label+'</div>'+
-        '<div style="font-size:11px;color:rgba(232,237,245,.5);margin-top:2px">'+s.sub+'</div>'+
-        (s.time?'<div style="font-size:10px;color:#22d3a7;margin-top:4px">'+dtStr+'</div>':'')+
+        '<div style="font-size:13px;font-weight:600;color:'+(s.current?'#818cf8':s.done?'#e8edf5':'rgba(232,237,245,.4)')+'">'+s.label+'</div>'+
+        (s.sub?'<div style="font-size:11px;color:rgba(232,237,245,.45);margin-top:2px">'+s.sub+'</div>':'')+
+        (dtStr?'<div style="font-size:10px;color:'+dotBg+';margin-top:4px;font-weight:600">'+dtStr+'</div>':'')+
       '</div>'+
     '</div>';
   }).join('');
+
+  var badgeColor=concluido?'#22d3a7':cancelado?'#ef4444':'#60a5fa';
+  var badgeBg=concluido?'rgba(34,211,167,.15)':cancelado?'rgba(239,68,68,.15)':'rgba(59,130,246,.15)';
 
   return '<div style="background:#111827;border:1px solid rgba(99,179,237,.1);border-radius:14px;padding:20px 24px;margin-bottom:4px">'+
     '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap">'+
@@ -2874,7 +2987,7 @@ function renderTimeline(p, movs){
         '<div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:2px">'+(p.nome_cliente||'—')+'</div>'+
         (p.num_nota?'<div style="font-size:11px;color:#f59e0b;margin-top:4px">NF: '+p.num_nota+' · '+fmtBRL(p.valor_nota_fat)+'</div>':'')+
       '</div>'+
-      '<span style="padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700;background:'+(concluido?'rgba(34,211,167,.15)':'rgba(59,130,246,.15)')+';color:'+(concluido?'#22d3a7':'#60a5fa')+'">'+statusAtual+'</span>'+
+      '<span style="padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700;background:'+badgeBg+';color:'+badgeColor+'">'+statusAtual+'</span>'+
     '</div>'+
     stepsHtml+
   '</div>';
@@ -2952,26 +3065,8 @@ async function enviarAgRetira(id) {
 }
 
 async function agRetiraChamarBalcao(id) {
-  ov(true);
-  try {
-    var pedido = getPedidoById(id);
-    if (!pedido) throw new Error('Pedido não encontrado.');
-    var agora = new Date().toISOString();
-    var res = await sb.from('pedidos').update({
-      status: 'balcao_chamado',
-      setor: 'balcao_op',
-      pendente_desde: agora
-    }).eq('id', id);
-    if (res.error) throw res.error;
-    upsertPedidoLocal({id: id, status: 'balcao_chamado', setor: 'balcao_op', pendente_desde: agora});
-    var linha = buildOccurrenceLine('RETIRADA', 'Ag. Retira', 'Cliente retornou. Chamado no balcão.');
-    await appendObsPedido(id, linha);
-    _lastPainelSnap = '';
-    atualizarTelasAtivas();
-    refreshPedidosSoon(500);
-    var _e2=document.createElement('div');_e2.className='toast t-ok';_e2.textContent='Cliente chamado no balcão! Pedido #'+pedido.numero;el('tw').appendChild(_e2);requestAnimationFrame(function(){requestAnimationFrame(function(){_e2.classList.add('show');});});setTimeout(function(){_e2.classList.remove('show');setTimeout(function(){_e2.remove();},300);},3500);
-  } catch(e) { toast(e.message, 'err'); }
-  finally { ov(false); }
+  // Reutiliza o mesmo fluxo: exige chave NF-e → vai para canhotos → narra TV
+  abrirChamaBalcao(id);
 }
 
 async function agRetiraCancelar(id) {
@@ -3078,6 +3173,122 @@ async function occCancelar(id) {
 
 // ── Render Ag. Retira ──
 
+// ── Recebimento de NF ──
+var RECEBIMENTOS = [];
+
+async function fetchRecebimentos(){
+  var hoje=new Date();hoje.setHours(0,0,0,0);
+  var startRec=el('rec-date-start')&&el('rec-date-start').value?el('rec-date-start').value:fmtDateInput(hoje);
+  var endRec=el('rec-date-end')&&el('rec-date-end').value?el('rec-date-end').value:fmtDateInput(hoje);
+  var r=getPeriodRange(startRec,endRec);
+  var res=await sb.from('recebimentos').select('*').gte('recebido_at',r.startIso).lte('recebido_at',r.endIso).order('recebido_at',{ascending:false});
+  RECEBIMENTOS=res.data||[];
+}
+
+function renderRecebimentos(){
+  var items=RECEBIMENTOS.slice();
+  // Filtro por NF
+  var filtNF=(el('rec-filtro-nf')?el('rec-filtro-nf').value:'').trim();
+  if(filtNF)items=items.filter(function(r){return (r.num_nota||'').indexOf(filtNF)>=0;});
+  if(el('rec-count'))el('rec-count').textContent=items.length+' registro(s)';
+  if(el('rec-empty'))el('rec-empty').style.display=items.length?'none':'block';
+  if(el('rec-table'))el('rec-table').style.display=items.length?'':'none';
+  if(!el('rec-tbody'))return;
+  el('rec-tbody').innerHTML=items.map(function(r){
+    var dt=r.recebido_at?new Date(r.recebido_at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    var chaveShort=r.chave_nfe?r.chave_nfe.substring(0,10)+'...'+r.chave_nfe.substring(34):r.chave_nfe||'—';
+    return '<tr>'+
+      '<td style="color:var(--muted)">'+dt+'</td>'+
+      '<td>'+( r.usuario||'—')+'</td>'+
+      '<td style="font-family:var(--font-head);font-size:15px;font-weight:700;color:var(--sep)">'+(r.num_nota||'—')+'</td>'+
+      '<td style="font-family:var(--font-mono);font-size:11px;color:var(--muted)" title="'+(r.chave_nfe||'')+'">'+chaveShort+'</td>'+
+    '</tr>';
+  }).join('');
+}
+
+async function filtrarRecebimentos(){
+  ov(true);
+  await fetchRecebimentos();
+  ov(false);
+  renderRecebimentos();
+}
+
+function limparFiltrosRecebimento(){
+  if(el('rec-date-start'))el('rec-date-start').value='';
+  if(el('rec-date-end'))el('rec-date-end').value='';
+  if(el('rec-filtro-nf'))el('rec-filtro-nf').value='';
+  filtrarRecebimentos();
+}
+
+function _extrairNumNotaChave(chave){
+  // Chave NF-e: posições 26-34 (0-indexed) = nNF (9 dígitos)
+  var nums=chave.replace(/\D/g,'');
+  if(nums.length!==44)return '';
+  return String(parseInt(nums.substring(25,34),10)); // remove zeros à esquerda
+}
+
+function recScanCheck(val){
+  var fb=el('rec-scan-feedback');
+  if(!fb)return;
+  var v=val.replace(/\D/g,'');
+  if(v.length===0){fb.style.color='var(--muted)';fb.textContent='';return;}
+  if(v.length<44){fb.style.color='var(--muted)';fb.textContent=v.length+'/44';return;}
+  if(v.length>=44){
+    var num=_extrairNumNotaChave(v);
+    fb.style.color='var(--accent)';
+    fb.textContent=num?'NF: '+num:' Chave válida';
+  }
+}
+
+async function recScanRegistrar(){
+  var input=el('rec-scan-input');
+  var fb=el('rec-scan-feedback');
+  if(!input)return;
+  var chave=(input.value||'').replace(/\D/g,'').trim();
+  if(chave.length!==44){if(fb){fb.style.color='var(--danger)';fb.textContent='Chave deve ter 44 dígitos.';}return;}
+  var num=_extrairNumNotaChave(chave);
+  ov(true);
+  try{
+    var agora=new Date().toISOString();
+    var res=await sb.from('recebimentos').insert({chave_nfe:chave,num_nota:num,usuario:ME?ME.login:'',recebido_at:agora});
+    if(res.error)throw res.error;
+    input.value='';
+    if(fb){fb.style.color='var(--accent)';fb.textContent='✓ NF '+num+' registrada!';}
+    await fetchRecebimentos();renderRecebimentos();
+    setTimeout(function(){if(fb)fb.textContent='';},3000);
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
+}
+
+function abrirRegistrarNF(){
+  if(el('m-rec-chave'))el('m-rec-chave').value='';
+  if(el('m-rec-preview'))el('m-rec-preview').textContent='';
+  openM('m-registrar-nf');
+  setTimeout(function(){if(el('m-rec-chave'))el('m-rec-chave').focus();},200);
+}
+function recModalCheck(val){
+  var prev=el('m-rec-preview');
+  if(!prev)return;
+  var v=val.replace(/\D/g,'');
+  if(v.length!==44){prev.textContent=v.length>0?v.length+' / 44 dígitos':'';return;}
+  var num=_extrairNumNotaChave(v);
+  prev.textContent=num?'Número da nota: '+num:'Chave validada.';
+}
+async function confirmarRegistrarNF(){
+  var chave=(el('m-rec-chave')?el('m-rec-chave').value:'').replace(/\D/g,'').trim();
+  if(chave.length!==44){toast('Informe a chave de 44 dígitos.','warn');return;}
+  var num=_extrairNumNotaChave(chave);
+  closeM('m-registrar-nf');ov(true);
+  try{
+    var agora=new Date().toISOString();
+    var res=await sb.from('recebimentos').insert({chave_nfe:chave,num_nota:num,usuario:ME?ME.login:'',recebido_at:agora});
+    if(res.error)throw res.error;
+    await fetchRecebimentos();renderRecebimentos();
+    toast('NF '+(num||chave)+' registrada com sucesso!','ok');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
+}
+
 // ── Em Trânsito ──
 function renderEmTransitoBadge(){
   var items=PEDIDOS.filter(function(o){return o.status==='em_entrega';});
@@ -3133,6 +3344,7 @@ function renderCanhotos(){
   el('canhoto-tbody').innerHTML=items.map(function(o){
     var entregueAt=o.entregue_at?new Date(o.entregue_at):null;
     var dtEntrega=entregueAt?entregueAt.toLocaleDateString('pt-BR')+' '+entregueAt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';
+    var chaveShort=o.chave_nfe?o.chave_nfe.substring(0,10)+'...'+o.chave_nfe.substring(34):'—';
     return '<tr>'+
       '<td style="font-family:var(--font-head);font-size:15px;font-weight:700">#'+o.numero+'</td>'+
       '<td>'+(o.nome_cliente||'—')+'</td>'+
@@ -3140,45 +3352,65 @@ function renderCanhotos(){
       '<td style="color:#818cf8;font-weight:600">'+(parseFloat(o.valor_nota_fat)>0?fmtBRL(o.valor_nota_fat):'—')+'</td>'+
       '<td>'+(o.transportadora||'—')+'</td>'+
       '<td>'+(o.motorista||'—')+'</td>'+
-      '<td style="color:var(--accent)">' + dtEntrega + '</td>'+
-      '<td><button class="bok" style="font-size:11px;padding:5px 12px" onclick="abrirCanhotoOk(\''+o.id+'\')">✓ Ok — Confirmar Canhoto</button></td>'+
+      '<td style="color:var(--accent)">'+dtEntrega+'</td>'+
+      '<td style="font-size:10px;color:var(--muted);font-family:var(--font-mono)">'+chaveShort+'</td>'+
     '</tr>';
   }).join('');
 }
-function abrirCanhotoOk(id){
-  var p=getPedidoById(id);
-  if(!p)return;
-  _canhotoTarget=id;
-  if(el('canhoto-ok-desc'))el('canhoto-ok-desc').textContent='Pedido #'+p.numero+' — '+(p.nome_cliente||'')+'  NF: '+(p.num_nota||'')+'  Chave registrada na saída: '+(p.chave_nfe||'(não registrada)');
-  if(el('canhoto-chave-input'))el('canhoto-chave-input').value='';
-  if(el('canhoto-chave-feedback'))el('canhoto-chave-feedback').textContent='';
-  openM('m-canhoto-ok');
+
+// ── Canhoto: bipagem única ──
+function canhotoScanCheck(val){
+  var fb=el('canhoto-scan-feedback');
+  if(!fb)return;
+  var v=val.replace(/\D/g,'');
+  if(v.length===0){fb.style.color='var(--muted)';fb.textContent='';return;}
+  if(v.length<44){fb.style.color='var(--muted)';fb.textContent=v.length+' / 44 dígitos';return;}
+  if(v.length===44){
+    // Preview: encontrar pedido correspondente
+    var match=PEDIDOS.filter(function(o){return o.status==='aguard_canhoto';}).find(function(o){return o.chave_nfe===v;});
+    if(match){
+      fb.style.color='var(--accent)';
+      fb.textContent='✓ Chave encontrada — Pedido #'+match.numero+' / '+( match.nome_cliente||'—')+' — Pressione Enter ou clique Confirmar';
+    }else{
+      fb.style.color='var(--warn)';
+      fb.textContent='⚠ Nenhum pedido aguardando canhoto com essa chave.';
+    }
+  }
 }
-async function confirmarCanhoto(){
-  var chave=(el('canhoto-chave-input').value||'').trim();
-  var fb=el('canhoto-chave-feedback');
-  if(!chave||chave.length!==44){if(fb){fb.style.color='var(--danger)';fb.textContent='A chave deve ter exatamente 44 dígitos.';}return;}
-  var pedido=getPedidoById(_canhotoTarget);
-  if(!pedido){toast('Pedido não encontrado.','err');return;}
-  // Fix 3: chave deve ser idêntica à registrada na saída
-  if(pedido.chave_nfe&&chave!==pedido.chave_nfe){
-    if(fb){fb.style.color='var(--danger)';fb.textContent='⚠ Chave diferente da registrada no embarque. Verifique e tente novamente.';}
+async function canhotoScanConfirmar(){
+  var input=el('canhoto-scan-input');
+  var fb=el('canhoto-scan-feedback');
+  if(!input)return;
+  var chave=(input.value||'').replace(/\D/g,'').trim();
+  if(chave.length!==44){if(fb){fb.style.color='var(--danger)';fb.textContent='A chave deve ter 44 dígitos.';}return;}
+  var aguardando=PEDIDOS.filter(function(o){return o.status==='aguard_canhoto';});
+  var pedido=aguardando.find(function(o){return o.chave_nfe===chave;});
+  if(!pedido){
+    if(fb){fb.style.color='var(--danger)';fb.textContent='⚠ Nenhum pedido aguardando canhoto com essa chave NF-e.';}
     return;
   }
-  closeM('m-canhoto-ok');
   ov(true);
   try{
     var agora=new Date().toISOString();
-    var res=await sb.from('pedidos').update({status:'finalizado',finalizado_at:agora,canhoto_at:agora}).eq('id',_canhotoTarget);
+    var res=await sb.from('pedidos').update({status:'finalizado',finalizado_at:agora,canhoto_at:agora}).eq('id',pedido.id);
     if(res.error)throw res.error;
-    upsertPedidoLocal({id:_canhotoTarget,status:'finalizado',finalizado_at:agora,canhoto_at:agora});
-    _canhotoTarget=null;
+    upsertPedidoLocal({id:pedido.id,status:'finalizado',finalizado_at:agora,canhoto_at:agora});
+    input.value='';
+    if(fb){fb.style.color='var(--accent)';fb.textContent='✓ Canhoto do pedido #'+pedido.numero+' confirmado! Processo encerrado.';}
     _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(500);
     renderCanhotos();renderCanhotosBadge();
-    toast('Canhoto confirmado! Processo encerrado.','ok');
+    toast('Canhoto #'+pedido.numero+' confirmado!','ok');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
 }
+// Mantido para compatibilidade (não usado mais diretamente)
+function abrirCanhotoOk(id){
+  var p=getPedidoById(id);
+  if(!p)return;
+  var input=el('canhoto-scan-input');
+  if(input){input.focus();input.value=p.chave_nfe||'';canhotoScanCheck(input.value);}
+}
+async function confirmarCanhoto(){canhotoScanConfirmar();}
 
 // ── Pendências de Saldo ──
 // ── Ag. Embarque ──
