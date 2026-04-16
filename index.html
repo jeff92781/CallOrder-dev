@@ -189,14 +189,15 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   min-width:0;
   background:rgba(0,0,0,.20);
   padding:12px 16px 12px 22px;
+  position:relative;
 }
 
 .orc-num{
-  font-family:var(--font-mono);
-  font-size:32px;
-  font-weight:700;
+  font-family:"Bahnschrift SemiCondensed","Bahnschrift Condensed","Bahnschrift",var(--font-mono),sans-serif;
+  font-size:48px;
+  font-weight:600;
   letter-spacing:-.02em;
-  line-height:1;
+  line-height:.92;
   color:var(--text);
   word-break:break-word;
   max-width:100%;
@@ -205,8 +206,9 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 
 /* PARCIAL maior e mais para baixo */
 .orc-badge-parcial{
-  margin-top:auto;
-  margin-bottom:6px;
+  position:absolute;
+  left:22px;
+  bottom:38px;
   display:inline-flex;
   align-items:center;
   align-self:flex-start;
@@ -223,13 +225,20 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 }
 
 .orc-time{
-  font-size:14px;
-  color:rgba(232,237,245,.78);
-  font-weight:700;
+  position:absolute;
+  left:22px;
+  right:12px;
+  bottom:12px;
+  font-size:15px;
+  color:rgba(232,237,245,.9);
+  font-weight:800;
   margin-top:0;
   padding-top:0;
   letter-spacing:.02em;
   font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 
 /* ── Coluna 2 ── */
@@ -269,7 +278,8 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   letter-spacing:-.02em;
   margin-bottom:2px;
   word-break:break-word;
-}
+
+  text-transform:uppercase;}
 
 .orc-grid{
   display:grid;
@@ -292,7 +302,8 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   font-weight:600;
   line-height:1.25;
   word-break:break-word;
-}
+
+  text-transform:uppercase;}
 
 /* ── Coluna 3 ── */
 .orc-actions{
@@ -350,6 +361,8 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   display:flex;
   flex-direction:column;
   justify-content:center;
+  align-items:center;
+  text-align:center;
   padding:10px 14px;
 }
 
@@ -367,18 +380,21 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 }
 
 .orc-tval{
-  font-family:var(--font-mono);
-  font-size:22px;
-  font-weight:700;
+  font-family:"Bahnschrift SemiCondensed","Bahnschrift Condensed","Bahnschrift",var(--font-mono),sans-serif;
+  font-size:36px;
+  font-weight:600;
   letter-spacing:-.02em;
   line-height:1;
   color:var(--text);
   font-variant-numeric:tabular-nums;
+  text-align:center;
 }
 
 .orc-tval.ok{color:var(--text)}
 .orc-tval.warn{color:var(--warn)}
 .orc-tval.danger{color:var(--danger)}
+.orc-timer-cell:first-child .orc-tlbl,
+.orc-timer-cell:first-child .orc-tval{color:var(--blue)!important}
 
 /* ── Coluna 5 ── */
 .orc-type-col{
@@ -449,7 +465,7 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
       minmax(150px, .68fr);
   }
 
-  .orc-num{font-size:30px}
+  .orc-num{font-size:48px}
   .orc-cli-name{font-size:18px}
   .orc-val{font-size:12px}
   .orc-type-tag{font-size:14px}
@@ -465,7 +481,7 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
       minmax(132px, .66fr);
   }
 
-  .orc-num{font-size:28px}
+  .orc-num{font-size:42px}
   .orc-cli-name{font-size:17px}
   .orc-val{font-size:11px}
   .orc-grid{gap:7px 12px}
