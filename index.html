@@ -656,32 +656,35 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
     </div>
 
     <!-- Filter bar -->
-     <div style="padding:14px 16px;border-radius:16px;background:var(--bg2);border:1px solid var(--border2);margin-bottom:16px;display:flex;flex-direction:column;gap:10px">
-      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
-        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);min-width:60px">Setor</span>
-        <button class="fchip active" onclick="setPainelFilter('setor','all',this)">Todos</button>
-        <button class="fchip" onclick="setPainelFilter('setor','atendimento',this)">Atendimento</button>
-        <button class="fchip" onclick="setPainelFilter('setor','estoque',this)">Estoque</button>
-        <button class="fchip" onclick="setPainelFilter('setor','corte',this)">Corte</button>
-        <button class="fchip" onclick="setPainelFilter('setor','expedicao',this)">Expedição</button>
-        <button class="fchip" onclick="setPainelFilter('setor','balcao_op',this)">Balcão</button>
-        <button class="fchip" onclick="setPainelFilter('setor','faturamento',this)">Faturamento</button>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
-        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);min-width:60px">Operação</span>
-        <button class="fchip active" onclick="setPainelFilter('op','all',this)">Todas</button>
-        <button class="fchip" onclick="setPainelFilter('op','balcao',this)">Balcão</button>
-        <button class="fchip" onclick="setPainelFilter('op','retira',this)">Retira</button>
-        <button class="fchip" onclick="setPainelFilter('op','entrega',this)">Entrega</button>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
-        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);min-width:60px">Prioridade</span>
-        <button class="fchip active" onclick="setPainelFilter('prio','all',this)">Todas</button>
-        <button class="fchip" onclick="setPainelFilter('prio','sim',this)">Somente prioridade</button>
-        <button class="fchip" onclick="setPainelFilter('prio','nao',this)">Sem prioridade</button>
-        <button class="fchip" style="color:var(--muted)" onclick="resetPainelFilters()">Limpar filtros</button>
-      </div>
-    </div>
+    <!-- Filter bar -->
+<div style="padding:14px 16px;border-radius:16px;background:var(--bg2);border:1px solid var(--border2);margin-bottom:16px;display:flex;flex-direction:column;gap:10px">
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+    <span style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);min-width:60px">Setor</span>
+    <button class="fchip active" onclick="setPainelFilter('setor','all',this)">Todos</button>
+    <button class="fchip" onclick="setPainelFilter('setor','atendimento',this)">Atendimento</button>
+    <button class="fchip" onclick="setPainelFilter('setor','estoque',this)">Estoque</button>
+    <button class="fchip" onclick="setPainelFilter('setor','corte',this)">Corte</button>
+    <button class="fchip" onclick="setPainelFilter('setor','expedicao',this)">Expedição</button>
+    <button class="fchip" onclick="setPainelFilter('setor','balcao_op',this)">Balcão</button>
+    <button class="fchip" onclick="setPainelFilter('setor','faturamento',this)">Faturamento</button>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+    <span style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);min-width:60px">Operação</span>
+    <button class="fchip active" onclick="setPainelFilter('op','all',this)">Todas</button>
+    <button class="fchip" onclick="setPainelFilter('op','balcao',this)">Balcão</button>
+    <button class="fchip" onclick="setPainelFilter('op','retira',this)">Retira</button>
+    <button class="fchip" onclick="setPainelFilter('op','entrega',this)">Entrega</button>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+    <span style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);min-width:60px">Prioridade</span>
+    <button class="fchip active" onclick="setPainelFilter('prio','all',this)">Todas</button>
+    <button class="fchip" onclick="setPainelFilter('prio','sim',this)">Somente prioridade</button>
+    <button class="fchip" onclick="setPainelFilter('prio','nao',this)">Sem prioridade</button>
+    <button class="fchip" style="color:var(--muted)" onclick="resetPainelFilters()">Limpar filtros</button>
+  </div>
+</div>
 
     <!-- Board list -->
     <div id="painel-board" style="display:flex;flex-direction:column;gap:12px"></div>
