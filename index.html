@@ -127,7 +127,7 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   gap:0;
   align-items:stretch;
   width:100%;
-  min-height:130px;
+  min-height:112px;
   border-radius:14px;
   background:var(--bg2);
   border:1px solid var(--border);
@@ -372,7 +372,7 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   color:var(--text);
 }
 
-.orc-tval.ok{color:var(--accent)}
+.orc-tval.ok{color:var(--text)}
 .orc-tval.warn{color:var(--warn)}
 .orc-tval.danger{color:var(--danger)}
 
@@ -439,7 +439,7 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 
   .orc-col:first-child{border-top:none}
 }
-.fchip{padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);font-family:var(--font-mono);transition:all .15s}
+.fchip{padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:var(--font-mono);transition:all .15s}
 .fchip:hover{border-color:var(--border3);color:var(--text);background:var(--bg4)}
 .fchip.active{background:rgba(34,211,167,.12);color:var(--accent);border-color:rgba(34,211,167,.4)}
 @keyframes balcaoBlink{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(239,68,68,0)}50%{opacity:.82;box-shadow:0 0 10px 3px rgba(239,68,68,.4)}}
@@ -2320,6 +2320,28 @@ function renderPainelBoard(){
   if(countEl)countEl.textContent=filtered.length+' pedido(s)';
   if(emptyEl)emptyEl.style.display=filtered.length?'none':'block';
   board.style.display=filtered.length?'':'none';
+
+  // Sort: prioridade marcada > balcao > retira > entrega | dentro de cada grupo: maior tempo primeiro
+  filtered.sort(function(a,b){
+    var oa=a.o, ob=b.o;
+    var isPrioA=_prioList.indexOf(normalizarNumero(oa.numero||''))>=0;
+    var isPrioB=_prioList.indexOf(normalizarNumero(ob.numero||''))>=0;
+    // Peso por tipo de operação (pedidos com prioridade ganham peso de balcão)
+    function peso(o,isPrioFlag){
+      var p=o.prioridade||'retira';
+      if(isPrioFlag)return 3; // prioridade marcada = balcão
+      if(p==='balcao')return 3;
+      if(p==='retira')return 2;
+      return 1; // entrega
+    }
+    var pa=peso(oa,isPrioA), pb=peso(ob,isPrioB);
+    if(pa!==pb)return pb-pa; // maior peso primeiro
+    // Mesmo peso: maior tempo de espera primeiro
+    var ta=calcTotalMs(oa), tb=calcTotalMs(ob);
+    var msA=Math.max(0,(ta.freeze||Date.now())-ta.entry);
+    var msB=Math.max(0,(tb.freeze||Date.now())-tb.entry);
+    return msB-msA;
+  });
 
   board.innerHTML=filtered.map(function(item){return renderRowCard(item.o,item.setor,item.transito);}).join('');
 }
