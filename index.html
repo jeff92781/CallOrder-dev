@@ -53,7 +53,7 @@ nav{display:flex;align-items:center;background:var(--glass2);backdrop-filter:blu
 .nav-right{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text)}
 .badge-r{padding:5px 14px;border-radius:20px;font-size:12px;background:linear-gradient(135deg,var(--accent-dim),var(--cyan-dim));color:var(--accent);border:1px solid rgba(34,211,167,0.35);font-weight:700;letter-spacing:.02em}
 .badge-s{padding:5px 14px;border-radius:20px;font-size:12px;background:var(--blue-dim);color:var(--blue);border:1px solid rgba(59,130,246,0.35);font-weight:700;letter-spacing:.02em}
-main{padding:20px 28px;width:100%;position:relative;z-index:1}
+main{padding:14px 20px;width:100%;position:relative;z-index:1}
 .screen{display:none}.screen.active{display:block}
 #ov{position:fixed;inset:0;background:rgba(11,17,33,.92);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:500;font-family:var(--font-head);font-size:16px;color:var(--accent);letter-spacing:.05em}
 #ov.h{display:none!important}
@@ -88,7 +88,7 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 .btnp:hover{transform:translateY(-1px);box-shadow:0 6px 24px var(--accent-glow)}
 .btnp:active{transform:translateY(0)}
 .lerr{margin-top:14px;color:var(--danger);font-size:12px;text-align:center;min-height:16px}
-.ph{display:flex;align-items:center;gap:14px;margin-bottom:24px;flex-wrap:wrap}
+.ph{display:flex;align-items:center;gap:14px;margin-bottom:12px;flex-wrap:wrap}
 .pt{font-family:var(--font-head);font-size:22px;font-weight:700;flex:1}
 .btnn{padding:10px 20px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04342C;border:none;border-radius:var(--radius);font-family:var(--font-mono);font-size:12px;font-weight:700;cursor:pointer;display:none;transition:all .2s;box-shadow:0 4px 16px var(--accent-glow);text-transform:uppercase;letter-spacing:.02em}
 .btnn:hover{transform:translateY(-1px);box-shadow:0 6px 24px var(--accent-glow)}
@@ -109,7 +109,7 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 .cdot-icon{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;filter:drop-shadow(0 0 4px currentColor)}
 .cn{font-family:var(--font-head);font-size:13px;font-weight:600;flex:1}
 .cc{color:var(--muted);font-size:11px}
-.card{background:var(--bg3);border-radius:var(--radius-lg);border:1px solid var(--border);padding:18px;margin-bottom:12px;transition:all .3s;position:relative}
+.card{background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border);padding:10px 12px;margin-bottom:6px;transition:all .3s;position:relative}
 .card:hover{border-color:var(--border2);box-shadow:0 4px 20px rgba(0,0,0,0.25)}
 .card.prio-balcao{background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.25)}
 .card.prio-entrega{background:rgba(129,140,248,.05);border-color:rgba(129,140,248,.3)}
@@ -119,16 +119,16 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 .order-row{
   display:grid;
   grid-template-columns:
-    minmax(168px, .78fr)
-    minmax(340px, 1.55fr)
-    minmax(188px, .95fr)
-    minmax(142px, .62fr)
-    minmax(132px, .62fr);
+    minmax(130px, .65fr)
+    minmax(300px, 1.55fr)
+    minmax(160px, .9fr)
+    minmax(110px, .52fr)
+    minmax(100px, .5fr);
   gap:0;
   align-items:stretch;
   width:100%;
-  min-height:98px;
-  border-radius:14px;
+  min-height:66px;
+  border-radius:10px;
   background:var(--bg2);
   border:1px solid var(--border);
   position:relative;
@@ -142,9 +142,9 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   left:0;
   top:0;
   bottom:0;
-  width:5px;
+  width:3px;
   background:var(--accent);
-  border-radius:14px 0 0 14px;
+  border-radius:10px 0 0 10px;
 }
 
 .order-row:hover{border-color:var(--border2)}
@@ -188,13 +188,13 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   justify-content:flex-start;
   min-width:0;
   background:rgba(0,0,0,.20);
-  padding:12px 16px 12px 22px;
+  padding:8px 10px 8px 14px;
   position:relative;
 }
 
 .orc-num{
   font-family:"Bahnschrift SemiCondensed","Bahnschrift Condensed","Bahnschrift",var(--font-mono),sans-serif;
-  font-size:48px;
+  font-size:30px;
   font-weight:600;
   letter-spacing:-.02em;
   line-height:.92;
@@ -207,17 +207,17 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 /* PARCIAL maior e mais para baixo */
 .orc-badge-parcial{
   position:absolute;
-  left:22px;
-  bottom:38px;
+  left:14px;
+  bottom:24px;
   display:inline-flex;
   align-items:center;
   align-self:flex-start;
-  font-size:10px;
+  font-size:9px;
   font-weight:800;
   text-transform:uppercase;
   letter-spacing:.08em;
-  padding:4px 10px;
-  border-radius:7px;
+  padding:2px 7px;
+  border-radius:5px;
   background:rgba(245,158,11,.18);
   color:var(--warn);
   border:1px solid rgba(245,158,11,.42);
@@ -226,10 +226,10 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 
 .orc-time{
   position:absolute;
-  left:22px;
-  right:12px;
-  bottom:12px;
-  font-size:15px;
+  left:14px;
+  right:8px;
+  bottom:8px;
+  font-size:11px;
   color:rgba(232,237,245,.9);
   font-weight:800;
   margin-top:0;
@@ -247,8 +247,8 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   flex-direction:column;
   justify-content:center;
   min-width:0;
-  padding:12px 22px;
-  gap:8px;
+  padding:7px 14px;
+  gap:4px;
 }
 
 /* ESTOQUE maior, central e ocupando a largura útil */
@@ -258,33 +258,32 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   justify-content:center;
   width:100%;
   text-align:center;
-  padding:6px 14px;
-  border-radius:10px;
-  font-size:13px;
+  padding:3px 10px;
+  border-radius:7px;
+  font-size:10px;
   font-weight:800;
   text-transform:uppercase;
   letter-spacing:.08em;
   background:rgba(34,211,167,.14);
   border:1.5px solid rgba(34,211,167,.45);
   color:var(--accent);
-  margin-bottom:6px;
+  margin-bottom:3px;
 }
 
 .orc-cli-name{
-  font-size:20px;
+  font-size:13px;
   font-weight:700;
   line-height:1.05;
   color:var(--text);
-  letter-spacing:-.02em;
-  margin-bottom:2px;
+  letter-spacing:-.01em;
+  margin-bottom:1px;
   word-break:break-word;
-
   text-transform:uppercase;}
 
 .orc-grid{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:8px 18px;
+  gap:3px 12px;
   margin-top:0;
 }
 
@@ -297,12 +296,11 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 }
 
 .orc-val{
-  font-size:12px;
+  font-size:11px;
   color:var(--text);
   font-weight:600;
-  line-height:1.25;
+  line-height:1.2;
   word-break:break-word;
-
   text-transform:uppercase;}
 
 /* ── Coluna 3 ── */
@@ -310,9 +308,9 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   display:flex;
   flex-direction:column;
   justify-content:center;
-  gap:5px;
+  gap:3px;
   min-width:0;
-  padding:10px;
+  padding:6px 8px;
 }
 
 .orc-row2{
@@ -322,19 +320,19 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 }
 
 .orc-actions button{
-  min-height:30px;
+  min-height:24px;
   width:100%;
   border:none;
-  border-radius:8px;
-  font-size:12px;
+  border-radius:6px;
+  font-size:10px;
   font-weight:700;
   font-family:var(--font-mono);
   cursor:pointer;
-  padding:0 8px;
+  padding:0 6px;
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:5px;
+  gap:4px;
   transition:opacity .15s;
   box-sizing:border-box;
 }
@@ -342,9 +340,9 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 .orc-actions button:hover{opacity:.85}
 
 .orc-row2 button{
-  min-height:26px;
-  font-size:10px !important;
-  padding:0 6px !important;
+  min-height:20px;
+  font-size:9px !important;
+  padding:0 4px !important;
   justify-content:center !important;
 }
 
@@ -363,7 +361,7 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   justify-content:center;
   align-items:center;
   text-align:center;
-  padding:10px 14px;
+  padding:6px 8px;
 }
 
 .orc-timer-cell + .orc-timer-cell{
@@ -371,17 +369,17 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 }
 
 .orc-tlbl{
-  font-size:10px;
+  font-size:8px;
   text-transform:uppercase;
   letter-spacing:.07em;
   color:var(--muted);
   font-weight:700;
-  margin-bottom:3px;
+  margin-bottom:1px;
 }
 
 .orc-tval{
   font-family:"Bahnschrift SemiCondensed","Bahnschrift Condensed","Bahnschrift",var(--font-mono),sans-serif;
-  font-size:36px;
+  font-size:22px;
   font-weight:600;
   letter-spacing:-.02em;
   line-height:1;
@@ -402,19 +400,19 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:6px;
+  gap:4px;
   min-width:0;
   background:rgba(0,0,0,.22);
-  padding:10px 10px;
+  padding:6px 8px;
 }
 
 .orc-type-tag{
   display:block;
   width:100%;
   text-align:center;
-  padding:10px 8px;
-  border-radius:8px;
-  font-size:15px;
+  padding:6px 6px;
+  border-radius:6px;
+  font-size:11px;
   font-weight:800;
   text-transform:uppercase;
   letter-spacing:.03em;
@@ -458,34 +456,34 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 @media(max-width:1600px){
   .order-row{
     grid-template-columns:
-      minmax(220px, .95fr)
-      minmax(470px, 1.7fr)
-      minmax(205px, .92fr)
-      minmax(165px, .7fr)
-      minmax(150px, .68fr);
+      minmax(170px, .85fr)
+      minmax(380px, 1.6fr)
+      minmax(170px, .88fr)
+      minmax(130px, .62fr)
+      minmax(118px, .60fr);
   }
 
-  .orc-num{font-size:48px}
-  .orc-cli-name{font-size:18px}
-  .orc-val{font-size:12px}
-  .orc-type-tag{font-size:14px}
+  .orc-num{font-size:28px}
+  .orc-cli-name{font-size:12px}
+  .orc-val{font-size:11px}
+  .orc-type-tag{font-size:10px}
 }
 
 @media(max-width:1300px){
   .order-row{
     grid-template-columns:
-      minmax(190px, .92fr)
-      minmax(360px, 1.45fr)
-      minmax(185px, .9fr)
-      minmax(150px, .7fr)
-      minmax(132px, .66fr);
+      minmax(150px, .85fr)
+      minmax(280px, 1.4fr)
+      minmax(150px, .88fr)
+      minmax(115px, .65fr)
+      minmax(105px, .62fr);
   }
 
-  .orc-num{font-size:42px}
-  .orc-cli-name{font-size:17px}
-  .orc-val{font-size:11px}
-  .orc-grid{gap:7px 12px}
-  .orc-type-tag{font-size:13px}
+  .orc-num{font-size:24px}
+  .orc-cli-name{font-size:11px}
+  .orc-val{font-size:10px}
+  .orc-grid{gap:2px 10px}
+  .orc-type-tag{font-size:10px}
 }
 
 @media(max-width:900px){
@@ -659,13 +657,12 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
     <button class="tab adm-only" onclick="go('relatorios')" style="display:none">Relatórios</button>
     <button class="tab adm-only" onclick="go('usuarios')" style="display:none">Usuários</button>
     <button class="tab" onclick="go('senha')">Minha Senha</button>
-    <!-- Configurações removida — voz fixada em código -->
+    <button class="tab adm-only" onclick="go('config')" style="display:none">Configurações</button>
+    <button class="tab" onclick="go('recebimento')" id="tab-recebimento">Recebimento <span id="recebimento-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('devolucoes')" id="tab-devolucoes">Devoluções <span id="devolucoes-badge" style="display:none;background:rgba(245,158,11,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
-    <button class="tab" onclick="go('expedicao')" id="tab-expedicao">Expedição <span id="expedicao-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
-    <span id="recebimento-badge" style="display:none">0</span>
-    <span id="agretira-badge" style="display:none">0</span>
-    <span id="agembarque-badge" style="display:none">0</span>
-    <span id="emtransito-badge" style="display:none">0</span>
+    <button class="tab" onclick="go('agretira')" id="tab-agretira">Ag. Retira <span id="agretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <button class="tab" onclick="go('agEmbarque')" id="tab-agembarque">Ag. Embarque <span id="agembarque-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <button class="tab" onclick="go('emTransito')" id="tab-emtransito">Em Trânsito <span id="emtransito-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('canhotos')" id="tab-canhotos">Canhotos <span id="canhotos-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('ocorrencias')" id="tab-ocorrencias">Ocorrências <span id="ocorrencias-badge" style="display:none;background:rgba(239,159,39,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('pendencias')" id="tab-pendencias">Pendências <span id="pendencias-badge" style="display:none;background:rgba(239,68,68,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
@@ -744,7 +741,7 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
     </div>
 
     <!-- Board list -->
-    <div id="painel-board" style="display:flex;flex-direction:column;gap:12px"></div>
+    <div id="painel-board" style="display:flex;flex-direction:column;gap:5px"></div>
     <div id="painel-empty" style="display:none;color:var(--muted);text-align:center;padding:60px 0;font-size:14px">Nenhum pedido em operação no momento.</div>
   </main>
 </div>
@@ -883,32 +880,8 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
 </div>
 
 
-<div class="screen" id="screen-expedicao">
+<div class="screen" id="screen-recebimento">
   <main>
-    <div class="ph">
-      <span class="pt">Expedição</span>
-    </div>
-    <!-- Sub-abas da expedição -->
-    <div style="display:flex;gap:4px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:0">
-      <button class="exp-sub-tab active" id="exp-tab-agretira" onclick="setExpSubTab('agretira',this)" style="padding:9px 18px;border-radius:10px 10px 0 0;font-family:var(--font-mono);font-size:12px;font-weight:600;border:none;background:var(--accent-dim);color:var(--accent);cursor:pointer;transition:all .2s;border-bottom:2px solid var(--accent)">
-        Ag. Retira <span id="exp-agretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span>
-      </button>
-      <button class="exp-sub-tab" id="exp-tab-agEmbarque" onclick="setExpSubTab('agEmbarque',this)" style="padding:9px 18px;border-radius:10px 10px 0 0;font-family:var(--font-mono);font-size:12px;font-weight:600;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:all .2s;border-bottom:2px solid transparent">
-        Ag. Embarque <span id="exp-agembarque-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span>
-      </button>
-      <button class="exp-sub-tab" id="exp-tab-emTransito" onclick="setExpSubTab('emTransito',this)" style="padding:9px 18px;border-radius:10px 10px 0 0;font-family:var(--font-mono);font-size:12px;font-weight:600;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:all .2s;border-bottom:2px solid transparent">
-        Em Trânsito <span id="exp-emtransito-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span>
-      </button>
-      <button class="exp-sub-tab" id="exp-tab-recebimento" onclick="setExpSubTab('recebimento',this)" style="padding:9px 18px;border-radius:10px 10px 0 0;font-family:var(--font-mono);font-size:12px;font-weight:600;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:all .2s;border-bottom:2px solid transparent">
-        Recebimento <span id="exp-recebimento-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span>
-      </button>
-    </div>
-    <div id="exp-sub-wrapper"></div>
-  </main>
-</div>
-
-<div class="screen" id="screen-recebimento" style="display:none">
-  <main id="exp-inner-recebimento" style="display:none">
     <div class="ph">
       <span class="pt">Recebimento de Notas Fiscais</span>
       <span style="color:var(--muted);font-size:12px" id="rec-count"></span>
@@ -1019,8 +992,8 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   </main>
 </div>
 
-<div class="screen" id="screen-agretira" style="display:none">
-  <main id="exp-inner-agretira" style="display:none">
+<div class="screen" id="screen-agretira">
+  <main>
     <div class="ph">
       <span class="pt">Aguardando Retirada</span>
       <span style="color:var(--muted);font-size:12px" id="agr-count"></span>
@@ -1077,8 +1050,8 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   </main>
 </div>
 
-<div class="screen" id="screen-agEmbarque" style="display:none">
-  <main id="exp-inner-agEmbarque" style="display:none">
+<div class="screen" id="screen-agEmbarque">
+  <main>
     <div class="ph">
       <span class="pt">Aguardando Embarque</span>
       <span style="color:var(--muted);font-size:12px" id="agEmb-count"></span>
@@ -1120,8 +1093,8 @@ main{padding:20px 28px;width:100%;position:relative;z-index:1}
   </div>
 </div>
 
-<div class="screen" id="screen-emTransito" style="display:none">
-  <main id="exp-inner-emTransito" style="display:none">
+<div class="screen" id="screen-emTransito">
+  <main>
     <div class="ph">
       <span class="pt">Em Trânsito</span>
       <span style="color:var(--muted);font-size:12px" id="transit-count"></span>
@@ -1968,9 +1941,9 @@ function prioBadge(p){
   return'<span class="pb '+p+'">'+label+'</span>';
 }
 // ── VOZ ──
-var _vozNome = 'Microsoft Maria - Portuguese (Brazil)';
-var _vozRate  = 1.50;
-var _vozPitch = 1.25;
+var _vozNome = localStorage.getItem('pf_voz') || '';
+var _vozRate  = parseFloat(localStorage.getItem('pf_rate') || '0.95');
+var _vozPitch = parseFloat(localStorage.getItem('pf_pitch') || '1');
 
 function narrar(texto) {
   if(!window.speechSynthesis) return;
@@ -1982,8 +1955,7 @@ function narrar(texto) {
   u.volume = 1;
   var vozes = window.speechSynthesis.getVoices();
   var voz = null;
-  voz = vozes.find(function(v){return v.name==='Microsoft Maria - Portuguese (Brazil)';});
-  if(!voz) voz = vozes.find(function(v){return v.name===_vozNome;});
+  if(_vozNome) voz = vozes.find(function(v){return v.name===_vozNome;});
   if(!voz) voz = vozes.find(function(v){return v.lang==='pt-BR'||v.lang.startsWith('pt');});
   if(voz) u.voice = voz;
   window.speechSynthesis.speak(u);
@@ -2083,7 +2055,7 @@ function startRealtime(){
 }
 async function fetchPedidos(){
   var hoje=new Date();hoje.setHours(0,0,0,0);
-  var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.em_entrega,status.eq.ag_embarque,status.eq.pronto_expedicao,status.eq.aguard_canhoto,canhoto_at.gte.'+hoje.toISOString()).order('entrada_at',{ascending:false});
+  var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.em_entrega,status.eq.ag_embarque,status.eq.pronto_expedicao,status.eq.aguard_canhoto').order('entrada_at',{ascending:false});
   PEDIDOS=res.data||[];
 }
 async function fetchMovs(){
@@ -2179,7 +2151,6 @@ async function go(name){
   if(name==='agEmbarque'){ov(true);await fetchPedidos();ov(false);renderAgEmbarque();}
   if(name==='emTransito'){ov(true);await fetchPedidos();ov(false);renderEmTransito();}
   if(name==='canhotos'){ov(true);await fetchPedidos();ov(false);_canhotoFilter='aguardando';setCanhotoFilter('aguardando',null);renderCanhotos();}
-  if(name==='expedicao'){ov(true);await fetchPedidos();ov(false);renderExpBadges();setExpSubTab(_expSubTab||'agretira',null);}
   if(name==='ocorrencias'){ov(true);await fetchPedidos();ov(false);renderOcorrencias();}
   if(name==='pendencias'){ov(true);await fetchPedidos();ov(false);renderPendencias();}
 }
@@ -2204,7 +2175,6 @@ function startClock(){
     renderAgEmbarqueBadge();
     renderEmTransitoBadge();
     renderCanhotosBadge();
-    renderExpBadges();
 
     // Alertas de 10min (raro, não causa render)
     PEDIDOS.forEach(function(o){
@@ -4450,59 +4420,6 @@ function renderEmTransito(){
 
 // ── Canhotos ──
 var _canhotoTarget=null;
-
-// ── Expedição: sub-abas ──
-var _expSubTab = 'agretira';
-function setExpSubTab(sub, btn) {
-  _expSubTab = sub;
-  // Update tab styles
-  document.querySelectorAll('.exp-sub-tab').forEach(function(t) {
-    t.style.background = 'transparent';
-    t.style.color = 'var(--muted)';
-    t.style.borderBottom = '2px solid transparent';
-  });
-  var active = el('exp-tab-' + sub);
-  if (active) {
-    active.style.background = 'var(--accent-dim)';
-    active.style.color = 'var(--accent)';
-    active.style.borderBottom = '2px solid var(--accent)';
-  }
-  // Mostra o sub-screen certo dentro do wrapper
-  var subs = ['agretira','agEmbarque','emTransito','recebimento'];
-  var wrapper = el('exp-sub-wrapper');
-  if (wrapper) {
-    // Mover o <main> do sub-screen selecionado para o wrapper (move real, não clone)
-    subs.forEach(function(s){
-      var sc = el('screen-'+s);
-      if(sc){
-        var m = sc.querySelector('main');
-        if(m && m.parentNode !== sc) sc.appendChild(m); // devolver ao screen original
-        sc.style.display = 'none';
-      }
-    });
-    wrapper.innerHTML = '';
-    var target = el('screen-' + sub);
-    if (target) {
-      var mainEl = target.querySelector('main');
-      if (mainEl) wrapper.appendChild(mainEl); // mover (não clonar) para o wrapper
-    }
-  }
-  if (sub === 'agretira') { renderAgRetira(); }
-  else if (sub === 'agEmbarque') { renderAgEmbarque(); }
-  else if (sub === 'emTransito') { renderEmTransito(); }
-  else if (sub === 'recebimento') { fetchRecebimentos().then(renderRecebimentos); }
-}
-function renderExpBadges() {
-  var agr = PEDIDOS.filter(function(o){return o.status==='ag_retira';}).length;
-  var agE = PEDIDOS.filter(function(o){return o.status==='ag_embarque';}).length;
-  var trn = PEDIDOS.filter(function(o){return o.status==='em_entrega';}).length;
-  var total = agr + agE + trn;
-  var expB = el('expedicao-badge');
-  if(expB){if(total>0){expB.textContent=total;expB.style.display='inline';}else{expB.style.display='none';}}
-  var b1=el('exp-agretira-badge'); if(b1){if(agr>0){b1.textContent=agr;b1.style.display='inline';}else{b1.style.display='none';}}
-  var b2=el('exp-agembarque-badge'); if(b2){if(agE>0){b2.textContent=agE;b2.style.display='inline';}else{b2.style.display='none';}}
-  var b3=el('exp-emtransito-badge'); if(b3){if(trn>0){b3.textContent=trn;b3.style.display='inline';}else{b3.style.display='none';}}
-}
 function renderCanhotosBadge(){
   // FIX 3: badge conta APENAS pendentes (aguard_canhoto), zera quando confirmados
   var pendentes=PEDIDOS.filter(function(o){return o.status==='aguard_canhoto';}).length;
@@ -4528,10 +4445,10 @@ function limparFiltrosCanhotos(){
 }
 function renderCanhotos(){
   var hoje=new Date();hoje.setHours(0,0,0,0);
-  // Base: aguardando + confirmados hoje (canhoto_at de hoje)
+  // Base: aguardando + confirmados hoje
   var base=PEDIDOS.filter(function(o){
     if(o.status==='aguard_canhoto')return true;
-    if((o.status==='finalizado'||o.status==='aguard_canhoto')&&o.canhoto_at&&tsMs(o.canhoto_at)>=hoje.getTime())return true;
+    if(o.status==='finalizado'&&o.canhoto_at&&tsMs(o.canhoto_at)>=hoje.getTime())return true;
     return false;
   });
   // Aplicar filtro de status
@@ -4586,7 +4503,7 @@ function canhotoScanCheck(val){
   if(v.length<44){fb.style.color='var(--muted)';fb.textContent=v.length+' / 44 dígitos';return;}
   if(v.length===44){
     // Preview: encontrar pedido correspondente
-    var match=PEDIDOS.filter(function(o){return o.status==='aguard_canhoto';}).find(function(o){return (o.chave_nfe||'').replace(/\D/g,'')===v;});
+    var match=PEDIDOS.filter(function(o){return o.status==='aguard_canhoto';}).find(function(o){return o.chave_nfe===v;});
     if(match){
       fb.style.color='var(--accent)';
       fb.textContent='✓ Chave encontrada — Pedido #'+match.numero+' / '+( match.nome_cliente||'—')+' — Pressione Enter ou clique Confirmar';
@@ -4603,8 +4520,7 @@ async function canhotoScanConfirmar(){
   var chave=(input.value||'').replace(/\D/g,'').trim();
   if(chave.length!==44){if(fb){fb.style.color='var(--danger)';fb.textContent='A chave deve ter 44 dígitos.';}return;}
   var aguardando=PEDIDOS.filter(function(o){return o.status==='aguard_canhoto';});
-  // Normalizar chave_nfe do pedido também (remover não-dígitos)
-  var pedido=aguardando.find(function(o){return (o.chave_nfe||'').replace(/\D/g,'')===chave;});
+  var pedido=aguardando.find(function(o){return o.chave_nfe===chave;});
   if(!pedido){
     if(fb){fb.style.color='var(--danger)';fb.textContent='⚠ Nenhum pedido aguardando canhoto com essa chave NF-e.';}
     return;
