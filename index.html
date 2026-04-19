@@ -667,7 +667,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <button class="tab adm-only" onclick="go('relatorios')" style="display:none">Relatórios</button>
     <button class="tab adm-only" onclick="go('usuarios')" style="display:none">Usuários</button>
     <button class="tab" onclick="go('senha')">Minha Senha</button>
-    <button class="tab adm-only" onclick="go('config')" style="display:none">Configurações</button>
+
     <button class="tab" onclick="go('recebimento')" id="tab-recebimento" style="display:none">Recebimento <span id="recebimento-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('devolucoes')" id="tab-devolucoes">Devoluções <span id="devolucoes-badge" style="display:none;background:rgba(245,158,11,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('agretira')" id="tab-agretira" style="display:none">Ag. Retira <span id="agretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
@@ -732,32 +732,34 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
       </div>
     </div>
 
-    <!-- Filter bar -->
-    <div style="padding:14px 16px;border-radius:16px;background:var(--bg2);border:1px solid var(--border2);margin-bottom:16px;display:flex;flex-direction:column;gap:10px">
-      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
-        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);min-width:60px">Setor</span>
-        <button class="fchip active" onclick="setPainelFilter('setor','all',this)">Todos</button>
-        <button class="fchip" onclick="setPainelFilter('setor','atendimento',this)">Atendimento</button>
-        <button class="fchip" onclick="setPainelFilter('setor','estoque',this)">Estoque</button>
-        <button class="fchip" onclick="setPainelFilter('setor','corte',this)">Corte</button>
-        <button class="fchip" onclick="setPainelFilter('setor','expedicao',this)">Expedição</button>
-        <button class="fchip" onclick="setPainelFilter('setor','balcao_op',this)">Balcão</button>
-        <button class="fchip" onclick="setPainelFilter('setor','faturamento',this)">Faturamento</button>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
-        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);min-width:60px">Operação</span>
-        <button class="fchip active" onclick="setPainelFilter('op','all',this)">Todas</button>
-        <button class="fchip" onclick="setPainelFilter('op','balcao',this)">Balcão</button>
-        <button class="fchip" onclick="setPainelFilter('op','retira',this)">Retira</button>
-        <button class="fchip" onclick="setPainelFilter('op','entrega',this)">Entrega</button>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
-        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);min-width:60px">Prioridade</span>
-        <button class="fchip active" onclick="setPainelFilter('prio','all',this)">Todas</button>
-        <button class="fchip" onclick="setPainelFilter('prio','sim',this)">Somente prioridade</button>
-        <button class="fchip" onclick="setPainelFilter('prio','nao',this)">Sem prioridade</button>
-        <button class="fchip" style="color:var(--muted)" onclick="resetPainelFilters()">Limpar filtros</button>
-      </div>
+    <!-- Filter bar compacto -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:8px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg)">
+      <span style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2);white-space:nowrap">Setor</span>
+      <select id="sel-setor" onchange="setPainelFilterSel('setor',this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-mono);font-size:11px;padding:4px 22px 4px 8px;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='rgba(232,237,245,.35)'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center">
+        <option value="all">Todos</option>
+        <option value="atendimento">Atendimento</option>
+        <option value="estoque">Estoque</option>
+        <option value="corte">Corte</option>
+        <option value="expedicao">Expedição</option>
+        <option value="balcao_op">Balcão</option>
+        <option value="faturamento">Faturamento</option>
+      </select>
+      <div style="width:1px;height:18px;background:var(--border);flex-shrink:0"></div>
+      <span style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2);white-space:nowrap">Operação</span>
+      <select id="sel-op" onchange="setPainelFilterSel('op',this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-mono);font-size:11px;padding:4px 22px 4px 8px;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='rgba(232,237,245,.35)'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center">
+        <option value="all">Todas</option>
+        <option value="balcao">Balcão</option>
+        <option value="retira">Retira</option>
+        <option value="entrega">Entrega</option>
+      </select>
+      <div style="width:1px;height:18px;background:var(--border);flex-shrink:0"></div>
+      <span style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2);white-space:nowrap">Prioridade</span>
+      <select id="sel-prio" onchange="setPainelFilterSel('prio',this.value)" style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-mono);font-size:11px;padding:4px 22px 4px 8px;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='rgba(232,237,245,.35)'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center">
+        <option value="all">Todas</option>
+        <option value="sim">Somente prioridade</option>
+        <option value="nao">Sem prioridade</option>
+      </select>
+      <button onclick="resetPainelFilters()" style="margin-left:4px;padding:4px 10px;background:none;border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:var(--font-mono);font-size:10px;cursor:pointer;transition:all .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">↺ limpar</button>
     </div>
 
     <!-- Board list -->
@@ -1976,9 +1978,9 @@ function prioBadge(p){
   return'<span class="pb '+p+'">'+label+'</span>';
 }
 // ── VOZ ──
-var _vozNome = localStorage.getItem('pf_voz') || '';
-var _vozRate  = parseFloat(localStorage.getItem('pf_rate') || '0.95');
-var _vozPitch = parseFloat(localStorage.getItem('pf_pitch') || '1');
+var _vozNome = 'Microsoft Maria Online (Natural) - Portuguese (Brazil)';
+var _vozRate  = 1.5;
+var _vozPitch = 1.2;
 
 function narrar(texto) {
   if(!window.speechSynthesis) return;
@@ -1990,7 +1992,8 @@ function narrar(texto) {
   u.volume = 1;
   var vozes = window.speechSynthesis.getVoices();
   var voz = null;
-  if(_vozNome) voz = vozes.find(function(v){return v.name===_vozNome;});
+  voz = vozes.find(function(v){return v.name===_vozNome;});
+  if(!voz) voz = vozes.find(function(v){return v.name.toLowerCase().indexOf('maria')>=0;});
   if(!voz) voz = vozes.find(function(v){return v.lang==='pt-BR'||v.lang.startsWith('pt');});
   if(voz) u.voice = voz;
   window.speechSynthesis.speak(u);
@@ -2342,8 +2345,18 @@ function setPainelFilter(group,val,btn){
   btn.classList.add('active');
   renderPainelBoard();
 }
+function setPainelFilterSel(group, val){
+  _painelFilter[group] = val;
+  renderPainel();
+}
 function resetPainelFilters(){
   _painelFilter={setor:'all',op:'all',prio:'all'};
+  var ss=document.getElementById('sel-setor');
+  var so=document.getElementById('sel-op');
+  var sp=document.getElementById('sel-prio');
+  if(ss)ss.value='all';
+  if(so)so.value='all';
+  if(sp)sp.value='all';
   document.querySelectorAll('.fchip').forEach(function(c){c.classList.remove('active');});
   document.querySelectorAll('.fchip:first-of-type').forEach(function(c){c.classList.add('active');});
   // Re-activate "Todos/Todas/Todas" first chip in each row
@@ -3532,7 +3545,8 @@ function criarUtterance(texto) {
   u.volume = 1;
   var vozes = window.speechSynthesis.getVoices();
   var voz = null;
-  if(_vozNome) voz = vozes.find(function(v){return v.name===_vozNome;});
+  voz = vozes.find(function(v){return v.name===_vozNome;});
+  if(!voz) voz = vozes.find(function(v){return v.name.toLowerCase().indexOf('maria')>=0;});
   if(!voz) voz = vozes.find(function(v){return v.lang==='pt-BR'||v.lang.startsWith('pt');});
   if(voz) u.voice = voz;
   return u;
