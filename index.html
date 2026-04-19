@@ -1181,7 +1181,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
       <table class="utbl" id="canhoto-table">
-        <thead><tr><th>Pedido</th><th>Cliente</th><th>NF</th><th>Valor</th><th>Transportadora</th><th>Motorista</th><th>Entrega confirmada</th><th>Confirmado por</th><th>Status</th></tr></thead>
+        <thead><tr><th>Pedido</th><th>Cliente</th><th>NF</th><th>Valor</th><th>Transportadora</th><th>Motorista</th><th>Entrega confirmada</th><th>Entregue/Chamado por</th><th>Canhoto por</th><th>Status</th></tr></thead>
         <tbody id="canhoto-tbody"></tbody>
       </table>
     </div>
@@ -1498,7 +1498,7 @@ function scheduleRender() {
       _dirty.tvpub = false;
     }
     if (ativa === 'screen-canhotos') {
-      renderCanhotos();
+      fetchCanhotosConfirmados().then(function(){renderCanhotos();});
     }
     if (ativa === 'screen-agretira') {
       renderAgRetira();
@@ -2101,6 +2101,12 @@ async function fetchMovs(){
   var res=await sb.from('movimentacoes').select('*').gte('saida_at',hoje.toISOString());
   MOVS=res.data||[];
 }
+var _canhotosConfirmados=[];
+async function fetchCanhotosConfirmados(){
+  var hoje=new Date();hoje.setHours(0,0,0,0);
+  var res=await sb.from('pedidos').select('*').eq('status','finalizado').gte('canhoto_at',hoje.toISOString()).order('canhoto_at',{ascending:false});
+  _canhotosConfirmados=res.data||[];
+}
 async function fetchPedidosRelatorio(startStr,endStr){
   var r=getPeriodRange(startStr,endStr);
   var res=await sb.from('pedidos').select('*').gte('entrada_at',r.startIso).lte('entrada_at',r.endIso).order('entrada_at',{ascending:false});
@@ -2188,7 +2194,7 @@ async function go(name){
   if(name==='devolucoes'){ov(true);await fetchDevolucoes();ov(false);renderDevolucoes();}
   if(name==='agEmbarque'){ov(true);await fetchPedidos();ov(false);renderAgEmbarque();}
   if(name==='emTransito'){ov(true);await fetchPedidos();ov(false);renderEmTransito();}
-  if(name==='canhotos'){ov(true);await fetchPedidos();ov(false);_canhotoFilter='aguardando';setCanhotoFilter('aguardando',null);renderCanhotos();}
+  if(name==='canhotos'){ov(true);await Promise.all([fetchPedidos(),fetchCanhotosConfirmados()]);ov(false);_canhotoFilter='aguardando';setCanhotoFilter('aguardando',null);renderCanhotos();}
   if(name==='ocorrencias'){ov(true);await fetchPedidos();ov(false);renderOcorrencias();}
   if(name==='pendencias'){ov(true);await fetchPedidos();ov(false);renderPendencias();}
 }
@@ -2916,9 +2922,10 @@ async function marcarEntregue(id){
     if(!pedido)throw new Error('Pedido não encontrado.');
     var agora=new Date().toISOString();
     // Move para Canhotos — aguardando confirmação do canhoto físico
-    var res=await sb.from('pedidos').update({status:'aguard_canhoto',entregue_at:agora}).eq('id',id);
+    var entregaPor=(ME&&ME.login)?ME.login:'(sistema)';
+    var res=await sb.from('pedidos').update({status:'aguard_canhoto',entregue_at:agora,confirmado_entrega_por:entregaPor}).eq('id',id);
     if(res.error)throw res.error;
-    upsertPedidoLocal({id:id,status:'aguard_canhoto',entregue_at:agora});
+    upsertPedidoLocal({id:id,status:'aguard_canhoto',entregue_at:agora,confirmado_entrega_por:entregaPor});
     _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(500);
     renderCanhotosBadge();
     renderEmTransitoBadge();
@@ -3024,14 +3031,16 @@ async function confirmarChamaBalcao(){
   ov(true);
   try{
     var agora=new Date().toISOString();
+    var chamadoPor=(ME&&ME.login)?ME.login:'(sistema)';
     var res=await sb.from('pedidos').update({
       status:'aguard_canhoto',
       pendente_desde:agora,
       entregue_at:agora,
-      chave_nfe:chave
+      chave_nfe:chave,
+      confirmado_entrega_por:chamadoPor
     }).eq('id',_chamaBalcaoTarget);
     if(res.error)throw res.error;
-    upsertPedidoLocal({id:_chamaBalcaoTarget,status:'aguard_canhoto',pendente_desde:agora,entregue_at:agora,chave_nfe:chave});
+    upsertPedidoLocal({id:_chamaBalcaoTarget,status:'aguard_canhoto',pendente_desde:agora,entregue_at:agora,chave_nfe:chave,confirmado_entrega_por:chamadoPor});
     _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(500);
     renderCanhotosBadge();
     var nomeParaChamar=pedido.nome_retirada||pedido.nome_cliente||'cliente';
@@ -3603,6 +3612,7 @@ function anunciarTVPublica(listaAtual) {
     // ou balcao_chamado (compatibilidade retroativa)
     if (o.status !== 'aguard_canhoto' && o.status !== 'balcao_chamado') return;
     if (o.prioridade === 'entrega') return; // entregas não narram balcão
+    if (!o.chave_nfe) return; // só narra se foi chamado pelo balcão (tem chave_nfe)
     if (!o.entregue_at && !o.pendente_desde) return;
     var refTime = o.entregue_at || o.pendente_desde;
     if (now()-tsMs(refTime) > JANELA_NARRACAO_BALCAO_MS) return;
@@ -4485,7 +4495,7 @@ function setCanhotoFilter(f,btn){
   renderCanhotos();
 }
 async function filtrarCanhotos(){
-  ov(true);await fetchPedidos();ov(false);renderCanhotos();
+  ov(true);await Promise.all([fetchPedidos(),fetchCanhotosConfirmados()]);ov(false);renderCanhotos();
 }
 function limparFiltrosCanhotos(){
   ['can-date-start','can-date-end','can-filtro-pedido','can-filtro-nf'].forEach(function(id){if(el(id))el(id).value='';});
@@ -4494,12 +4504,16 @@ function limparFiltrosCanhotos(){
 }
 function renderCanhotos(){
   var hoje=new Date();hoje.setHours(0,0,0,0);
-  // Base: aguardando + confirmados hoje
-  var base=PEDIDOS.filter(function(o){
-    if(o.status==='aguard_canhoto')return true;
-    if(o.status==='finalizado'&&o.canhoto_at&&tsMs(o.canhoto_at)>=hoje.getTime())return true;
-    return false;
+  // Base: aguardando (from PEDIDOS) + confirmados hoje (from dedicated fetch)
+  var aguardandoList=PEDIDOS.filter(function(o){return o.status==='aguard_canhoto';});
+  // Merge: avoid duplicates (PEDIDOS may also have some finalizado from today)
+  var confirmadosIds={};
+  _canhotosConfirmados.forEach(function(o){confirmadosIds[o.id]=true;});
+  var confirmadosFromPedidos=PEDIDOS.filter(function(o){
+    return o.status==='finalizado'&&o.canhoto_at&&tsMs(o.canhoto_at)>=hoje.getTime()&&!confirmadosIds[o.id];
   });
+  var confirmadosList=_canhotosConfirmados.concat(confirmadosFromPedidos);
+  var base=aguardandoList.concat(confirmadosList);
   // Aplicar filtro de status
   var items;
   if(_canhotoFilter==='aguardando')items=base.filter(function(o){return o.status==='aguard_canhoto';});
@@ -4518,7 +4532,7 @@ function renderCanhotos(){
   items=items.sort(function(a,b){return (a.status==='aguard_canhoto'?0:1)-(b.status==='aguard_canhoto'?0:1);});
   renderCanhotosBadge();
   var pendentes=PEDIDOS.filter(function(o){return o.status==='aguard_canhoto';}).length;
-  var conf=base.filter(function(o){return o.status==='finalizado';}).length;
+  var conf=confirmadosList.length;
   if(el('canhoto-count'))el('canhoto-count').textContent=pendentes+' aguardando · '+conf+' confirmado(s) hoje';
   if(el('canhoto-empty'))el('canhoto-empty').style.display=items.length?'none':'block';
   if(el('canhoto-table'))el('canhoto-table').style.display=items.length?'':'none';
@@ -4537,6 +4551,7 @@ function renderCanhotos(){
       '<td>'+(o.transportadora||'—')+'</td>'+
       '<td>'+(o.motorista||'—')+'</td>'+
       '<td style="color:var(--accent)">'+dtEntrega+'</td>'+
+      '<td style="color:var(--cyan);font-size:12px">'+(o.confirmado_entrega_por||'—')+'</td>'+
       '<td style="color:var(--muted);font-size:12px">'+(o.confirmado_por_canhoto||'—')+'</td>'+
       '<td>'+statusBadge+'</td>'+
     '</tr>';
