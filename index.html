@@ -2658,11 +2658,15 @@ function renderRowCard(o,setor,transito){
       if(prio!=='entrega')flowBtns.push('<button class="bcon" style="background:#6366f1" onclick="enviar(\''+o.id+'\',\'balcao_op\')">&#8594; Balcão</button>');
       if(prio==='entrega')flowBtns.push('<button class="bmv" style="background:#818cf8" onclick="enviar(\''+o.id+'\',\'expedicao\')">&#8594; Expedição</button>');
     }else if(setor==='balcao_op'&&canAct&&o.status!=='pronto_balcao'){
-      flowBtns.push('<button class="bmv" onclick="openPreFatura(\''+o.id+'\')">&#8594; Faturamento</button>');
+      if(parcialActive)flowBtns.push('<button class="bmv" onclick="openPreFatura(\''+o.id+'\')">&#8594; Faturamento</button>');
+      else flowBtns.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">&#8594; Faturamento</button>');
     }else if(setor==='expedicao'&&canAct){
       if(o.status==='pronto_expedicao')flowBtns.push('<button class="bmv" style="background:#818cf8" onclick="enviarAgEmbarque(\''+o.id+'\')">Ag. Embarque</button>');
       else if(o.status==='em_entrega'){flowBtns.push('<button class="bfin" onclick="marcarEntregue(\''+o.id+'\')">&#10003; Entregue</button>');flowBtns.push('<button class="boc" onclick="marcarDevolvido(\''+o.id+'\')">&#8617; Retorno</button>');}
-      else if(o.status!=='ag_embarque')flowBtns.push('<button class="bmv" onclick="openPreFatura(\''+o.id+'\')">&#8594; Faturamento</button>');
+      else if(o.status!=='ag_embarque'){
+        if(parcialActive)flowBtns.push('<button class="bmv" onclick="openPreFatura(\''+o.id+'\')">&#8594; Faturamento</button>');
+        else flowBtns.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">&#8594; Faturamento</button>');
+      }
     }
   }
 
@@ -3546,8 +3550,9 @@ function renderRelatorios(){
     var lines=(obs||'').split('\n');
     var starts=[],ends=[];
     lines.forEach(function(l){
-      if(l.indexOf('OCORRÊNCIA')>=0){var t=_parseObsDate(l);if(t)starts.push(t);}
-      if((l.indexOf('RETORNO')>=0&&l.indexOf('OCORRÊNCIA')<0)||l.indexOf('RETORNO_OCORRENCIA')>=0){var t2=_parseObsDate(l);if(t2)ends.push(t2);}
+      if(l.indexOf('OCORRÊNCIA')>=0&&l.indexOf('RETORNO')<0){var t=_parseObsDate(l);if(t>0)starts.push(t);}
+      // Only count RETORNO that comes after an OCORRÊNCIA (not RETORNO PENDÊNCIA or other types)
+      if(l.indexOf('] RETORNO')>=0&&l.indexOf('OCORRÊNCIA')<0&&l.indexOf('PENDÊNCIA')<0&&l.indexOf('PENDENCIA')<0&&l.indexOf('Ag. Retira')<0){var t2=_parseObsDate(l);if(t2>0)ends.push(t2);}
     });
     var total=0;
     for(var i=0;i<Math.min(starts.length,ends.length);i++){if(starts[i]&&ends[i]&&ends[i]>starts[i])total+=ends[i]-starts[i];}
@@ -4318,6 +4323,8 @@ function openOcorrenciaCard(id){
   el('occ-title').textContent='Registrar Ocorrência — Pedido #'+pedido.numero;
   el('occ-desc').textContent='Descreva o motivo da ocorrência. O pedido ficará em Ocorrências e o timer continuará contando.';
   el('occ-text').value='';
+  if(el('occ-tipo'))el('occ-tipo').value='';
+  if(el('occ-tipo-wrap'))el('occ-tipo-wrap').style.display='block';
   openM('m-ocorrencia');
 }
 
@@ -4330,8 +4337,10 @@ function occRetornarAtendimento(id){
   var setorLabel=SL[setorOrigem]||setorOrigem;
   _occCtx={modo:'retorno_ocorrencia',id:id,setorLabel:'Ocorrências',setorDestino:setorOrigem};
   el('occ-title').textContent='Retornar pedido #'+pedido.numero+' — '+setorLabel;
-  el('occ-desc').textContent='Descreva o que foi feito. O pedido voltará para "'+setorLabel+'" com o timer total ainda rodando.';
+  el('occ-desc').textContent='Descreva o que foi realizado. O pedido voltará para "'+setorLabel+'" com o timer total ainda rodando.';
   el('occ-text').value='';
+  if(el('occ-tipo-wrap'))el('occ-tipo-wrap').style.display='none';
+  if(el('occ-tipo'))el('occ-tipo').value='';
   openM('m-ocorrencia');
 }
 
@@ -5913,14 +5922,16 @@ function openPreFatura(id){
     'Pedido #' + pedido.numero + ' — ' + (pedido.nome_cliente||'') +
     (parseFloat(pedido.valor_pedido)>0 ? ' · Valor: ' + fmtBRL(pedido.valor_pedido) : '') +
     '. Preencha os itens antes de emitir a nota.';
-  // Pre-fill from previous obs if exists
+  // Always start fresh (don't carry over from previous pedido)
+  window._pfItensFat = '';
+  window._pfItensPend = '';
+  if(el('pf-itens-fat')) el('pf-itens-fat').value = '';
+  // Only show pending items field if it's the first billing (check if there are previous pend_items)
   var obsP = pedido.obs || '';
-  var prevFat = _getPendObs(obsP,'PEND_SEP');
   var prevPend = _getPendObs(obsP,'PEND_ITEMS');
-  if(el('pf-itens-fat')) el('pf-itens-fat').value = prevFat === '—' ? '' : prevFat;
-  if(el('pf-itens-pend')) el('pf-itens-pend').value = prevPend === '—' ? '' : prevPend;
-  // Show pending items field always (both CIF and FOB)
+  var hasPrevPend = prevPend && prevPend !== '—';
   if(el('pf-pend-wrap')) el('pf-pend-wrap').style.display = 'block';
+  if(el('pf-itens-pend')) el('pf-itens-pend').value = '';
   openM('m-pre-fatura');
 }
 
