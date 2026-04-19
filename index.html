@@ -50,6 +50,15 @@ nav{display:flex;align-items:center;background:var(--glass2);backdrop-filter:blu
 .tab{padding:6px 10px;border-radius:var(--radius);cursor:pointer;color:rgba(232,237,245,0.75);font-family:var(--font-mono);font-size:11px;font-weight:600;border:none;background:none;transition:all .2s;white-space:nowrap;position:relative;letter-spacing:.01em}
 .tab:hover{color:var(--text);background:var(--bg3)}
 .tab.active{color:var(--accent);background:var(--accent-dim)}
+.tab-drop{position:relative}
+.tab-drop-menu{position:absolute;top:calc(100% + 6px);left:0;background:var(--glass2);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:6px;min-width:190px;z-index:999;box-shadow:var(--shadow-lg);display:none;flex-direction:column;gap:2px}
+.tab-drop-menu.open{display:flex}
+.tab-drop-item{padding:8px 12px;border-radius:var(--radius);cursor:pointer;color:rgba(232,237,245,0.8);font-family:var(--font-mono);font-size:11px;font-weight:600;border:none;background:none;text-align:left;display:flex;align-items:center;gap:8px;transition:all .15s;white-space:nowrap}
+.tab-drop-item:hover{color:var(--text);background:var(--bg3)}
+.tab-drop-item.active{color:var(--accent);background:var(--accent-dim)}
+.tab-drop-arrow{font-size:9px;margin-left:2px;transition:transform .2s;display:inline-block}
+.tab-drop.open .tab-drop-arrow{transform:rotate(180deg)}
+.parcial-badge-tipo{position:absolute;bottom:7px;right:7px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;padding:2px 6px;border-radius:5px;background:rgba(245,158,11,.22);color:var(--warn);border:1px solid rgba(245,158,11,.45);pointer-events:none}
 .nav-right{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text)}
 .badge-r{padding:5px 14px;border-radius:20px;font-size:12px;background:linear-gradient(135deg,var(--accent-dim),var(--cyan-dim));color:var(--accent);border:1px solid rgba(34,211,167,0.35);font-weight:700;letter-spacing:.02em}
 .badge-s{padding:5px 14px;border-radius:20px;font-size:12px;background:var(--blue-dim);color:var(--blue);border:1px solid rgba(59,130,246,0.35);font-weight:700;letter-spacing:.02em}
@@ -399,11 +408,12 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
   display:flex;
   flex-direction:column;
   align-items:center;
-  justify-content:center;
+  justify-content:flex-start;
   gap:4px;
   min-width:0;
   background:rgba(0,0,0,.22);
-  padding:6px 8px;
+  padding:8px 8px 8px;
+  position:relative;
 }
 
 .orc-type-tag{
@@ -658,14 +668,24 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <button class="tab adm-only" onclick="go('usuarios')" style="display:none">Usuários</button>
     <button class="tab" onclick="go('senha')">Minha Senha</button>
     <button class="tab adm-only" onclick="go('config')" style="display:none">Configurações</button>
-    <button class="tab" onclick="go('recebimento')" id="tab-recebimento">Recebimento <span id="recebimento-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <button class="tab" onclick="go('recebimento')" id="tab-recebimento" style="display:none">Recebimento <span id="recebimento-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('devolucoes')" id="tab-devolucoes">Devoluções <span id="devolucoes-badge" style="display:none;background:rgba(245,158,11,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
-    <button class="tab" onclick="go('agretira')" id="tab-agretira">Ag. Retira <span id="agretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
-    <button class="tab" onclick="go('agEmbarque')" id="tab-agembarque">Ag. Embarque <span id="agembarque-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
-    <button class="tab" onclick="go('emTransito')" id="tab-emtransito">Em Trânsito <span id="emtransito-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <button class="tab" onclick="go('agretira')" id="tab-agretira" style="display:none">Ag. Retira <span id="agretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <button class="tab" onclick="go('agEmbarque')" id="tab-agembarque" style="display:none">Ag. Embarque <span id="agembarque-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <button class="tab" onclick="go('emTransito')" id="tab-emtransito" style="display:none">Em Trânsito <span id="emtransito-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('canhotos')" id="tab-canhotos">Canhotos <span id="canhotos-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('ocorrencias')" id="tab-ocorrencias">Ocorrências <span id="ocorrencias-badge" style="display:none;background:rgba(239,159,39,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
-    <button class="tab" onclick="go('pendencias')" id="tab-pendencias">Pendências <span id="pendencias-badge" style="display:none;background:rgba(239,68,68,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <button class="tab" onclick="go('pendencias')" id="tab-pendencias" style="display:none">Pendências <span id="pendencias-badge" style="display:none;background:rgba(239,68,68,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <div class="tab-drop" id="drop-expedicao">
+      <button class="tab" id="tab-expedicao-drop" onclick="toggleExpedicaoMenu(event)">Expedição <span class="tab-drop-arrow">▾</span></button>
+      <div class="tab-drop-menu" id="expedicao-menu">
+        <button class="tab-drop-item" id="di-agretira" onclick="go('agretira');closeExpedicaoMenu()">Ag. Retira <span id="dagretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
+        <button class="tab-drop-item" id="di-agembarque" onclick="go('agEmbarque');closeExpedicaoMenu()">Ag. Embarque <span id="dagembarque-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
+        <button class="tab-drop-item" id="di-emtransito" onclick="go('emTransito');closeExpedicaoMenu()">Em Trânsito <span id="demtransito-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
+        <button class="tab-drop-item" id="di-recebimento" onclick="go('recebimento');closeExpedicaoMenu()">Recebimento <span id="drecebimento-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
+        <button class="tab-drop-item" id="di-pendencias" onclick="go('pendencias');closeExpedicaoMenu()">Pendências <span id="dpendencias-badge" style="display:none;background:rgba(239,68,68,.2);color:var(--danger);padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
+      </div>
+    </div>
   </div>
   <div class="nav-right">
     <span id="nav-nome" style="font-size:13px;font-weight:600;color:var(--text)">—</span>
@@ -2497,6 +2517,7 @@ function renderRowCard(o,setor,transito){
     '<span class="orc-type-tag '+prioClass+'">'+prioLabel+'</span>'+
     (isPrio?'<span class="orc-type-tag tt-prio">Prioridade</span>':'')+
     (etapaPosFaturamento?'<span class="orc-type-tag tt-pronto">Pronto</span>':'')+
+    (parcialActive?'<span class="parcial-badge-tipo">&#9889; Parcial</span>':'')+
   '</div>';
 
   /* ── COL 5 (novo): botoes de acao ── */
@@ -5142,5 +5163,69 @@ function renderAgRetiraBadge() {
     <div id="adv-timeline-area" style="margin-top:18px"></div>
   </main>
 </div>
+<script>
+// ── Expedição dropdown ──
+function toggleExpedicaoMenu(e){
+  e.stopPropagation();
+  var menu=document.getElementById('expedicao-menu');
+  var drop=document.getElementById('drop-expedicao');
+  var isOpen=menu.classList.contains('open');
+  closeExpedicaoMenu();
+  if(!isOpen){menu.classList.add('open');drop.classList.add('open');}
+}
+function closeExpedicaoMenu(){
+  var menu=document.getElementById('expedicao-menu');
+  var drop=document.getElementById('drop-expedicao');
+  if(menu)menu.classList.remove('open');
+  if(drop)drop.classList.remove('open');
+}
+document.addEventListener('click',function(){closeExpedicaoMenu();});
+
+// Highlight Expedição tab when sub-screen is active
+var EXPEDICAO_SCREENS=['agretira','agEmbarque','emTransito','recebimento','pendencias'];
+var _goOrig=window.go;
+window.go=async function(name){
+  await _goOrig(name);
+  var expTab=document.getElementById('tab-expedicao-drop');
+  if(expTab){
+    if(EXPEDICAO_SCREENS.indexOf(name)>=0){
+      expTab.classList.add('active');
+    } else {
+      expTab.classList.remove('active');
+    }
+  }
+  // highlight dropdown item
+  ['agretira','agembarque','emtransito','recebimento','pendencias'].forEach(function(k){
+    var el=document.getElementById('di-'+k);
+    if(el)el.classList.remove('active');
+  });
+  var keyMap={agretira:'agretira',agEmbarque:'agembarque',emTransito:'emtransito',recebimento:'recebimento',pendencias:'pendencias'};
+  if(keyMap[name]){
+    var item=document.getElementById('di-'+keyMap[name]);
+    if(item)item.classList.add('active');
+  }
+};
+
+// Sync badges from hidden tabs to dropdown
+function syncExpedicaoBadges(){
+  var map=[
+    ['agretira-badge','dagretira-badge'],
+    ['agembarque-badge','dagembarque-badge'],
+    ['emtransito-badge','demtransito-badge'],
+    ['recebimento-badge','drecebimento-badge'],
+    ['pendencias-badge','dpendencias-badge']
+  ];
+  map.forEach(function(pair){
+    var src=document.getElementById(pair[0]);
+    var dst=document.getElementById(pair[1]);
+    if(src&&dst){
+      dst.textContent=src.textContent;
+      dst.style.display=src.style.display;
+    }
+  });
+}
+// Run sync periodically
+setInterval(syncExpedicaoBadges,1000);
+</script>
 </body>
 </html>
