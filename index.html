@@ -950,6 +950,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
       <input type="text" id="m-rec-chave" placeholder="Bipe ou cole a chave aqui" maxlength="44" oninput="recModalCheck(this.value)"/>
       <div id="m-rec-preview" style="margin-top:8px;font-size:12px;color:var(--accent);min-height:16px"></div>
     </div>
+    <div class="f"><label class="fl">Valor da NF R$ *</label><input type="number" id="m-rec-valor-manual" placeholder="0.00" step="0.01" min="0"/></div>
     <div class="ma"><button class="bcan" onclick="closeM('m-registrar-nf')">Cancelar</button><button class="bok" onclick="confirmarRegistrarNF()">✓ Registrar</button></div>
   </div>
 </div>
@@ -963,6 +964,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
       <input type="text" id="dev-rec-chave" placeholder="Bipe ou cole a chave aqui" maxlength="44" oninput="devRecCheck(this.value)"/>
       <div id="dev-rec-preview" style="margin-top:8px;font-size:12px;color:var(--accent);min-height:32px"></div>
     </div>
+    <div class="f"><label class="fl">Valor da NF devolvida R$ *</label><input type="number" id="dev-rec-valor" placeholder="0.00" step="0.01" min="0"/></div>
     <div class="ma"><button class="bcan" onclick="closeM('m-registrar-devolucao-rec')">Cancelar</button><button class="bok" style="background:#f59e0b" onclick="confirmarRegistrarDevolucaoRec()">↩ Registrar Devolução</button></div>
   </div>
 </div>
@@ -1096,10 +1098,18 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
       <span style="color:var(--muted);font-size:12px" id="agEmb-count"></span>
       <div id="agEmb-valor-total" style="font-size:12px;color:#818cf8;font-weight:600;background:rgba(129,140,248,.1);padding:5px 14px;border-radius:20px;border:1px solid rgba(129,140,248,.3)"></div>
       <button onclick="openM('m-embarque-lote')" style="padding:8px 18px;background:#818cf8;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:12px;font-weight:700;cursor:pointer">📦 Embarcar em lote</button>
+      <button onclick="exportarAgEmbarqueExcel()" style="padding:8px 16px;background:#10b981;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:12px;font-weight:700;cursor:pointer">⬇ Exportar Excel</button>
     </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
-      <table class="utbl" id="agEmb-table">
-        <thead><tr><th style="width:30px"><input type="checkbox" id="agEmb-checkall" onchange="toggleCheckAllEmbarque(this)" style="accent-color:#818cf8"/></th><th>Pedido</th><th>Cliente</th><th>Nota Fiscal</th><th>Valor NF</th><th>Entrada</th><th>Endereço</th><th>Ações</th></tr></thead>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg)">
+      <span style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2);white-space:nowrap">Transportadora</span>
+      <select id="agEmb-filtro-transp" onchange="renderAgEmbarque()" style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font-mono);font-size:11px;padding:4px 22px 4px 8px;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='rgba(232,237,245,.35)'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 7px center">
+        <option value="">Todas</option>
+      </select>
+      <button onclick="el('agEmb-filtro-transp').value='';renderAgEmbarque()" style="padding:4px 10px;background:none;border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:var(--font-mono);font-size:10px;cursor:pointer">↺ limpar</button>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:auto">
+      <table class="utbl" id="agEmb-table" style="min-width:1200px">
+        <thead><tr><th style="width:30px"><input type="checkbox" id="agEmb-checkall" onchange="toggleCheckAllEmbarque(this)" style="accent-color:#818cf8"/></th><th>Entrada</th><th>Pedido</th><th>Cliente</th><th>Nota Fiscal</th><th>Valor NF</th><th>Cidade</th><th>Endereço</th><th>Vendedor</th><th>Transportadora</th><th>Loc. Mercadoria</th><th>Ações</th></tr></thead>
         <tbody id="agEmb-tbody"></tbody>
       </table>
     </div>
@@ -1294,11 +1304,16 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     </div>
     <div class="f"><label class="fl">Nome do Cliente *</label><input type="text" id="no-cli" placeholder="Nome completo"/></div>
     <div class="f"><label class="fl">Tipo de saída</label>
-      <select id="no-prio"><option value="balcao">Balcão</option><option value="retira">Retira</option><option value="entrega">Entrega CIF</option></select>
+      <select id="no-prio" onchange="var f=el('no-entrega-fields');if(f)f.style.display=this.value==='entrega'?'block':'none'"><option value="balcao">Balcão</option><option value="retira">Retira</option><option value="entrega">Entrega CIF</option></select>
     </div>
     <div class="f"><label class="fl">Nome de quem está retirando (opcional)</label><input type="text" id="no-retirada" placeholder="Ex: João Motorista"/></div>
     <div class="f"><label class="fl">Vendedor *</label><input type="text" id="no-vendedor" placeholder="Nome do vendedor responsável"/></div>
     <div class="f"><label class="fl">Valor do Pedido R$ *</label><input type="number" id="no-valor" placeholder="0.00" step="0.01" min="0"/></div>
+    <div id="no-entrega-fields" style="display:none">
+      <div class="f"><label class="fl">Cidade de destino</label><input type="text" id="no-cidade" placeholder="Ex: São Paulo — SP"/></div>
+      <div class="f"><label class="fl">Endereço de entrega</label><input type="text" id="no-endereco" placeholder="Ex: Rua das Flores, 123 — Bairro"/></div>
+      <div class="f"><label class="fl">Transportadora</label><input type="text" id="no-transportadora" placeholder="Ex: Jadlog, Correios, Própria"/></div>
+    </div>
     <div class="ma"><button class="bcan" onclick="closeM('m-new-order')">Cancelar</button><button class="bok" onclick="createOrder()">Criar Pedido</button></div>
   </div>
 </div>
@@ -3099,7 +3114,7 @@ async function confirmarChamaBalcao(){
 }
 // Mantido para compatibilidade (Ag. Retira chama direto)
 async function chamarBalcao(id){abrirChamaBalcao(id);}
-function openNewOrder(){el('no-num').value='';el('no-cli').value='';el('no-retirada').value='';el('no-prio').value='retira';el('no-valor').value='';el('no-vendedor').value='';if(el('no-parcial'))el('no-parcial').checked=false;if(el('no-num-feedback'))el('no-num-feedback').textContent='';openM('m-new-order');}
+function openNewOrder(){el('no-num').value='';el('no-cli').value='';el('no-retirada').value='';el('no-prio').value='retira';el('no-valor').value='';el('no-vendedor').value='';if(el('no-parcial'))el('no-parcial').checked=false;if(el('no-num-feedback'))el('no-num-feedback').textContent='';if(el('no-cidade'))el('no-cidade').value='';if(el('no-endereco'))el('no-endereco').value='';if(el('no-transportadora'))el('no-transportadora').value='';if(el('no-entrega-fields'))el('no-entrega-fields').style.display='none';openM('m-new-order');}
 
 var _dupCheckTimer=null;
 function verificarDuplicataLive(val){
@@ -3162,7 +3177,10 @@ async function createOrder(){
     closeM('m-new-order');
     if(el('no-num-feedback'))el('no-num-feedback').textContent='';
     var agora=new Date().toISOString();
-    var payload={numero:numNorm,setor:'atendimento',setor_pendente:'',status:'em_andamento',criado_por:ME.login,entrada_at:agora,setor_entrada_at:agora,nome_cliente:cli,prioridade:prio,num_nota:'',valor_pedido:valorPedido,vendedor:vendedor,nome_retirada:(el('no-retirada').value||'').trim(),parcial:parcial};
+    var cidadeEntrega=(el('no-cidade')?el('no-cidade').value.trim():'');
+    var enderecoEntrega=(el('no-endereco')?el('no-endereco').value.trim():'');
+    var transportadoraEntrega=(el('no-transportadora')?el('no-transportadora').value.trim():'');
+    var payload={numero:numNorm,setor:'atendimento',setor_pendente:'',status:'em_andamento',criado_por:ME.login,entrada_at:agora,setor_entrada_at:agora,nome_cliente:cli,prioridade:prio,num_nota:'',valor_pedido:valorPedido,vendedor:vendedor,nome_retirada:(el('no-retirada').value||'').trim(),parcial:parcial,cidade_destino:cidadeEntrega||null,endereco_entrega:enderecoEntrega||null,transportadora:transportadoraEntrega||null};
     var res=await sb.from('pedidos').insert(payload);
     // Fallback: se coluna 'parcial' ainda não existe no banco, tenta sem ela
     if(res.error&&res.error.message&&res.error.message.indexOf('parcial')>=0){
@@ -4334,6 +4352,14 @@ async function recScanRegistrar(){
   var chave=(input.value||'').replace(/\D/g,'').trim();
   if(chave.length!==44){if(fb){fb.style.color='var(--danger)';fb.textContent='Chave deve ter 44 dígitos.';}return;}
   var num=_extrairNumNotaChave(chave);
+  // Duplicate check
+  var dupRes=await sb.from('recebimentos').select('id,num_nota,recebido_at,usuario').eq('chave_nfe',chave).limit(1);
+  var dup=(dupRes.data||[])[0];
+  if(dup){
+    var dtDup=dup.recebido_at?new Date(dup.recebido_at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    if(fb){fb.style.color='var(--warn)';fb.textContent='⚠ NF '+( num||dup.num_nota)+' já registrada em '+dtDup+' por '+(dup.usuario||'—')+'.';}
+    return;
+  }
   _recScanPendingChave=chave;_recScanPendingNum=num;
   if(el('rec-valor-preview'))el('rec-valor-preview').textContent='NF: '+(num||'—');
   if(el('m-rec-valor-nf'))el('m-rec-valor-nf').value='';
@@ -4350,7 +4376,7 @@ async function confirmarRecScanComValor(){
   ov(true);
   try{
     var agora=new Date().toISOString();
-    var res=await sb.from('recebimentos').insert({chave_nfe:chave,num_nota:num,usuario:ME?ME.login:'',recebido_at:agora,valor_nf:valor||null});
+    var res=await sb.from('recebimentos').insert({chave_nfe:chave,num_nota:num,usuario:ME?ME.login:'',recebido_at:agora});
     if(res.error)throw res.error;
     if(input)input.value='';
     if(fb){fb.style.color='var(--accent)';fb.textContent='✓ NF '+num+' registrada!'+(valor>0?' — '+fmtBRL(valor):'');}
@@ -4378,13 +4404,24 @@ async function confirmarRegistrarNF(){
   var chave=(el('m-rec-chave')?el('m-rec-chave').value:'').replace(/\D/g,'').trim();
   if(chave.length!==44){toast('Informe a chave de 44 dígitos.','warn');return;}
   var num=_extrairNumNotaChave(chave);
+  // Duplicate check
+  var dupRes=await sb.from('recebimentos').select('id,num_nota,recebido_at,usuario').eq('chave_nfe',chave).limit(1);
+  var dup=(dupRes.data||[])[0];
+  if(dup){
+    var dtDup=dup.recebido_at?new Date(dup.recebido_at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    toast('⚠ NF '+(num||dup.num_nota)+' já foi registrada em '+dtDup+' por '+(dup.usuario||'—')+'.','warn',6000);
+    return;
+  }
+  var valorStr=(el('m-rec-valor-manual')?el('m-rec-valor-manual').value:'').replace(',','.').trim();
+  var valor=parseFloat(valorStr)||0;
+  if(valor<=0){toast('Informe o valor da nota fiscal.','warn');return;}
   closeM('m-registrar-nf');ov(true);
   try{
     var agora=new Date().toISOString();
     var res=await sb.from('recebimentos').insert({chave_nfe:chave,num_nota:num,usuario:ME?ME.login:'',recebido_at:agora});
     if(res.error)throw res.error;
     await fetchRecebimentos();renderRecebimentos();
-    toast('NF '+(num||chave)+' registrada com sucesso!','ok');
+    toast('NF '+(num||chave)+' — '+fmtBRL(valor)+' registrada com sucesso!','ok');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
 }
@@ -4495,10 +4532,13 @@ async function devRecCheck(val){
 async function confirmarRegistrarDevolucaoRec(){
   var chave=(el('dev-rec-chave')?el('dev-rec-chave').value:'').replace(/\D/g,'').trim();
   if(chave.length!==44){toast('Informe a chave de 44 dígitos.','warn');return;}
+  var valorDevStr=(el('dev-rec-valor')?el('dev-rec-valor').value:'').replace(',','.').trim();
+  var valorDev=parseFloat(valorDevStr)||0;
+  if(valorDev<=0){toast('Informe o valor da nota devolvida.','warn');return;}
   var numOrigem=_extrairNumNotaChave(chave);
-  // Buscar vendedor e pedido da chave
-  var pedRes=await sb.from('pedidos').select('numero,vendedor,num_nota').eq('chave_nfe',chave).limit(1);
+  var pedRes=await sb.from('pedidos').select('numero,vendedor,num_nota,valor_nota_fat').eq('chave_nfe',chave).limit(1);
   var ped=pedRes.data&&pedRes.data[0];
+  var valorOriginal=ped&&ped.valor_nota_fat?parseFloat(ped.valor_nota_fat)||0:0;
   closeM('m-registrar-devolucao-rec');ov(true);
   try{
     var agora=new Date().toISOString();
@@ -4512,11 +4552,12 @@ async function confirmarRegistrarDevolucaoRec(){
       status:'pendente',
       num_nota_entrada:'',
       chave_nfe_entrada:'',
-      valor_entrada:0
+      valor_entrada:valorDev,
+      valor_original:valorOriginal
     });
     if(ins.error)throw ins.error;
     await fetchDevolucoes();renderDevolucoes();
-    toast('Devolução da NF '+numOrigem+' registrada. Aguardando entrada.','warn');
+    toast('Devolução da NF '+numOrigem+' — '+fmtBRL(valorDev)+' registrada.','warn');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
 }
@@ -4759,9 +4800,20 @@ function renderAgEmbarqueBadge() {
 }
 
 function renderAgEmbarque() {
-  var items = PEDIDOS.filter(function(o){return o.status==='ag_embarque';});
+  var all = PEDIDOS.filter(function(o){return o.status==='ag_embarque';});
+  var selEl=el('agEmb-filtro-transp');
+  if(selEl){
+    var transpAtual=selEl.value;
+    var transps=[];
+    all.forEach(function(o){if(o.transportadora&&transps.indexOf(o.transportadora)<0)transps.push(o.transportadora);});
+    transps.sort();
+    selEl.innerHTML='<option value="">Todas</option>'+transps.map(function(t){return '<option value="'+t+'"'+(t===transpAtual?' selected':'')+'>'+t+'</option>';}).join('');
+    selEl.value=transpAtual;
+  }
+  var filtTransp=selEl?selEl.value:'';
+  var items=filtTransp?all.filter(function(o){return (o.transportadora||'')=== filtTransp;}):all;
   renderAgEmbarqueBadge();
-  if(el('agEmb-count'))el('agEmb-count').textContent=items.length+' pedido(s)';
+  if(el('agEmb-count'))el('agEmb-count').textContent=items.length+(filtTransp?' ('+filtTransp+')':'')+' / '+all.length+' pedido(s)';
   if(el('agEmb-empty'))el('agEmb-empty').style.display=items.length?'none':'block';
   if(el('agEmb-table'))el('agEmb-table').style.display=items.length?'':'none';
   var totalV=items.reduce(function(s,o){return s+(parseFloat(o.valor_nota_fat)||0);},0);
@@ -4773,14 +4825,20 @@ function renderAgEmbarque() {
   el('agEmb-tbody').innerHTML=items.map(function(o){
     var dataEntrada=o.pendente_desde?new Date(o.pendente_desde).toLocaleDateString('pt-BR'):'—';
     var valorNF=parseFloat(o.valor_nota_fat)||0;
-    var sel=_embarqueSelecionados.indexOf(o.id)>=0;
+    var sel2=_embarqueSelecionados.indexOf(o.id)>=0;
+    var endAloc=_getEnderecoAlocacao(o.id)||'—';
     return '<tr>'+
-      '<td><input type="checkbox" class="emb-chk" value="'+o.id+'" '+(sel?'checked':'')+' style="accent-color:#818cf8" onchange="toggleEmbarqueItem(\''+o.id+'\')"/></td>'+
+      '<td><input type="checkbox" class="emb-chk" value="'+o.id+'" '+(sel2?'checked':'')+' style="accent-color:#818cf8" onchange="toggleEmbarqueItem(\''+o.id+'\')" /></td>'+
+      '<td style="color:var(--muted);font-size:11px">'+dataEntrada+'</td>'+
       '<td style="font-family:var(--font-head);font-size:15px;font-weight:700">#'+o.numero+'</td>'+
       '<td>'+(o.nome_cliente||'—')+'</td>'+
       '<td style="color:var(--sep)">'+(o.num_nota||'—')+'</td>'+
       '<td style="color:#818cf8;font-weight:600">'+(valorNF>0?fmtBRL(valorNF):'—')+'</td>'+
-      '<td style="color:var(--muted)">'+dataEntrada+'</td>'+
+      '<td style="color:var(--cyan);font-size:11px">'+(o.cidade_destino||'—')+'</td>'+
+      '<td style="font-size:11px;color:var(--muted);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(o.endereco_entrega||'')+'">'+(o.endereco_entrega||'—')+'</td>'+
+      '<td style="font-size:11px">'+(o.vendedor||'—')+'</td>'+
+      '<td style="font-size:11px;color:var(--cyan)">'+(o.transportadora||'—')+'</td>'+
+      '<td><input type="text" data-id="'+o.id+'" value="'+(endAloc==='—'?'':endAloc)+'" placeholder="—" style="padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;width:100px;outline:none" onblur="salvarEnderecoAlocacao(this.dataset.id,this.value)" onkeydown="if(event.key===String.fromCharCode(13))this.blur()"/></td>'+
       '<td><div class="act-btns">'+
         '<button class="bmv" style="background:#818cf8;font-size:11px" onclick="abrirEmbarqueUnitario(\''+o.id+'\')">Embarcar</button>'+
         '<button class="bmv" style="background:#f59e0b;font-size:11px" onclick="abrirTransferirAba(\''+o.id+'\',\'embarque\')">⇄ Ag. Retira</button>'+
@@ -5512,6 +5570,40 @@ function syncExpedicaoBadges(){
     }
   });
 }
+// ── Exportar Ag. Embarque Excel ──
+function exportarAgEmbarqueExcel(){
+  var filtTransp=el('agEmb-filtro-transp')?el('agEmb-filtro-transp').value:'';
+  var all=PEDIDOS.filter(function(o){return o.status==='ag_embarque';});
+  var items=filtTransp?all.filter(function(o){return (o.transportadora||'')===filtTransp;}):all;
+  if(!items.length){toast('Nenhum pedido para exportar.','warn');return;}
+  var cabecalho=['Data Entrada','N° Pedido','Cliente','N° Nota','Valor NF','Cidade Destino','Endereço Entrega','Vendedor','Transportadora'].join(';');
+  var linhas=[cabecalho];
+  items.forEach(function(o){
+    var dataEntrada=o.pendente_desde?new Date(o.pendente_desde).toLocaleDateString('pt-BR'):'—';
+    var valorNF=parseFloat(o.valor_nota_fat)||0;
+    linhas.push([
+      escapeCsv(dataEntrada),
+      escapeCsv('#'+(o.numero||'')),
+      escapeCsv(o.nome_cliente||'—'),
+      escapeCsv(o.num_nota||'—'),
+      escapeCsv(valorNF>0?valorNF.toFixed(2):'—'),
+      escapeCsv(o.cidade_destino||'—'),
+      escapeCsv(o.endereco_entrega||'—'),
+      escapeCsv(o.vendedor||'—'),
+      escapeCsv(o.transportadora||'—')
+    ].join(';'));
+  });
+  var totalV=items.reduce(function(s,o){return s+(parseFloat(o.valor_nota_fat)||0);},0);
+  if(totalV>0)linhas.push(['','','','TOTAL',totalV.toFixed(2),'','','',''].join(';'));
+  var blob=new Blob(['﻿'+linhas.join('
+')],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='ag_embarque'+(filtTransp?'_'+filtTransp.replace(/\s/g,'_'):'')+'_'+fmtDateInput(new Date())+'.csv';
+  a.click();
+  toast('Exportado: '+items.length+' pedido(s)'+(filtTransp?' — '+filtTransp:'')+'.','ok');
+}
+
 // Run sync periodically
 setInterval(syncExpedicaoBadges,1000);
 
