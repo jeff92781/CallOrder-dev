@@ -1495,6 +1495,21 @@ function scheduleRender() {
       renderTVPub();
       _dirty.tvpub = false;
     }
+    if (ativa === 'screen-canhotos') {
+      renderCanhotos();
+    }
+    if (ativa === 'screen-agretira') {
+      renderAgRetira();
+    }
+    if (ativa === 'screen-agEmbarque') {
+      renderAgEmbarque();
+    }
+    if (ativa === 'screen-emTransito') {
+      renderEmTransito();
+    }
+    if (ativa === 'screen-pendencias') {
+      renderPendencias();
+    }
   });
 }
 
@@ -2459,12 +2474,19 @@ function renderRowCard(o,setor,transito){
   var parcialActive=!!o.parcial;
   var parcialBtnSt='position:absolute;left:14px;bottom:8px;width:26px;height:26px;border-radius:6px;border:1px solid rgba(245,158,11,'+(parcialActive?'.55':'.2')+');background:'+(parcialActive?'rgba(245,158,11,.22)':'rgba(245,158,11,.05)')+';color:'+(parcialActive?'var(--warn)':'rgba(245,158,11,.3)')+';font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;'+(parcialActive?'box-shadow:0 0 8px rgba(245,158,11,.35);':'');
   var alterarBtnSt='position:absolute;left:46px;bottom:8px;width:26px;height:26px;border-radius:6px;border:1px solid rgba(59,130,246,.25);background:rgba(59,130,246,.08);color:var(--blue);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;font-weight:700';
+  var retornarBtnSt='position:absolute;left:78px;bottom:8px;width:26px;height:26px;border-radius:6px;border:1px solid rgba(249,115,22,.25);background:rgba(249,115,22,.08);color:#fb923c;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;font-weight:700';
   var utilInCol1='';
   if(canAct&&!etapaPosFaturamento){
     utilInCol1+='<button style="'+parcialBtnSt+'" title="'+(parcialActive?'Remover parcial':'Marcar parcial')+'" onclick="toggleParcialCard(\''+o.id+'\','+parcialActive+')">&#9889;</button>';
   }
   if(podeCriarPedido()){
     utilInCol1+='<button style="'+alterarBtnSt+'" title="Alterar tipo" onclick="togglePrio(\''+o.id+'\',\''+prio+'\')">&#8644;</button>';
+  }
+  if(!transito&&canAct&&setor!=='atendimento'&&!etapaPosFaturamento&&!(setor==='expedicao'&&o.status==='em_entrega')){
+    utilInCol1+='<button style="'+retornarBtnSt+'" title="Retornar etapa" onclick="openReturnActive(\''+o.id+'\')">&#8617;</button>';
+  }
+  if(transito&&podeAtuarNoSetor(o.setor)){
+    utilInCol1+='<button style="'+retornarBtnSt+'" title="Retornar envio" onclick="openReturnTransit(\''+o.id+'\')">&#8617;</button>';
   }
   var col1='<div class="orc-col orc-id">'+
     '<div class="orc-num">'+o.numero+'</div>'+
@@ -2526,10 +2548,7 @@ function renderRowCard(o,setor,transito){
 
   if(transito){
     if(podeConfirmarDestino(o.setor_pendente))flowBtns.push('<button class="bcon" onclick="confirmarRec(\''+o.id+'\')">&#10003; Confirmar recebimento</button>');
-    if(podeAtuarNoSetor(o.setor))flowBtns.push('<button class="bret" onclick="openReturnTransit(\''+o.id+'\')">&#8617; Retornar envio</button>');
   }else{
-    if(canAct&&setor!=='atendimento'&&!etapaPosFaturamento&&!(setor==='expedicao'&&o.status==='em_entrega'))
-      flowBtns.push('<button class="bret" onclick="openReturnActive(\''+o.id+'\')">&#8617; Retornar etapa</button>');
     if(o.status==='pronto_balcao'&&setor==='balcao_op'&&canAct){
       flowBtns.push('<button class="bmv" style="background:#f59e0b" onclick="enviarAgRetira(\''+o.id+'\')">Ag. Retira</button>');
     }else if(setor==='faturamento'&&podeFaturar()){
