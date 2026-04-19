@@ -1059,7 +1059,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <div class="ph">
       <span class="pt">Pendências de Saldo</span>
       <span style="color:var(--muted);font-size:12px" id="pend-count"></span>
-      <button onclick="openM('m-nova-pendencia')" style="padding:8px 16px;background:var(--accent);border:none;border-radius:var(--radius);color:#04342c;font-family:var(--font-mono);font-size:12px;font-weight:700;cursor:pointer">+ Nova Pendência</button>
+
     </div>
     <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.25);border-radius:var(--radius-lg);padding:10px 16px;margin-bottom:14px;font-size:12px;color:var(--muted)">
       ⚠ Pedidos com saldo em aberto. <strong style="color:var(--text)">FOB</strong> = Retira/Balcão parciais · <strong style="color:var(--text)">CIF</strong> = Entregas parciais.
@@ -1324,10 +1324,14 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
 <div class="mb" id="m-nota">
   <div class="mo">
     <div class="mt">Faturamento — Nota Fiscal</div>
-    <p style="color:var(--muted);font-size:12px;margin-bottom:16px">Informe o número da NF. Após faturar, o pedido volta para a Separação com o botão de chamar balcão.</p>
+    <p id="nota-desc" style="color:var(--muted);font-size:12px;margin-bottom:16px">Informe o número da NF. Após faturar, o pedido volta para a Separação com o botão de chamar balcão.</p>
     <div class="f"><label class="fl">Número da Nota Fiscal *</label><input type="text" id="nota-num" placeholder="000123"/></div>
     <div class="f"><label class="fl">Valor da Nota Fiscal R$ *</label><input type="number" id="nota-valor" placeholder="0.00" step="0.01" min="0"/>
       <div id="nota-saldo-preview" style="margin-top:8px;font-size:12px;color:var(--muted);min-height:16px"></div>
+    </div>
+    <div class="f" id="nota-itens-wrap" style="display:none">
+      <label class="fl">Itens a faturar <span style="color:var(--warn);font-size:10px">— Pedido parcial</span></label>
+      <textarea id="nota-itens" style="min-height:80px" placeholder="Liste os itens que devem ser faturados nesta nota..."></textarea>
     </div>
     <div class="ma"><button class="bcan" onclick="closeM('m-nota')">Cancelar</button><button class="bok" onclick="confirmarNota()">Faturar e Enviar</button></div>
   </div>
@@ -2603,7 +2607,13 @@ function renderRowCard(o,setor,transito){
     }else if(setor==='expedicao'&&canAct){
       if(o.status==='pronto_expedicao')flowBtns.push('<button class="bmv" style="background:#818cf8" onclick="enviarAgEmbarque(\''+o.id+'\')">Ag. Embarque</button>');
       else if(o.status==='em_entrega'){flowBtns.push('<button class="bfin" onclick="marcarEntregue(\''+o.id+'\')">&#10003; Entregue</button>');flowBtns.push('<button class="boc" onclick="marcarDevolvido(\''+o.id+'\')">&#8617; Retorno</button>');}
-      else if(o.status!=='ag_embarque')flowBtns.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">&#8594; Faturamento</button>');
+      else if(o.status!=='ag_embarque'){
+        if(prio==='entrega'&&!parcialActive){
+          flowBtns.push('<button class="bmv" style="background:rgba(239,68,68,.7);border:1px solid rgba(239,68,68,.5)" onclick="enviarParaPendencia(\''+o.id+'\')">&#9888; Pendências</button>');
+        }else{
+          flowBtns.push('<button class="bmv" onclick="openNotaComItens(\''+o.id+'\')">&#8594; Faturamento</button>');
+        }
+      }
     }
   }
 
@@ -5003,8 +5013,9 @@ function renderPendencias() {
       '<td style="font-size:11px;color:var(--warn);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+itensPend+'">'+itensPend+'</td>'+
       '<td style="color:var(--muted)">' + dataFat + '</td>' +
       '<td><div class="act-btns">' +
-        '<button class="bmv" style="background:#3b82f6" onclick="pendenciaRetornar(\'' + o.id + '\')">↩ Retornar Operação</button>' +
-        '<button class="bexc" onclick="pendenciaEncerrar(\'' + o.id + '\')">✕ Encerrar Saldo</button>' +
+        '<button class="bmv" style="background:#3b82f6;font-size:11px" onclick="abrirRetornarPendencia(\'' + o.id + '\')">&#8617; Retornar</button>' +
+        '<button class="bexc" style="font-size:11px" onclick="cancelarPendencia(\'' + o.id + '\')">✕ Cancelar</button>' +
+        '<button class="boc" style="font-size:11px" onclick="pendenciaEncerrar(\'' + o.id + '\')">&#9723; Encerrar Saldo</button>' +
       '</div></td>' +
     '</tr>';
   }).join('');
@@ -5392,6 +5403,25 @@ function renderAgRetiraBadge() {
     <div id="adv-timeline-area" style="margin-top:18px"></div>
   </main>
 </div>
+<div class="mb" id="m-retornar-pend">
+  <div class="mo" style="max-width:480px;width:95vw">
+    <div class="mt">Retornar para Operação</div>
+    <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Escolha o setor de destino e informe o que está sendo trabalhado nesta pendência.</p>
+    <div class="f">
+      <label class="fl">Setor de destino *</label>
+      <select id="rp-setor" style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none">
+        <option value="atendimento">Atendimento</option>
+        <option value="estoque">Estoque</option>
+        <option value="corte">Corte</option>
+        <option value="expedicao" selected>Expedição</option>
+        <option value="balcao_op">Balcão</option>
+        <option value="faturamento">Faturamento</option>
+      </select>
+    </div>
+    <div class="f"><label class="fl">O que está sendo trabalhado</label><textarea id="rp-item" style="min-height:70px" placeholder="Ex: Separando os itens restantes, aguardando chegada do produto X..."></textarea></div>
+    <div class="ma"><button class="bcan" onclick="closeM('m-retornar-pend')">Cancelar</button><button class="bok" onclick="confirmarRetornarPendencia()">Retornar</button></div>
+  </div>
+</div>
 <div class="mb" id="m-rec-valor">
   <div class="mo" style="max-width:360px;width:95vw">
     <div class="mt">Valor da Nota Fiscal</div>
@@ -5464,6 +5494,104 @@ function syncExpedicaoBadges(){
 }
 // Run sync periodically
 setInterval(syncExpedicaoBadges,1000);
+
+// ── Pendências: enviar da expedição ──
+async function enviarParaPendencia(id){
+  var pedido=getPedidoById(id);
+  if(!pedido){toast('Pedido não encontrado.','err');return;}
+  if(!confirm('Enviar pedido #'+pedido.numero+' para Pendências CIF?'))return;
+  ov(true);
+  try{
+    var agora=new Date().toISOString();
+    var linha=buildOccurrenceLine('PENDÊNCIA','Expedição','Pedido enviado para Pendências CIF pela Expedição.');
+    var obsAtual=pedido.obs||'';
+    var novaObs=(obsAtual?obsAtual+'\n':'')+linha;
+    await sb.from('pedidos').update({tem_pendencia:true,pendencia_status:'aberta',obs:novaObs}).eq('id',id);
+    upsertPedidoLocal({id:id,tem_pendencia:true,pendencia_status:'aberta',obs:novaObs});
+    _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(300);
+    toast('Pedido #'+pedido.numero+' enviado para Pendências CIF.','ok');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
+}
+
+// ── openNotaComItens: opens faturamento modal, shows items field if parcial entrega ──
+function openNotaComItens(id){
+  var pedido=getPedidoById(id);
+  var isParcialEntrega=pedido&&pedido.parcial&&pedido.prioridade==='entrega';
+  var wrap=el('nota-itens-wrap');
+  var itensEl=el('nota-itens');
+  if(wrap)wrap.style.display=isParcialEntrega?'block':'none';
+  if(itensEl)itensEl.value='';
+  openNota(id);
+}
+
+// ── cancelarPendencia: remove pendencia flag ──
+async function cancelarPendencia(id){
+  var pedido=getPedidoById(id);
+  if(!pedido)return;
+  if(!confirm('Cancelar a pendência do pedido #'+pedido.numero+'? O pedido permanecerá no setor atual.'))return;
+  ov(true);
+  try{
+    await sb.from('pedidos').update({tem_pendencia:false,pendencia_status:'cancelada'}).eq('id',id);
+    upsertPedidoLocal({id:id,tem_pendencia:false,pendencia_status:'cancelada'});
+    renderPendencias();renderPendenciasBadge();
+    toast('Pendência #'+pedido.numero+' cancelada.','ok');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
+}
+
+// ── abrirRetornarPendencia / confirmarRetornarPendencia ──
+var _rpTarget=null;
+function abrirRetornarPendencia(id){
+  _rpTarget=id;
+  var pedido=getPedidoById(id);
+  if(el('rp-item'))el('rp-item').value='';
+  if(el('rp-setor'))el('rp-setor').value=pedido&&pedido.setor?pedido.setor:'expedicao';
+  openM('m-retornar-pend');
+}
+async function confirmarRetornarPendencia(){
+  var id=_rpTarget;
+  if(!id)return;
+  var setor=el('rp-setor')?el('rp-setor').value:'expedicao';
+  var item=(el('rp-item')?el('rp-item').value:'').trim();
+  var pedido=getPedidoById(id);
+  if(!pedido)return;
+  closeM('m-retornar-pend');
+  ov(true);
+  try{
+    var agora=new Date().toISOString();
+    var obsAtual=pedido.obs||'';
+    var linha=buildOccurrenceLine('RETORNO_PENDENCIA',SL[setor]||setor,'Retornado para '+( SL[setor]||setor)+(item?' — Item: '+item:''));
+    var novaObs=(obsAtual?obsAtual+'\n':'')+linha;
+    // Update obs with new log and set item being worked
+    var updates={tem_pendencia:false,pendencia_status:'retornada',setor:setor,status:'em_andamento',setor_pendente:'',setor_entrada_at:agora,obs:novaObs};
+    // Save item note to obs
+    if(item){novaObs=novaObs+'\n[PEND_TRAB: '+item+']';updates.obs=novaObs;}
+    await sb.from('pedidos').update(updates).eq('id',id);
+    upsertPedidoLocal(Object.assign({id:id},updates));
+    _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(300);
+    renderPendencias();renderPendenciasBadge();
+    toast('Pedido #'+pedido.numero+' retornado para '+(SL[setor]||setor)+'.','ok');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);_rpTarget=null;}
+}
+
+// ── patch confirmarNota to save itens when parcial entrega ──
+var _confirmarNotaOrig=confirmarNota;
+confirmarNota=async function(){
+  var id=_notaTarget;
+  var pedido=id?getPedidoById(id):null;
+  var isParcialEntrega=pedido&&pedido.parcial&&pedido.prioridade==='entrega';
+  var itens=(el('nota-itens')&&isParcialEntrega)?el('nota-itens').value.trim():'';
+  if(isParcialEntrega&&itens){
+    var obsAtual=pedido.obs||'';
+    var linha=buildOccurrenceLine('FATURAMENTO PARCIAL','Expedição','Itens faturados: '+itens);
+    var novaObs=(obsAtual?obsAtual+'\n':'')+linha;
+    await sb.from('pedidos').update({obs:novaObs}).eq('id',id);
+    if(pedido)pedido.obs=novaObs;
+  }
+  return _confirmarNotaOrig.apply(this,arguments);
+};
 </script>
 </body>
 </html>
