@@ -4574,7 +4574,7 @@ function renderEmTransito(){
       '<td>'+(o.transportadora||'—')+'</td>'+
       '<td>'+(o.motorista||'—')+'</td>'+
       '<td style="color:var(--muted)">'+dataEmb+' '+horaEmb+'</td>'+
-      '<td><input type="text" value="'+(_getEnderecoAlocacao(o.id)||'').replace(/"/g,"&apos;")+'" placeholder="endereço..." style="padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;width:120px;outline:none" onblur="salvarEnderecoAlocacao(''+o.id+'',this.value)" onkeydown="if(event.key==='Enter')this.blur()"/></td>'+
+      '<td><input type="text" data-id="'+o.id+'" value="'+(_getEnderecoAlocacao(o.id)||'')+'" placeholder="end..." style="padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;width:120px;outline:none" onblur="salvarEnderecoAlocacao(this.getAttribute(&quot;data-id&quot;),this.value)" onkeydown="if(event.key===String.fromCharCode(13))this.blur()"/></td>'+
       '<td><div class="act-btns">'+
         '<button class="bfin" style="font-size:11px" onclick="marcarEntregue(\''+o.id+'\')">✓ Entregue</button>'+
         '<button class="bmv" style="font-size:11px;background:#f59e0b" onclick="retornarParaEmbarque(\''+o.id+'\')">↩ Retorno</button>'+
@@ -4998,7 +4998,7 @@ function renderPendencias() {
       '<td style="color:var(--muted)">' + fmtBRL(valorPedido) + '</td>' +
       '<td style="color:var(--accent)">' + fmtBRL(valorNota) + '</td>' +
       '<td style="color:var(--danger);font-weight:700">' + fmtBRL(saldo) + '</td>' +
-      '<td><input type="text" value="'+(endAloc==='—'?'':endAloc)+'" placeholder="—" style="padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;width:110px;outline:none" onblur="salvarEnderecoAlocacao(''+o.id+'',this.value)" onkeydown="if(event.key==='Enter')this.blur()"/></td>'+
+      '<td><input type="text" data-id="'+o.id+'" value="'+(endAloc==='—'?'':endAloc)+'" placeholder="—" style="padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;width:110px;outline:none" onblur="salvarEnderecoAlocacao(this.dataset.id,this.value)" onkeydown="if(event.key===String.fromCharCode(13))this.blur()"/></td>'+
       '<td style="font-size:11px;color:var(--accent);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+itensSep+'">'+itensSep+'</td>'+
       '<td style="font-size:11px;color:var(--warn);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+itensPend+'">'+itensPend+'</td>'+
       '<td style="color:var(--muted)">' + dataFat + '</td>' +
@@ -5207,7 +5207,7 @@ function renderAgRetira() {
       '<td style="color:var(--accent);font-weight:600">' + (valorNF > 0 ? fmtBRL(valorNF) : '—') + '</td>' +
       '<td style="color:var(--muted)">' + dataEntrada + '</td>' +
       '<td><span style="font-weight:600;color:' + (dias>=15?'var(--danger)':dias>=10?'var(--warn)':'var(--accent)') + '">' + dias + ' dia(s)</span></td>' +
-      '<td><input type="text" value="'+(_getEnderecoAlocacao(o.id)||'').replace(/"/g,"'")+'" placeholder="endereço..." style="padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;width:120px;outline:none" onblur="salvarEnderecoAlocacao('\''+o.id+'\'' ,this.value)" onkeydown="if(event.key==='Enter')this.blur()"/></td>'+
+      '<td><input type="text" data-id="'+o.id+'" value="'+(_getEnderecoAlocacao(o.id)||'')+'" placeholder="end..." style="padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;width:120px;outline:none" onblur="salvarEnderecoAlocacao(this.dataset.id,this.value)" onkeydown="if(event.key===String.fromCharCode(13))this.blur()"/></td>'+
       '<td><div class="act-btns">' +
         '<button class="bcall" onclick="agRetiraChamarBalcao(\'' + o.id + '\')" style="animation:none">Chamar balcão</button>' +
         '<button class="bmv" style="background:#3b82f6;font-size:11px" onclick="abrirTransferirAba(\''+o.id+'\',\'retira\')">⇄ Ag. Embarque</button>' +
