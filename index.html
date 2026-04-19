@@ -1181,7 +1181,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
       <table class="utbl" id="canhoto-table">
-        <thead><tr><th>Pedido</th><th>Cliente</th><th>NF</th><th>Valor</th><th>Transportadora</th><th>Motorista</th><th>Entrega confirmada</th><th>Entregue/Chamado por</th><th>Canhoto por</th><th>Status</th></tr></thead>
+        <thead><tr><th>Pedido</th><th>Cliente</th><th>NF</th><th>Valor</th><th>Transportadora</th><th>Motorista</th><th>Entrega confirmada</th><th>Confirmado por</th><th>Status</th></tr></thead>
         <tbody id="canhoto-tbody"></tbody>
       </table>
     </div>
@@ -2923,9 +2923,9 @@ async function marcarEntregue(id){
     var agora=new Date().toISOString();
     // Move para Canhotos — aguardando confirmação do canhoto físico
     var entregaPor=(ME&&ME.login)?ME.login:'(sistema)';
-    var res=await sb.from('pedidos').update({status:'aguard_canhoto',entregue_at:agora,confirmado_entrega_por:entregaPor}).eq('id',id);
+    var res=await sb.from('pedidos').update({status:'aguard_canhoto',entregue_at:agora,confirmado_por_canhoto:entregaPor}).eq('id',id);
     if(res.error)throw res.error;
-    upsertPedidoLocal({id:id,status:'aguard_canhoto',entregue_at:agora,confirmado_entrega_por:entregaPor});
+    upsertPedidoLocal({id:id,status:'aguard_canhoto',entregue_at:agora,confirmado_por_canhoto:entregaPor});
     _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(500);
     renderCanhotosBadge();
     renderEmTransitoBadge();
@@ -3037,10 +3037,10 @@ async function confirmarChamaBalcao(){
       pendente_desde:agora,
       entregue_at:agora,
       chave_nfe:chave,
-      confirmado_entrega_por:chamadoPor
+      confirmado_por_canhoto:chamadoPor
     }).eq('id',_chamaBalcaoTarget);
     if(res.error)throw res.error;
-    upsertPedidoLocal({id:_chamaBalcaoTarget,status:'aguard_canhoto',pendente_desde:agora,entregue_at:agora,chave_nfe:chave,confirmado_entrega_por:chamadoPor});
+    upsertPedidoLocal({id:_chamaBalcaoTarget,status:'aguard_canhoto',pendente_desde:agora,entregue_at:agora,chave_nfe:chave,confirmado_por_canhoto:chamadoPor});
     _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(500);
     renderCanhotosBadge();
     var nomeParaChamar=pedido.nome_retirada||pedido.nome_cliente||'cliente';
@@ -4551,7 +4551,6 @@ function renderCanhotos(){
       '<td>'+(o.transportadora||'—')+'</td>'+
       '<td>'+(o.motorista||'—')+'</td>'+
       '<td style="color:var(--accent)">'+dtEntrega+'</td>'+
-      '<td style="color:var(--cyan);font-size:12px">'+(o.confirmado_entrega_por||'—')+'</td>'+
       '<td style="color:var(--muted);font-size:12px">'+(o.confirmado_por_canhoto||'—')+'</td>'+
       '<td>'+statusBadge+'</td>'+
     '</tr>';
