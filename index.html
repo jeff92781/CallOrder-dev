@@ -674,6 +674,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <button class="tab" onclick="go('agEmbarque')" id="tab-agembarque" style="display:none">Ag. Embarque <span id="agembarque-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('emTransito')" id="tab-emtransito" style="display:none">Em Trânsito <span id="emtransito-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('canhotos')" id="tab-canhotos">Canhotos <span id="canhotos-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <button class="tab" onclick="go('pendencias')" id="tab-pendencias-top">Pendências <span id="pendencias-badge" style="display:none;background:rgba(239,68,68,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('ocorrencias')" id="tab-ocorrencias">Ocorrências <span id="ocorrencias-badge" style="display:none;background:rgba(239,159,39,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('pendencias')" id="tab-pendencias" style="display:none">Pendências <span id="pendencias-badge" style="display:none;background:rgba(239,68,68,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <div class="tab-drop" id="drop-expedicao">
@@ -683,7 +684,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
         <button class="tab-drop-item" id="di-agembarque" onclick="go('agEmbarque');closeExpedicaoMenu()">Ag. Embarque <span id="dagembarque-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
         <button class="tab-drop-item" id="di-emtransito" onclick="go('emTransito');closeExpedicaoMenu()">Em Trânsito <span id="demtransito-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
         <button class="tab-drop-item" id="di-recebimento" onclick="go('recebimento');closeExpedicaoMenu()">Recebimento <span id="drecebimento-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
-        <button class="tab-drop-item" id="di-pendencias" onclick="go('pendencias');closeExpedicaoMenu()">Pendências <span id="dpendencias-badge" style="display:none;background:rgba(239,68,68,.2);color:var(--danger);padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
+
       </div>
     </div>
   </div>
@@ -932,7 +933,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <!-- Tabela -->
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
       <table class="utbl" id="rec-table">
-        <thead><tr><th>Data / Hora</th><th>Usuário</th><th>Nº Nota</th></tr></thead>
+        <thead><tr><th>Operação</th><th>Data / Hora</th><th>Usuário</th><th>Nº Nota</th><th>Valor NF</th><th>Tipo Dev.</th></tr></thead>
         <tbody id="rec-tbody"></tbody>
       </table>
     </div>
@@ -1029,7 +1030,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
       <table class="utbl" id="agr-table">
-        <thead><tr><th style="width:30px"></th><th>Pedido</th><th>Cliente</th><th>Vendedor</th><th>Nota Fiscal</th><th>Valor NF</th><th>Entrada</th><th>Dias</th><th>Ações</th></tr></thead>
+        <thead><tr><th style="width:30px"></th><th>Pedido</th><th>Cliente</th><th>Vendedor</th><th>Nota Fiscal</th><th>Valor NF</th><th>Entrada</th><th>Dias</th><th>Endereço</th><th>Ações</th></tr></thead>
         <tbody id="agr-tbody"></tbody>
       </table>
     </div>
@@ -1058,18 +1059,34 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <div class="ph">
       <span class="pt">Pendências de Saldo</span>
       <span style="color:var(--muted);font-size:12px" id="pend-count"></span>
+      <button onclick="openM('m-nova-pendencia')" style="padding:8px 16px;background:var(--accent);border:none;border-radius:var(--radius);color:#04342c;font-family:var(--font-mono);font-size:12px;font-weight:700;cursor:pointer">+ Nova Pendência</button>
     </div>
-    <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.25);border-radius:var(--radius-lg);padding:14px 18px;margin-bottom:20px;font-size:12px;color:var(--muted)">
-      ⚠ Pedidos com saldo em aberto: o valor faturado foi inferior ao valor original do pedido. Use <strong style="color:var(--text)">Retornar para Operação</strong> quando o saldo for entregue, ou <strong style="color:var(--text)">Encerrar Saldo</strong> caso o cliente não queira aguardar.
+    <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.25);border-radius:var(--radius-lg);padding:10px 16px;margin-bottom:14px;font-size:12px;color:var(--muted)">
+      ⚠ Pedidos com saldo em aberto. <strong style="color:var(--text)">FOB</strong> = Retira/Balcão parciais · <strong style="color:var(--text)">CIF</strong> = Entregas parciais.
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:14px">
+      <button class="fchip active" id="pend-tab-fob" onclick="setPendTab('fob',this)">FOB — Retira/Balcão</button>
+      <button class="fchip" id="pend-tab-cif" onclick="setPendTab('cif',this)">CIF — Entregas</button>
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
       <table class="utbl" id="pend-table">
-        <thead><tr><th>Pedido</th><th>Cliente</th><th>Nota Fiscal</th><th>Valor Pedido</th><th>Valor Faturado</th><th>Saldo em Aberto</th><th>Data</th><th>Ações</th></tr></thead>
+        <thead><tr><th>Pedido</th><th>Cliente</th><th>Nota Fiscal</th><th>Valor Pedido</th><th>Valor Faturado</th><th>Saldo em Aberto</th><th>Endereço</th><th>Itens Sep.</th><th>Itens Pend.</th><th>Data</th><th>Ações</th></tr></thead>
         <tbody id="pend-tbody"></tbody>
       </table>
     </div>
-    <div id="pend-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhuma pendência de saldo no momento.</div>
+    <div id="pend-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhuma pendência nesta categoria.</div>
   </main>
+</div>
+<div class="mb" id="m-nova-pendencia">
+  <div class="mo" style="max-width:520px;width:95vw">
+    <div class="mt">Nova Pendência Manual</div>
+    <p style="color:var(--muted);font-size:12px;margin-bottom:14px">Insira o número do pedido para registrar uma pendência. O sistema verificará se já existe.</p>
+    <div class="f"><label class="fl">Nº do Pedido *</label><input type="text" id="np-numero" placeholder="Ex: 60515" oninput="verificarPendenciaDuplicada(this.value)"/><div id="np-feedback" style="font-size:11px;min-height:16px;margin-top:4px;color:var(--muted)"></div></div>
+    <div class="f"><label class="fl">Endereço de alocação</label><input type="text" id="np-endereco" placeholder="Ex: Prateleira A3, Corredor 2"/></div>
+    <div class="f"><label class="fl">Itens separados</label><textarea id="np-sep" style="min-height:60px" placeholder="Liste os itens já separados..."></textarea></div>
+    <div class="f"><label class="fl">Itens pendentes</label><textarea id="np-pend" style="min-height:60px" placeholder="Liste os itens ainda pendentes..."></textarea></div>
+    <div class="ma"><button class="bcan" onclick="closeM('m-nova-pendencia')">Cancelar</button><button class="bok" onclick="salvarNovaPendencia()">Salvar Pendência</button></div>
+  </div>
 </div>
 
 <div class="screen" id="screen-agEmbarque">
@@ -1082,7 +1099,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
       <table class="utbl" id="agEmb-table">
-        <thead><tr><th style="width:30px"><input type="checkbox" id="agEmb-checkall" onchange="toggleCheckAllEmbarque(this)" style="accent-color:#818cf8"/></th><th>Pedido</th><th>Cliente</th><th>Nota Fiscal</th><th>Valor NF</th><th>Entrada</th><th>Ações</th></tr></thead>
+        <thead><tr><th style="width:30px"><input type="checkbox" id="agEmb-checkall" onchange="toggleCheckAllEmbarque(this)" style="accent-color:#818cf8"/></th><th>Pedido</th><th>Cliente</th><th>Nota Fiscal</th><th>Valor NF</th><th>Entrada</th><th>Endereço</th><th>Ações</th></tr></thead>
         <tbody id="agEmb-tbody"></tbody>
       </table>
     </div>
@@ -2196,7 +2213,7 @@ async function go(name){
   if(name==='emTransito'){ov(true);await fetchPedidos();ov(false);renderEmTransito();}
   if(name==='canhotos'){ov(true);await Promise.all([fetchPedidos(),fetchCanhotosConfirmados()]);ov(false);_canhotoFilter='aguardando';setCanhotoFilter('aguardando',null);renderCanhotos();}
   if(name==='ocorrencias'){ov(true);await fetchPedidos();ov(false);renderOcorrencias();}
-  if(name==='pendencias'){ov(true);await fetchPedidos();ov(false);renderPendencias();}
+  if(name==='pendencias'){ov(true);await fetchPedidos();ov(false);if(!_pendTab)_pendTab='fob';renderPendencias();}
 }
 
 // ── MUDANÇA 5: Clock SÓ atualiza texto do relógio + timers in-place ──
@@ -3742,6 +3759,58 @@ function renderTimeline(p, movs, devs){
     });
   });
 
+  // Ocorrências e retornos — parsed from obs field
+  if(p.obs){
+    var obsLines=(p.obs||'').split('\n');
+    obsLines.forEach(function(linha){
+      if(!linha.trim())return;
+      // Format: [dd/mm/aa hh:mm:ss] TIPO · Setor · Usuário — texto
+      var dateMatch=linha.match(/^\[([^\]]+)\]\s*(OCORRÊNCIA|RETORNO_OCORRÊNCIA|RETORNO)\s*·\s*([^·]+)·\s*([^—]+)—\s*(.+)$/i);
+      if(!dateMatch){
+        // simpler format without username
+        var dateMatch2=linha.match(/^\[([^\]]+)\]\s*(OCORRÊNCIA|RETORNO_OCORRÊNCIA|RETORNO)\s*·\s*([^—]+)—\s*(.+)$/i);
+        if(dateMatch2){
+          var tipo2=dateMatch2[2].trim().toUpperCase();
+          var isOcc2=tipo2==='OCORRÊNCIA';
+          var isRet2=tipo2==='RETORNO'||tipo2==='RETORNO_OCORRÊNCIA';
+          if(isOcc2||isRet2){
+            steps.push({
+              label:isOcc2?'Pedido entrou em Ocorrência':'Retorno da Ocorrência',
+              sub:'Setor: '+dateMatch2[3].trim()+' — '+dateMatch2[4].trim(),
+              time:null,done:true,
+              icon:isOcc2?'⚠️':'🔄',
+              color:isOcc2?'#f59e0b':'#3b82f6'
+            });
+          }
+        }
+        return;
+      }
+      var tipo=dateMatch[2].trim().toUpperCase();
+      var setor=dateMatch[3].trim();
+      var usuario=dateMatch[4].trim();
+      var motivo=dateMatch[5].trim();
+      var isOcc=tipo==='OCORRÊNCIA';
+      var isRet=tipo==='RETORNO'||tipo==='RETORNO_OCORRÊNCIA';
+      if(!isOcc&&!isRet)return;
+      // Parse the date string (pt-BR format)
+      var dtStr=dateMatch[1].trim();
+      var dtParsed=null;
+      try{
+        var parts=dtStr.split(/[\s,/]+/);
+        // dd/mm/aa hh:mm:ss
+        var dp=dtStr.match(/(\d{2})\/(\d{2})\/(\d{2,4})[,\s]+(\d{2}):(\d{2})/);
+        if(dp){dtParsed=new Date(2000+parseInt(dp[3]%100),parseInt(dp[2])-1,parseInt(dp[1]),parseInt(dp[4]),parseInt(dp[5])).toISOString();}
+      }catch(e){}
+      steps.push({
+        label:isOcc?'Pedido entrou em Ocorrência':'Retorno da Ocorrência',
+        sub:(isOcc?'Acionado por '+usuario+' · Setor: '+setor+' — Motivo: '+motivo:'Retornado por '+usuario+' · Setor: '+setor+' — O que foi feito: '+motivo),
+        time:dtParsed,done:true,
+        icon:isOcc?'⚠️':'🔄',
+        color:isOcc?'#f59e0b':'#3b82f6'
+      });
+    });
+  }
+
   // Ag. Retira
   if(p.status==='ag_retira'){
     steps.push({label:'Aguardando retirada',sub:'Nota emitida: '+(p.num_nota||'—')+' — aguardando cliente retirar',time:p.pendente_desde,done:true,icon:'🏪',color:'#f59e0b'});
@@ -4150,23 +4219,44 @@ async function fetchRecebimentos(){
   var r=getPeriodRange(startRec,endRec);
   var res=await sb.from('recebimentos').select('*').gte('recebido_at',r.startIso).lte('recebido_at',r.endIso).order('recebido_at',{ascending:false});
   RECEBIMENTOS=res.data||[];
+  // Also fetch devolucoes for unified view
+  var devRes=await sb.from('devolucoes').select('*').gte('recebido_at',r.startIso).lte('recebido_at',r.endIso).order('recebido_at',{ascending:false});
+  REC_DEVOLUCOES=devRes.data||[];
 }
 
 function renderRecebimentos(){
-  var items=RECEBIMENTOS.slice();
-  // Filtro por NF
+  var entradas=RECEBIMENTOS.map(function(r){return Object.assign({},r,{_op:'entrada'});});
+  var devs=(REC_DEVOLUCOES||[]).map(function(r){return Object.assign({},r,{_op:'devolucao'});});
+  var all=entradas.concat(devs).sort(function(a,b){return new Date(b.recebido_at||0)-new Date(a.recebido_at||0);});
   var filtNF=(el('rec-filtro-nf')?el('rec-filtro-nf').value:'').trim();
-  if(filtNF)items=items.filter(function(r){return (r.num_nota||'').indexOf(filtNF)>=0;});
-  if(el('rec-count'))el('rec-count').textContent=items.length+' registro(s)';
-  if(el('rec-empty'))el('rec-empty').style.display=items.length?'none':'block';
-  if(el('rec-table'))el('rec-table').style.display=items.length?'':'none';
+  if(filtNF)all=all.filter(function(r){return (r.num_nota||r.num_nota_origem||'').indexOf(filtNF)>=0;});
+  if(el('rec-count'))el('rec-count').textContent=all.length+' registro(s) ('+entradas.length+' entradas / '+devs.length+' devoluções)';
+  if(el('rec-empty'))el('rec-empty').style.display=all.length?'none':'block';
+  if(el('rec-table'))el('rec-table').style.display=all.length?'':'none';
   if(!el('rec-tbody'))return;
-  el('rec-tbody').innerHTML=items.map(function(r){
+  el('rec-tbody').innerHTML=all.map(function(r){
     var dt=r.recebido_at?new Date(r.recebido_at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    var isDev=r._op==='devolucao';
+    var numNota=isDev?(r.num_nota_origem||r.num_nota||'—'):(r.num_nota||'—');
+    var valor=isDev?(parseFloat(r.valor_entrada)||0):(parseFloat(r.valor_nf)||0);
+    var valorOriginal=parseFloat(r.valor_original)||0;
+    var tipoDev='—';
+    if(isDev&&valor>0&&valorOriginal>0){tipoDev=valor>=valorOriginal?'Total':'Parcial';}
+    var opBadge=isDev
+      ?'<span style="padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;background:rgba(239,68,68,.12);color:var(--danger);border:1px solid rgba(239,68,68,.3)">Devolução</span>'
+      :'<span style="padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;background:rgba(34,211,167,.1);color:var(--accent);border:1px solid rgba(34,211,167,.25)">Entrada</span>';
+    var tipoBadge=isDev&&tipoDev!=='—'
+      ?(tipoDev==='Total'
+        ?'<span style="padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;background:rgba(239,68,68,.12);color:var(--danger)">Total</span>'
+        :'<span style="padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;background:rgba(245,158,11,.12);color:var(--warn)">Parcial</span>')
+      :'<span style="color:var(--muted2)">—</span>';
     return '<tr>'+
+      '<td>'+opBadge+'</td>'+
       '<td style="color:var(--muted)">'+dt+'</td>'+
-      '<td>'+( r.usuario||'—')+'</td>'+
-      '<td style="font-family:var(--font-head);font-size:15px;font-weight:700;color:var(--sep)">'+(r.num_nota||'—')+'</td>'+
+      '<td>'+(r.usuario||'—')+'</td>'+
+      '<td style="font-family:var(--font-head);font-size:15px;font-weight:700;color:var(--sep)">'+numNota+'</td>'+
+      '<td style="color:var(--accent);font-weight:600">'+(valor>0?fmtBRL(valor):'—')+'</td>'+
+      '<td>'+tipoBadge+'</td>'+
     '</tr>';
   }).join('');
 }
@@ -4205,6 +4295,8 @@ function recScanCheck(val){
   }
 }
 
+var _recScanPendingChave='';
+var _recScanPendingNum='';
 async function recScanRegistrar(){
   var input=el('rec-scan-input');
   var fb=el('rec-scan-feedback');
@@ -4212,13 +4304,26 @@ async function recScanRegistrar(){
   var chave=(input.value||'').replace(/\D/g,'').trim();
   if(chave.length!==44){if(fb){fb.style.color='var(--danger)';fb.textContent='Chave deve ter 44 dígitos.';}return;}
   var num=_extrairNumNotaChave(chave);
+  _recScanPendingChave=chave;_recScanPendingNum=num;
+  if(el('rec-valor-preview'))el('rec-valor-preview').textContent='NF: '+(num||'—');
+  if(el('m-rec-valor-nf'))el('m-rec-valor-nf').value='';
+  openM('m-rec-valor');
+}
+async function confirmarRecScanComValor(){
+  var chave=_recScanPendingChave;
+  var num=_recScanPendingNum;
+  var valorStr=(el('m-rec-valor-nf')?el('m-rec-valor-nf').value:'').replace(',','.').trim();
+  var valor=parseFloat(valorStr)||0;
+  closeM('m-rec-valor');
+  var input=el('rec-scan-input');
+  var fb=el('rec-scan-feedback');
   ov(true);
   try{
     var agora=new Date().toISOString();
-    var res=await sb.from('recebimentos').insert({chave_nfe:chave,num_nota:num,usuario:ME?ME.login:'',recebido_at:agora});
+    var res=await sb.from('recebimentos').insert({chave_nfe:chave,num_nota:num,usuario:ME?ME.login:'',recebido_at:agora,valor_nf:valor||null});
     if(res.error)throw res.error;
-    input.value='';
-    if(fb){fb.style.color='var(--accent)';fb.textContent='✓ NF '+num+' registrada!';}
+    if(input)input.value='';
+    if(fb){fb.style.color='var(--accent)';fb.textContent='✓ NF '+num+' registrada!'+(valor>0?' — '+fmtBRL(valor):'');}
     await fetchRecebimentos();renderRecebimentos();
     setTimeout(function(){if(fb)fb.textContent='';},3000);
   }catch(e){toast(e.message,'err');}
@@ -4469,6 +4574,7 @@ function renderEmTransito(){
       '<td>'+(o.transportadora||'—')+'</td>'+
       '<td>'+(o.motorista||'—')+'</td>'+
       '<td style="color:var(--muted)">'+dataEmb+' '+horaEmb+'</td>'+
+      '<td><input type="text" value="'+(_getEnderecoAlocacao(o.id)||'').replace(/"/g,"&apos;")+'" placeholder="endereço..." style="padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;width:120px;outline:none" onblur="salvarEnderecoAlocacao(''+o.id+'',this.value)" onkeydown="if(event.key==='Enter')this.blur()"/></td>'+
       '<td><div class="act-btns">'+
         '<button class="bfin" style="font-size:11px" onclick="marcarEntregue(\''+o.id+'\')">✓ Entregue</button>'+
         '<button class="bmv" style="font-size:11px;background:#f59e0b" onclick="retornarParaEmbarque(\''+o.id+'\')">↩ Retorno</button>'+
@@ -4801,8 +4907,75 @@ function renderPendenciasBadge() {
   }
 }
 
+var _pendTab='fob';
+function setPendTab(tab,btn){
+  _pendTab=tab;
+  ['fob','cif'].forEach(function(t){var b=el('pend-tab-'+t);if(b)b.classList.toggle('active',t===tab);});
+  renderPendencias();
+}
+function _getEnderecoAlocacao(id){
+  var obs=(getPedidoById(id)||{}).obs||'';
+  var m=obs.match(/\[END_ALOC:([^\]]+)\]/);
+  return m?m[1].trim():'';
+}
+async function salvarEnderecoAlocacao(id,val){
+  var pedido=getPedidoById(id);
+  if(!pedido)return;
+  var obs=pedido.obs||'';
+  obs=obs.replace(/\[END_ALOC:[^\]]*\]/g,'').trim();
+  if(val.trim())obs=(obs?obs+'\n':'')+'[END_ALOC: '+val.trim()+']';
+  await sb.from('pedidos').update({obs:obs}).eq('id',id);
+  if(pedido)pedido.obs=obs;
+}
+function verificarPendenciaDuplicada(num){
+  var fb=el('np-feedback');
+  if(!fb||!num.trim())return;
+  var existe=PEDIDOS.find(function(o){return o.numero===num.trim()&&o.tem_pendencia&&o.pendencia_status==='aberta';});
+  if(existe){
+    fb.style.color='var(--warn)';
+    fb.textContent='⚠ Este pedido já está em Pendências! ('+existe.nome_cliente+') — Verifique antes de continuar.';
+  }else{
+    var p=PEDIDOS.find(function(o){return o.numero===num.trim();});
+    fb.style.color='var(--accent)';
+    fb.textContent=p?'✓ Pedido encontrado: '+p.nome_cliente:'— Número não encontrado nos registros do dia.';
+  }
+}
+async function salvarNovaPendencia(){
+  var num=(el('np-numero')?el('np-numero').value:'').trim();
+  if(!num){toast('Informe o número do pedido.','warn');return;}
+  var pedido=PEDIDOS.find(function(o){return o.numero===num;});
+  if(!pedido){toast('Pedido #'+num+' não encontrado nos registros ativos.','err');return;}
+  var existe=pedido.tem_pendencia&&pedido.pendencia_status==='aberta';
+  if(existe){if(!confirm('O pedido #'+num+' já está em Pendências. Deseja atualizar as informações?'))return;}
+  var end=(el('np-endereco')?el('np-endereco').value:'').trim();
+  var sep=(el('np-sep')?el('np-sep').value:'').trim();
+  var pend=(el('np-pend')?el('np-pend').value:'').trim();
+  var obs=pedido.obs||'';
+  obs=obs.replace(/\[END_ALOC:[^\]]*\]/g,'').replace(/\[PEND_SEP:[^\]]*\]/g,'').replace(/\[PEND_ITEMS:[^\]]*\]/g,'').trim();
+  if(end)obs=(obs?obs+'\n':'')+'[END_ALOC: '+end+']';
+  if(sep)obs=(obs?obs+'\n':'')+'[PEND_SEP: '+sep+']';
+  if(pend)obs=(obs?obs+'\n':'')+'[PEND_ITEMS: '+pend+']';
+  ov(true);
+  try{
+    await sb.from('pedidos').update({tem_pendencia:true,pendencia_status:'aberta',obs:obs}).eq('id',pedido.id);
+    upsertPedidoLocal({id:pedido.id,tem_pendencia:true,pendencia_status:'aberta',obs:obs});
+    closeM('m-nova-pendencia');
+    renderPendencias();renderPendenciasBadge();
+    toast('Pendência do pedido #'+num+' salva.','ok');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
+}
+function _getPendObs(obs,tag){
+  var m=(obs||'').match(new RegExp('\\['+tag+':([^\\]]+)\\]'));
+  return m?m[1].trim():'—';
+}
 function renderPendencias() {
-  var items = PEDIDOS.filter(function(o) { return o.tem_pendencia && o.pendencia_status === 'aberta'; });
+  var all = PEDIDOS.filter(function(o) { return o.tem_pendencia && o.pendencia_status === 'aberta'; });
+  var items = all.filter(function(o){
+    if(_pendTab==='fob') return o.prioridade==='balcao'||o.prioridade==='retira'||!o.prioridade;
+    if(_pendTab==='cif') return o.prioridade==='entrega';
+    return true;
+  });
   renderPendenciasBadge();
   if (el('pend-count')) el('pend-count').textContent = items.length + ' pendência(s)';
   if (el('pend-empty')) el('pend-empty').style.display = items.length ? 'none' : 'block';
@@ -4814,6 +4987,10 @@ function renderPendencias() {
     var valorPedido = parseFloat(o.valor_pedido) || 0;
     var valorNota = parseFloat(o.valor_nota_fat) || 0;
     var dataFat = o.finalizado_at ? new Date(o.finalizado_at).toLocaleDateString('pt-BR') : '—';
+    var obsP=o.obs||'';
+    var endAloc=_getPendObs(obsP,'END_ALOC');
+    var itensSep=_getPendObs(obsP,'PEND_SEP');
+    var itensPend=_getPendObs(obsP,'PEND_ITEMS');
     return '<tr>' +
       '<td style="font-family:var(--font-head);font-size:15px;font-weight:700">#' + o.numero + '</td>' +
       '<td>' + (o.nome_cliente || '—') + '</td>' +
@@ -4821,6 +4998,9 @@ function renderPendencias() {
       '<td style="color:var(--muted)">' + fmtBRL(valorPedido) + '</td>' +
       '<td style="color:var(--accent)">' + fmtBRL(valorNota) + '</td>' +
       '<td style="color:var(--danger);font-weight:700">' + fmtBRL(saldo) + '</td>' +
+      '<td><input type="text" value="'+(endAloc==='—'?'':endAloc)+'" placeholder="—" style="padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;width:110px;outline:none" onblur="salvarEnderecoAlocacao(''+o.id+'',this.value)" onkeydown="if(event.key==='Enter')this.blur()"/></td>'+
+      '<td style="font-size:11px;color:var(--accent);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+itensSep+'">'+itensSep+'</td>'+
+      '<td style="font-size:11px;color:var(--warn);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+itensPend+'">'+itensPend+'</td>'+
       '<td style="color:var(--muted)">' + dataFat + '</td>' +
       '<td><div class="act-btns">' +
         '<button class="bmv" style="background:#3b82f6" onclick="pendenciaRetornar(\'' + o.id + '\')">↩ Retornar Operação</button>' +
@@ -4829,6 +5009,7 @@ function renderPendencias() {
     '</tr>';
   }).join('');
 }
+
 
 async function pendenciaRetornar(id) {
   var pedido = getPedidoById(id);
@@ -5026,6 +5207,7 @@ function renderAgRetira() {
       '<td style="color:var(--accent);font-weight:600">' + (valorNF > 0 ? fmtBRL(valorNF) : '—') + '</td>' +
       '<td style="color:var(--muted)">' + dataEntrada + '</td>' +
       '<td><span style="font-weight:600;color:' + (dias>=15?'var(--danger)':dias>=10?'var(--warn)':'var(--accent)') + '">' + dias + ' dia(s)</span></td>' +
+      '<td><input type="text" value="'+(_getEnderecoAlocacao(o.id)||'').replace(/"/g,"'")+'" placeholder="endereço..." style="padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;width:120px;outline:none" onblur="salvarEnderecoAlocacao('\''+o.id+'\'' ,this.value)" onkeydown="if(event.key==='Enter')this.blur()"/></td>'+
       '<td><div class="act-btns">' +
         '<button class="bcall" onclick="agRetiraChamarBalcao(\'' + o.id + '\')" style="animation:none">Chamar balcão</button>' +
         '<button class="bmv" style="background:#3b82f6;font-size:11px" onclick="abrirTransferirAba(\''+o.id+'\',\'retira\')">⇄ Ag. Embarque</button>' +
@@ -5209,6 +5391,15 @@ function renderAgRetiraBadge() {
     </div>
     <div id="adv-timeline-area" style="margin-top:18px"></div>
   </main>
+</div>
+<div class="mb" id="m-rec-valor">
+  <div class="mo" style="max-width:360px;width:95vw">
+    <div class="mt">Valor da Nota Fiscal</div>
+    <p id="rec-valor-preview" style="color:var(--accent);font-size:13px;font-weight:600;margin-bottom:12px"></p>
+    <div class="f"><label class="fl">Valor da NF (R$)</label><input type="number" id="m-rec-valor-nf" placeholder="0,00" step="0.01" min="0" style="width:100%"/></div>
+    <p style="color:var(--muted);font-size:11px;margin-bottom:14px">Informe o valor para registro. Deixe em branco se não souber.</p>
+    <div class="ma"><button class="bcan" onclick="closeM('m-rec-valor')">Cancelar</button><button class="bok" onclick="confirmarRecScanComValor()">Registrar</button></div>
+  </div>
 </div>
 <script>
 // ── Expedição dropdown ──
