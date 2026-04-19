@@ -835,16 +835,9 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
       <div id="rel-canhoto-bars"></div>
     </div>
 
-    <!-- Seção 5: Tabela de pedidos -->
-    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Registro de pedidos</div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:auto">
-      <table class="rkt" style="min-width:900px">
-        <thead><tr><th>Entrada</th><th>Pedido</th><th>Cliente</th><th>NF</th><th>Valor</th><th>Separador</th><th>Tempo total</th><th>T. Ocorr.</th><th>Operação</th><th>Status</th></tr></thead>
-        <tbody id="pedidos-dia-body"></tbody>
-        <tfoot id="pedidos-dia-tfoot"></tfoot>
-      </table>
-    </div>
     <div id="bars-conf" class="adm-only" style="display:none"></div>
+    <div id="pedidos-dia-body" style="display:none"></div>
+    <div id="pedidos-dia-tfoot" style="display:none"></div>
   </main>
 </div>
 <div class="screen" id="screen-usuarios">
@@ -1298,24 +1291,26 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
   </div>
 </div>
 <div class="mb" id="m-new-order">
-  <div class="mo">
-    <div class="mt">Novo Pedido — Atendimento</div>
-    <div class="f"><label class="fl">Número do Pedido *</label><input type="text" id="no-num" placeholder="Ex: 00123" oninput="verificarDuplicataLive(this.value)"/>
-      <div id="no-num-feedback" style="margin-top:6px;font-size:11px;min-height:14px"></div>
+  <div class="mo" style="max-width:560px;width:95vw;padding:20px 22px">
+    <div class="mt" style="font-size:16px;margin-bottom:12px">Novo Pedido — Atendimento</div>
+    <div class="f" style="margin-bottom:10px"><label class="fl">Nº Pedido *</label><input type="text" id="no-num" placeholder="Ex: 00123" oninput="verificarDuplicataLive(this.value)"/><div id="no-num-feedback" style="margin-top:4px;font-size:11px;min-height:12px"></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="f" style="margin-bottom:0"><label class="fl">Cliente *</label><input type="text" id="no-cli" placeholder="Nome completo"/></div>
+      <div class="f" style="margin-bottom:0"><label class="fl">Tipo de saída</label>
+        <select id="no-prio" onchange="var f=el('no-entrega-fields');if(f)f.style.display=this.value==='entrega'?'block':'none'"><option value="balcao">Balcão</option><option value="retira">Retira</option><option value="entrega">Entrega CIF</option></select>
+      </div>
+      <div class="f" style="margin-bottom:0"><label class="fl">Retirada (opcional)</label><input type="text" id="no-retirada" placeholder="Ex: João Motorista"/></div>
+      <div class="f" style="margin-bottom:0"><label class="fl">Vendedor *</label><input type="text" id="no-vendedor" placeholder="Nome do vendedor"/></div>
+      <div class="f" style="margin-bottom:0;grid-column:span 2"><label class="fl">Valor do Pedido R$ *</label><input type="number" id="no-valor" placeholder="0.00" step="0.01" min="0"/></div>
     </div>
-    <div class="f"><label class="fl">Nome do Cliente *</label><input type="text" id="no-cli" placeholder="Nome completo"/></div>
-    <div class="f"><label class="fl">Tipo de saída</label>
-      <select id="no-prio" onchange="var f=el('no-entrega-fields');if(f)f.style.display=this.value==='entrega'?'block':'none'"><option value="balcao">Balcão</option><option value="retira">Retira</option><option value="entrega">Entrega CIF</option></select>
+    <div id="no-entrega-fields" style="display:none;margin-top:10px;display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="f" style="margin-bottom:0"><label class="fl">Cidade de destino</label><input type="text" id="no-cidade" placeholder="Ex: São Paulo — SP"/></div>
+        <div class="f" style="margin-bottom:0"><label class="fl">Transportadora</label><input type="text" id="no-transportadora" placeholder="Ex: Jadlog, Correios"/></div>
+        <div class="f" style="margin-bottom:0;grid-column:span 2"><label class="fl">Endereço de entrega</label><input type="text" id="no-endereco" placeholder="Ex: Rua das Flores, 123 — Bairro"/></div>
+      </div>
     </div>
-    <div class="f"><label class="fl">Nome de quem está retirando (opcional)</label><input type="text" id="no-retirada" placeholder="Ex: João Motorista"/></div>
-    <div class="f"><label class="fl">Vendedor *</label><input type="text" id="no-vendedor" placeholder="Nome do vendedor responsável"/></div>
-    <div class="f"><label class="fl">Valor do Pedido R$ *</label><input type="number" id="no-valor" placeholder="0.00" step="0.01" min="0"/></div>
-    <div id="no-entrega-fields" style="display:none">
-      <div class="f"><label class="fl">Cidade de destino</label><input type="text" id="no-cidade" placeholder="Ex: São Paulo — SP"/></div>
-      <div class="f"><label class="fl">Endereço de entrega</label><input type="text" id="no-endereco" placeholder="Ex: Rua das Flores, 123 — Bairro"/></div>
-      <div class="f"><label class="fl">Transportadora</label><input type="text" id="no-transportadora" placeholder="Ex: Jadlog, Correios, Própria"/></div>
-    </div>
-    <div class="ma"><button class="bcan" onclick="closeM('m-new-order')">Cancelar</button><button class="bok" onclick="createOrder()">Criar Pedido</button></div>
+    <div class="ma" style="margin-top:14px"><button class="bcan" onclick="closeM('m-new-order')">Cancelar</button><button class="bok" onclick="createOrder()">Criar Pedido</button></div>
   </div>
 </div>
 </div>
@@ -1424,9 +1419,20 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
   <div class="mo">
     <div class="mt" id="occ-title">Registrar ocorrência</div>
     <p id="occ-desc" style="color:var(--muted);font-size:12px;margin-bottom:16px">Descreva o ocorrido.</p>
+    <div class="f" id="occ-tipo-wrap">
+      <label class="fl">Tipo de ocorrência</label>
+      <select id="occ-tipo" style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none">
+        <option value="">— Selecione o tipo —</option>
+        <option value="Estoque não consultado">Estoque não consultado</option>
+        <option value="Falta de metragem">Falta de metragem</option>
+        <option value="Margem">Margem</option>
+        <option value="Pedido incorreto">Pedido incorreto</option>
+        <option value="Outro">Outro</option>
+      </select>
+    </div>
     <div class="f">
-      <label class="fl">Motivo *</label>
-      <textarea id="occ-text" style="width:100%;min-height:120px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;resize:vertical"></textarea>
+      <label class="fl">Descrição / Observação</label>
+      <textarea id="occ-text" style="width:100%;min-height:80px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;resize:vertical" placeholder="Descreva o ocorrido em mais detalhes..."></textarea>
     </div>
     <div class="ma">
       <button class="bcan" onclick="closeOccurrenceModal()">Cancelar</button>
@@ -1883,6 +1889,7 @@ async function openReturnTransit(id){
   el('occ-title').textContent='Retornar pedido';
   el('occ-desc').textContent='Informe o motivo do retorno para '+(SL[pedido.setor]||pedido.setor)+'.';
   el('occ-text').value='';
+  if(el('occ-tipo-wrap'))el('occ-tipo-wrap').style.display='none';
   openM('m-ocorrencia');
 }
 async function openReturnActive(id){
@@ -1904,9 +1911,12 @@ async function openReturnActive(id){
   finally{ov(false);}
 }
 async function submitOccurrenceModal(){
+  var tipo=(el('occ-tipo')&&(el('occ-tipo-wrap').style.display!=='none'))?el('occ-tipo').value:'';
   var texto=(el('occ-text').value||'').trim();
   if(!_occCtx){closeOccurrenceModal();return;}
-  if(texto.length<5){toast('Descreva o motivo com mais detalhes.','warn');return;}
+  if(_occCtx.modo==='ocorrencia'&&!tipo){toast('Selecione o tipo de ocorrência.','warn');return;}
+  var textoFinal=tipo?(tipo+(texto?' — '+texto:'')):texto;
+  if(textoFinal.length<3){toast('Preencha o tipo ou descrição.','warn');return;}
   closeM('m-ocorrencia');
   ov(true);
   try{
@@ -1915,7 +1925,7 @@ async function submitOccurrenceModal(){
     var linha=buildOccurrenceLine(
       _occCtx.modo==='ocorrencia'?'OCORRÊNCIA':_occCtx.modo==='exclusao'?'EXCLUSÃO':'RETORNO',
       _occCtx.setorLabel||pedido.setor,
-      texto
+      textoFinal
     );
     await appendObsPedido(_occCtx.id,linha);
 
@@ -2197,23 +2207,34 @@ async function aplicarFiltroRelatorios(){
 }
 function exportarPedidosExcel(){
   if(!REPORT_PEDIDOS_EXPORT.length){toast('Não há registros para exportar no período selecionado.','warn');return;}
-  var linhas=[['Entrada','Pedido','Cliente','NF','Valor Faturado','Tempo total','Destino'].join(';')];
+  var linhas=[['Entrada','Pedido','Cliente','NF','Valor Faturado','Cidade','Endereço','Transportadora','Tempo total','Destino','Status'].join(';')];
   var totalValor=0;
   REPORT_PEDIDOS_EXPORT.forEach(function(o){
     var total=(tsMs(o.finalizado_at)||now())-tsMs(o.entrada_at);
     var valorNF=parseFloat(o.valor_nota_fat)||0;
     totalValor+=valorNF;
+    var obsP=o.obs||'';
+    var mCidade=obsP.match(/cidade=([^|\]]+)/);
+    var mEnd=obsP.match(/end=([^|\]]+)/);
+    var mTransp=obsP.match(/transp=([^\]]+)/);
+    var cidade=mCidade?mCidade[1].trim():(o.cidade_destino||'—');
+    var endDest=mEnd?mEnd[1].trim():(o.endereco_entrega||'—');
+    var transp=mTransp?mTransp[1].trim():(o.transportadora||'—');
     linhas.push([
       escapeCsv(o.entrada_at?new Date(o.entrada_at).toLocaleString('pt-BR'):'—'),
-      escapeCsv('#'+(o.numero||'')),
+      escapeCsv(o.numero||''),
       escapeCsv(o.nome_cliente||'—'),
       escapeCsv(o.num_nota||'—'),
-      escapeCsv(valorNF>0?valorNF.toFixed(2):'—'),
+      escapeCsv(valorNF>0?valorNF.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'),
+      escapeCsv(cidade),
+      escapeCsv(endDest),
+      escapeCsv(transp),
       escapeCsv(fmtT(Math.max(0,total))),
-      escapeCsv(getDestinoFinalTexto(o))
+      escapeCsv(getDestinoFinalTexto(o)),
+      escapeCsv(SL[o.status]||o.status||'—')
     ].join(';'));
   });
-  if(totalValor>0)linhas.push(['','','','TOTAL',totalValor.toFixed(2),'',''].join(';'));
+  if(totalValor>0)linhas.push(['','','','TOTAL',totalValor.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}),'','','','','',''].join(';'));
   var blob=new Blob(['\ufeff'+linhas.join('\r\n')],{type:'text/csv;charset=utf-8;'});
   var a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
@@ -2809,10 +2830,23 @@ function openNota(id){
   if(el('nota-saldo-preview'))el('nota-saldo-preview').textContent='';
   var pedido=getPedidoById(id);
   if(pedido){
-    // Fix 8: se é retorno de pendência, usa saldo_pendencia; senão usa valor_pedido
-    var valorRef=parseFloat(pedido.valor_pedido)||0;
+    var saldoPend=parseFloat(pedido.saldo_pendencia)||0;
+    var valorRef=saldoPend>0?saldoPend:(parseFloat(pedido.valor_pedido)||0);
     if(valorRef>0){
-      if(el('nota-saldo-preview'))el('nota-saldo-preview').textContent='Valor do pedido: '+fmtBRL(valorRef)+'. Se o valor da NF for inferior, haverá saldo em Pendências.';
+      var label=saldoPend>0?'Saldo em aberto':'Valor do pedido';
+      if(el('nota-saldo-preview'))el('nota-saldo-preview').textContent=label+': '+fmtBRL(valorRef)+'. '+(saldoPend>0?'NF deve cobrir este saldo.':'Se o valor da NF for inferior, haverá saldo em Pendências.');
+    }
+    // Show pre-filled items from expedicao pre-fatura
+    var obsP = pedido.obs || '';
+    var itensSep = _getPendObs(obsP, 'PEND_SEP');
+    var wrap = el('nota-itens-wrap');
+    var itensEl = el('nota-itens');
+    if(wrap && itensSep !== '—' && itensSep) {
+      wrap.style.display = 'block';
+      if(itensEl) itensEl.value = itensSep;
+    } else if(wrap) {
+      wrap.style.display = 'none';
+      if(itensEl) itensEl.value = '';
     }
   }
   openM('m-nota');
@@ -2825,9 +2859,10 @@ async function confirmarNota(){
   // Fix 5: valor da NF não pode ser maior que o valor do pedido
   var pedidoRef=PEDIDOS.find(function(p){return p.id===_notaTarget;});
   if(pedidoRef){
-    var valorPedidoRef=parseFloat(pedidoRef.valor_pedido)||0;
+    var saldoRef=parseFloat(pedidoRef.saldo_pendencia)||0;
+    var valorPedidoRef=saldoRef>0?saldoRef:(parseFloat(pedidoRef.valor_pedido)||0);
     if(valorPedidoRef>0&&valorNota>valorPedidoRef){
-      toast('⚠ O valor da NF ('+fmtBRL(valorNota)+') não pode ser maior que o valor do pedido ('+fmtBRL(valorPedidoRef)+').','err',6000);
+      toast('⚠ O valor da NF ('+fmtBRL(valorNota)+') não pode ser maior que '+(saldoRef>0?'o saldo em aberto':'o valor do pedido')+' ('+fmtBRL(valorPedidoRef)+').','err',6000);
       return;
     }
   }
@@ -4766,8 +4801,8 @@ function renderEmTransito(){
       '<td style="color:var(--muted)">'+dataEmb+' '+horaEmb+'</td>'+
       '<td><input type="text" data-id="'+o.id+'" value="'+(_getEnderecoAlocacao(o.id)||'')+'" placeholder="end..." style="padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;width:120px;outline:none" onblur="salvarEnderecoAlocacao(this.getAttribute(&quot;data-id&quot;),this.value)" onkeydown="if(event.key===String.fromCharCode(13))this.blur()"/></td>'+
       '<td><div class="act-btns">'+
-        '<button class="bfin" style="font-size:11px" onclick="marcarEntregue(\''+o.id+'\')">✓ Entregue</button>'+
-        '<button class="bmv" style="font-size:11px;background:#f59e0b" onclick="retornarParaEmbarque(\''+o.id+'\')">↩ Retorno</button>'+
+        '<button class="bfin" style="font-size:11px" onclick="abrirConfirmEntregue(\''+o.id+'\')">✓ Entregue</button>'+
+        '<button class="bmv" style="font-size:11px;background:#f59e0b" onclick="abrirRetornoTransito(\''+o.id+'\')">↩ Retorno</button>'+
       '</div></td>'+
     '</tr>';
   }).join('');
@@ -5211,8 +5246,7 @@ function renderPendencias() {
       '<td style="color:var(--muted)">' + dataFat + '</td>' +
       '<td><div class="act-btns">' +
         '<button class="bmv" style="background:#3b82f6;font-size:11px" onclick="abrirRetornarPendencia(\'' + o.id + '\')">&#8617; Retornar</button>' +
-        '<button class="bexc" style="font-size:11px" onclick="cancelarPendencia(\'' + o.id + '\')">✕ Cancelar</button>' +
-        '<button class="boc" style="font-size:11px" onclick="pendenciaEncerrar(\'' + o.id + '\')">&#9723; Encerrar Saldo</button>' +
+        '<button class="bexc" style="font-size:11px" onclick="pendenciaEncerrar(\'' + o.id + '\')">&#9723; Encerrar Saldo</button>' +
       '</div></td>' +
     '</tr>';
   }).join('');
@@ -5439,7 +5473,7 @@ function exportarAgRetiraExcel() {
       escapeCsv(o.nome_cliente||'—'),
       escapeCsv(o.vendedor||'—'),
       escapeCsv(o.num_nota||'—'),
-      escapeCsv(valorNF>0?valorNF.toFixed(2):'—'),
+      escapeCsv(valorNF>0?valorNF.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'),
       escapeCsv(dataEntrada),
       escapeCsv(dias+' dia(s)')
     ].join(';'));
@@ -5600,6 +5634,36 @@ function renderAgRetiraBadge() {
     <div id="adv-timeline-area" style="margin-top:18px"></div>
   </main>
 </div>
+<div class="mb" id="m-confirm-entregue">
+  <div class="mo" style="max-width:400px;width:95vw">
+    <div class="mt">Confirmar entrega</div>
+    <p id="ce-desc" style="color:var(--muted);font-size:12px;margin-bottom:14px"></p>
+    <div class="f">
+      <label class="fl">Chave NF-e * <span style="color:var(--muted)">(44 dígitos — confirma a entrega)</span></label>
+      <input type="text" id="ce-chave" placeholder="44 dígitos" maxlength="44" oninput="ceScanCheck(this.value)"/>
+      <div id="ce-feedback" style="margin-top:6px;font-size:11px;min-height:14px;color:var(--muted)"></div>
+    </div>
+    <div class="ma">
+      <button class="bcan" onclick="closeM('m-confirm-entregue');_ceTarget=null">Cancelar</button>
+      <button class="bfin" onclick="confirmarEntregueComChave()">✓ Confirmar Entregue</button>
+    </div>
+  </div>
+</div>
+<div class="mb" id="m-retorno-transito">
+  <div class="mo" style="max-width:400px;width:95vw">
+    <div class="mt">Registrar retorno</div>
+    <p id="rt-desc" style="color:var(--muted);font-size:12px;margin-bottom:14px"></p>
+    <div class="f">
+      <label class="fl">Chave NF-e * <span style="color:var(--muted)">(44 dígitos — confirma o retorno)</span></label>
+      <input type="text" id="rt-chave" placeholder="44 dígitos" maxlength="44" oninput="rtScanCheck(this.value)"/>
+      <div id="rt-feedback" style="margin-top:6px;font-size:11px;min-height:14px;color:var(--muted)"></div>
+    </div>
+    <div class="ma">
+      <button class="bcan" onclick="closeM('m-retorno-transito');_rtTarget=null">Cancelar</button>
+      <button class="bmv" style="background:#f59e0b" onclick="confirmarRetornoTransito()">↩ Confirmar Retorno</button>
+    </div>
+  </div>
+</div>
 <div class="mb" id="m-retornar-pend">
   <div class="mo" style="max-width:480px;width:95vw">
     <div class="mt">Retornar para Operação</div>
@@ -5705,7 +5769,7 @@ function exportarAgEmbarqueExcel(){
       escapeCsv('#'+(o.numero||'')),
       escapeCsv(o.nome_cliente||'—'),
       escapeCsv(o.num_nota||'—'),
-      escapeCsv(valorNF>0?valorNF.toFixed(2):'—'),
+      escapeCsv(valorNF>0?valorNF.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'),
       escapeCsv(o.cidade_destino||'—'),
       escapeCsv(o.endereco_entrega||'—'),
       escapeCsv(o.vendedor||'—'),
@@ -5720,6 +5784,55 @@ function exportarAgEmbarqueExcel(){
   a.download='ag_embarque'+(filtTransp?'_'+filtTransp.replace(/\s/g,'_'):'')+'_'+fmtDateInput(new Date())+'.csv';
   a.click();
   toast('Exportado: '+items.length+' pedido(s)'+(filtTransp?' — '+filtTransp:'')+'.','ok');
+}
+
+// ── Em Trânsito: exigir chave NF ──
+var _ceTarget=null,_rtTarget=null;
+function abrirConfirmEntregue(id){
+  _ceTarget=id;
+  var p=getPedidoById(id);
+  if(el('ce-desc'))el('ce-desc').textContent='Pedido #'+(p?p.numero:'')+' — '+(p?p.nome_cliente:'')+'. Informe a chave NF-e para confirmar a entrega.';
+  if(el('ce-chave'))el('ce-chave').value='';
+  if(el('ce-feedback'))el('ce-feedback').textContent='';
+  openM('m-confirm-entregue');
+}
+function ceScanCheck(val){
+  var fb=el('ce-feedback');if(!fb)return;
+  var v=(val||'').replace(/\D/g,'');
+  if(!v){fb.textContent='';return;}
+  if(v.length<44){fb.style.color='var(--muted)';fb.textContent=v.length+' / 44';return;}
+  var num=_extrairNumNotaChave(v);
+  fb.style.color='var(--accent)';fb.textContent='✓ NF '+(num||v.substring(0,8)+'...')+' válida';
+}
+async function confirmarEntregueComChave(){
+  var id=_ceTarget;if(!id)return;
+  var chave=(el('ce-chave')?el('ce-chave').value:'').replace(/\D/g,'').trim();
+  if(chave.length!==44){toast('Informe a chave de 44 dígitos.','warn');return;}
+  closeM('m-confirm-entregue');_ceTarget=null;
+  await marcarEntregue(id);
+}
+function abrirRetornoTransito(id){
+  _rtTarget=id;
+  var p=getPedidoById(id);
+  if(el('rt-desc'))el('rt-desc').textContent='Pedido #'+(p?p.numero:'')+' — '+(p?p.nome_cliente:'')+'. Informe a chave NF-e para registrar o retorno.';
+  if(el('rt-chave'))el('rt-chave').value='';
+  if(el('rt-feedback'))el('rt-feedback').textContent='';
+  openM('m-retorno-transito');
+}
+function rtScanCheck(val){
+  var fb=el('rt-feedback');if(!fb)return;
+  var v=(val||'').replace(/\D/g,'');
+  if(!v){fb.textContent='';return;}
+  if(v.length<44){fb.style.color='var(--muted)';fb.textContent=v.length+' / 44';return;}
+  var num=_extrairNumNotaChave(v);
+  fb.style.color='var(--warn)';fb.textContent='NF '+(num||v.substring(0,8)+'...')+' — confirme o retorno';
+}
+async function confirmarRetornoTransito(){
+  var id=_rtTarget;if(!id)return;
+  var chave=(el('rt-chave')?el('rt-chave').value:'').replace(/\D/g,'').trim();
+  if(chave.length!==44){toast('Informe a chave de 44 dígitos.','warn');return;}
+  closeM('m-retorno-transito');_rtTarget=null;
+  await retornarParaEmbarque(id);
 }
 
 // Run sync periodically
@@ -5752,19 +5865,51 @@ function openPreFatura(id){
   openM('m-pre-fatura');
 }
 
-function confirmarPreFatura(){
+async function confirmarPreFatura(){
   var id = _preFaturaId;
   if(!id) return;
+  var pedido = getPedidoById(id);
+  if(!pedido) return;
   var itensFat = (el('pf-itens-fat') ? el('pf-itens-fat').value : '').trim();
   var itensPend = (el('pf-itens-pend') ? el('pf-itens-pend').value : '').trim();
-  // Store in globals for confirmarNota to pick up
   window._pfItensFat = itensFat;
   window._pfItensPend = itensPend;
   closeM('m-pre-fatura');
-  // Show items preview in nota modal
-  if(el('nota-itens-wrap')) el('nota-itens-wrap').style.display = itensFat ? 'block' : 'none';
-  if(el('nota-itens')) el('nota-itens').value = itensFat;
-  openNota(id);
+  ov(true);
+  try {
+    // Save items to obs, then send to faturamento
+    var obsAtual = pedido.obs || '';
+    var linhas = [];
+    if(itensFat) linhas.push('[PEND_SEP: ' + itensFat + ']');
+    if(itensPend) {
+      obsAtual = obsAtual.replace(/\[PEND_ITEMS:[^\]]*\]/g, '').trim();
+      linhas.push('[PEND_ITEMS: ' + itensPend + ']');
+    }
+    if(linhas.length){
+      obsAtual = (obsAtual ? obsAtual + '\n' : '') + linhas.join('\n');
+      await sb.from('pedidos').update({obs: obsAtual}).eq('id', id);
+      if(pedido) pedido.obs = obsAtual;
+    }
+    // Send to faturamento (normal enviar flow)
+    var agora = new Date().toISOString();
+    var tempoSetor = Math.max(0, new Date(agora) - new Date(pedido.setor_entrada_at));
+    var res = await sb.from('pedidos').update({
+      setor: 'faturamento', status: 'em_andamento',
+      setor_pendente: '', pendente_desde: null, setor_entrada_at: agora
+    }).eq('id', id);
+    if(res.error) throw res.error;
+    upsertPedidoLocal({id:id, setor:'faturamento', status:'em_andamento', setor_pendente:'', pendente_desde:null, setor_entrada_at:agora});
+    sb.from('movimentacoes').insert({
+      pedido_id:id, setor_origem:pedido.setor, setor_destino:'faturamento',
+      usuario:ME?ME.login:'', entrada_at:pedido.setor_entrada_at,
+      saida_at:agora, tempo_ms:tempoSetor,
+      confirmado_por:ME?ME.login:'', confirmado_at:agora, tempo_confirmacao_ms:0
+    });
+    _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(300);
+    toast('Pedido #'+pedido.numero+' enviado para Faturamento'+(itensFat?' com itens: '+itensFat.substring(0,40):'')+'.',  'move');
+    _preFaturaId = null;
+  } catch(e) { toast(e.message, 'err'); }
+  finally { ov(false); }
 }
 
 // ── Override confirmarNota to persist items and auto-create pendência ──
