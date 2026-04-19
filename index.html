@@ -1321,6 +1321,24 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
   </div>
 </div>
 
+<div class="mb" id="m-pre-fatura">
+  <div class="mo" style="max-width:520px;width:95vw">
+    <div class="mt" id="pf-title">Pré-Faturamento</div>
+    <p id="pf-desc" style="color:var(--muted);font-size:12px;margin-bottom:14px"></p>
+    <div class="f">
+      <label class="fl">Itens a faturar agora <span style="color:var(--accent);font-size:10px">— serão enviados ao Faturamento</span></label>
+      <textarea id="pf-itens-fat" style="min-height:80px" placeholder="Liste os itens/produtos que serão faturados nesta NF..."></textarea>
+    </div>
+    <div class="f" id="pf-pend-wrap">
+      <label class="fl">Itens pendentes <span style="color:var(--warn);font-size:10px">— irão para Pendências automaticamente</span></label>
+      <textarea id="pf-itens-pend" style="min-height:70px" placeholder="Liste os itens que ficam em aberto (ainda não disponíveis, aguardando, etc.)..."></textarea>
+    </div>
+    <div class="ma">
+      <button class="bcan" onclick="closeM('m-pre-fatura')">Cancelar</button>
+      <button class="bok" onclick="confirmarPreFatura()">Continuar → NF</button>
+    </div>
+  </div>
+</div>
 <div class="mb" id="m-nota">
   <div class="mo">
     <div class="mt">Faturamento — Nota Fiscal</div>
@@ -2603,17 +2621,11 @@ function renderRowCard(o,setor,transito){
       if(prio!=='entrega')flowBtns.push('<button class="bcon" style="background:#6366f1" onclick="enviar(\''+o.id+'\',\'balcao_op\')">&#8594; Balcão</button>');
       if(prio==='entrega')flowBtns.push('<button class="bmv" style="background:#818cf8" onclick="enviar(\''+o.id+'\',\'expedicao\')">&#8594; Expedição</button>');
     }else if(setor==='balcao_op'&&canAct&&o.status!=='pronto_balcao'){
-      flowBtns.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">&#8594; Faturamento</button>');
+      flowBtns.push('<button class="bmv" onclick="openPreFatura(\''+o.id+'\')">&#8594; Faturamento</button>');
     }else if(setor==='expedicao'&&canAct){
       if(o.status==='pronto_expedicao')flowBtns.push('<button class="bmv" style="background:#818cf8" onclick="enviarAgEmbarque(\''+o.id+'\')">Ag. Embarque</button>');
       else if(o.status==='em_entrega'){flowBtns.push('<button class="bfin" onclick="marcarEntregue(\''+o.id+'\')">&#10003; Entregue</button>');flowBtns.push('<button class="boc" onclick="marcarDevolvido(\''+o.id+'\')">&#8617; Retorno</button>');}
-      else if(o.status!=='ag_embarque'){
-        if(prio==='entrega'&&!parcialActive){
-          flowBtns.push('<button class="bmv" style="background:rgba(239,68,68,.7);border:1px solid rgba(239,68,68,.5)" onclick="enviarParaPendencia(\''+o.id+'\')">&#9888; Pendências</button>');
-        }else{
-          flowBtns.push('<button class="bmv" onclick="openNotaComItens(\''+o.id+'\')">&#8594; Faturamento</button>');
-        }
-      }
+      else if(o.status!=='ag_embarque')flowBtns.push('<button class="bmv" onclick="openPreFatura(\''+o.id+'\')">&#8594; Faturamento</button>');
     }
   }
 
@@ -2830,6 +2842,13 @@ async function confirmarNota(){
     var isEntrega=(o.prioridade==='entrega');
     var setorDestino=isEntrega?'expedicao':'balcao_op';
     var novoStatus=isEntrega?'pronto_expedicao':'pronto_balcao';
+    // Save pending items to obs if provided
+    var _pfPend = window._pfItensPend || '';
+    var obsAtualNota = o.obs || '';
+    if(_pfPend){
+      obsAtualNota = obsAtualNota.replace(/\[PEND_ITEMS:[^\]]*\]/g,'').trim();
+      obsAtualNota = (obsAtualNota ? obsAtualNota + '\n' : '') + '[PEND_ITEMS: ' + _pfPend + ']';
+    }
     var res=await sb.from('pedidos').update({
       setor:setorDestino,
       status:novoStatus,
@@ -2841,7 +2860,8 @@ async function confirmarNota(){
       valor_nota_fat:valorNota,
       tem_pendencia:temPendencia,
       saldo_pendencia:temPendencia?saldo:0,
-      pendencia_status:temPendencia?'aberta':''
+      pendencia_status:temPendencia?'aberta':'',
+      obs:obsAtualNota||undefined
     }).eq('id',_notaTarget);
     if(res.error)throw res.error;
     upsertPedidoLocal({id:_notaTarget,setor:setorDestino,status:novoStatus,setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,finalizado_at:agora,num_nota:nota,valor_nota_fat:valorNota,tem_pendencia:temPendencia,saldo_pendencia:temPendencia?saldo:0,pendencia_status:temPendencia?'aberta':''});
@@ -5495,6 +5515,80 @@ function syncExpedicaoBadges(){
 // Run sync periodically
 setInterval(syncExpedicaoBadges,1000);
 
+// ═══════════════════════════════════════════
+// PRÉ-FATURAMENTO: itens a faturar + pendentes
+// ═══════════════════════════════════════════
+var _preFaturaId = null;
+
+function openPreFatura(id){
+  _preFaturaId = id;
+  var pedido = getPedidoById(id);
+  if(!pedido) return;
+  var isEntrega = pedido.prioridade === 'entrega';
+  var label = isEntrega ? 'Expedição — CIF' : 'Balcão/Retira — FOB';
+  if(el('pf-title')) el('pf-title').textContent = 'Pré-Faturamento · ' + label;
+  if(el('pf-desc')) el('pf-desc').textContent =
+    'Pedido #' + pedido.numero + ' — ' + (pedido.nome_cliente||'') +
+    (parseFloat(pedido.valor_pedido)>0 ? ' · Valor: ' + fmtBRL(pedido.valor_pedido) : '') +
+    '. Preencha os itens antes de emitir a nota.';
+  // Pre-fill from previous obs if exists
+  var obsP = pedido.obs || '';
+  var prevFat = _getPendObs(obsP,'PEND_SEP');
+  var prevPend = _getPendObs(obsP,'PEND_ITEMS');
+  if(el('pf-itens-fat')) el('pf-itens-fat').value = prevFat === '—' ? '' : prevFat;
+  if(el('pf-itens-pend')) el('pf-itens-pend').value = prevPend === '—' ? '' : prevPend;
+  // Show pending items field always (both CIF and FOB)
+  if(el('pf-pend-wrap')) el('pf-pend-wrap').style.display = 'block';
+  openM('m-pre-fatura');
+}
+
+function confirmarPreFatura(){
+  var id = _preFaturaId;
+  if(!id) return;
+  var itensFat = (el('pf-itens-fat') ? el('pf-itens-fat').value : '').trim();
+  var itensPend = (el('pf-itens-pend') ? el('pf-itens-pend').value : '').trim();
+  // Store in globals for confirmarNota to pick up
+  window._pfItensFat = itensFat;
+  window._pfItensPend = itensPend;
+  closeM('m-pre-fatura');
+  // Show items preview in nota modal
+  if(el('nota-itens-wrap')) el('nota-itens-wrap').style.display = itensFat ? 'block' : 'none';
+  if(el('nota-itens')) el('nota-itens').value = itensFat;
+  openNota(id);
+}
+
+// ── Override confirmarNota to persist items and auto-create pendência ──
+var _confirmarNotaBase = window.confirmarNota;
+window.confirmarNota = async function(){
+  // Save itens context before closing modal
+  var itensFat = window._pfItensFat || '';
+  var itensPend = window._pfItensPend || '';
+  window._pfItensFat = '';
+  window._pfItensPend = '';
+  // Call original
+  await _confirmarNotaBase.apply(this, arguments);
+  // After billing: update obs with items log, and pre-fill pendência items if partial
+  var id = _notaTarget || _preFaturaId;
+  _preFaturaId = null;
+  if(!id) return;
+  var pedido = getPedidoById(id);
+  if(!pedido) return;
+  var obsAtual = pedido.obs || '';
+  var linhas = [];
+  if(itensFat) linhas.push(buildOccurrenceLine('ITENS_FATURADOS', SL[pedido.setor]||pedido.setor, 'Faturados: ' + itensFat));
+  if(itensPend){
+    // Mark pending items in obs so they appear pre-filled in Pendências
+    obsAtual = obsAtual.replace(/\[PEND_ITEMS:[^\]]*\]/g,'').trim();
+    linhas.push('[PEND_ITEMS: ' + itensPend + ']');
+    linhas.push(buildOccurrenceLine('ITENS_PENDENTES', SL[pedido.setor]||pedido.setor, 'Pendentes: ' + itensPend));
+  }
+  if(linhas.length){
+    var novaObs = (obsAtual ? obsAtual + '\n' : '') + linhas.join('\n');
+    await sb.from('pedidos').update({obs: novaObs}).eq('id', id);
+    if(pedido) pedido.obs = novaObs;
+  }
+};
+
 // ── Pendências: enviar da expedição ──
 async function enviarParaPendencia(id){
   var pedido=getPedidoById(id);
@@ -5576,22 +5670,7 @@ async function confirmarRetornarPendencia(){
   finally{ov(false);_rpTarget=null;}
 }
 
-// ── patch confirmarNota to save itens when parcial entrega ──
-var _confirmarNotaOrig=confirmarNota;
-confirmarNota=async function(){
-  var id=_notaTarget;
-  var pedido=id?getPedidoById(id):null;
-  var isParcialEntrega=pedido&&pedido.parcial&&pedido.prioridade==='entrega';
-  var itens=(el('nota-itens')&&isParcialEntrega)?el('nota-itens').value.trim():'';
-  if(isParcialEntrega&&itens){
-    var obsAtual=pedido.obs||'';
-    var linha=buildOccurrenceLine('FATURAMENTO PARCIAL','Expedição','Itens faturados: '+itens);
-    var novaObs=(obsAtual?obsAtual+'\n':'')+linha;
-    await sb.from('pedidos').update({obs:novaObs}).eq('id',id);
-    if(pedido)pedido.obs=novaObs;
-  }
-  return _confirmarNotaOrig.apply(this,arguments);
-};
+
 </script>
 </body>
 </html>
