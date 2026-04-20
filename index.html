@@ -835,6 +835,13 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
       <div id="rel-canhoto-bars"></div>
     </div>
 
+    <!-- Seção 5: Separadores ──>
+    <div id="rel-sep-section" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:20px;display:none">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px">Desempenho dos Separadores</div>
+      <div id="rel-sep-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px"></div>
+      <div id="rel-sep-table"></div>
+    </div>
+
     <div id="bars-conf" class="adm-only" style="display:none"></div>
     <div id="pedidos-dia-body" style="display:none"></div>
     <div id="pedidos-dia-tfoot" style="display:none"></div>
@@ -1066,7 +1073,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
       <table class="utbl" id="pend-table">
-        <thead><tr><th>Pedido</th><th>Cliente</th><th>Nota Fiscal</th><th>Valor Pedido</th><th>Valor Faturado</th><th>Saldo em Aberto</th><th>Endereço</th><th>Itens Sep.</th><th>Itens Pend.</th><th>Data</th><th>Ações</th></tr></thead>
+        <thead><tr><th>Pedido</th><th>Cliente</th><th>Nota Fiscal</th><th>Valor Pedido</th><th>Valor Faturado</th><th>Saldo em Aberto</th><th>Endereço</th><th>Itens Sep.</th><th>Itens Pend.</th><th>Itens Fat.</th><th>Data</th><th>Ações</th></tr></thead>
         <tbody id="pend-tbody"></tbody>
       </table>
     </div>
@@ -2658,15 +2665,18 @@ function renderRowCard(o,setor,transito){
       if(prio!=='entrega')flowBtns.push('<button class="bcon" style="background:#6366f1" onclick="enviar(\''+o.id+'\',\'balcao_op\')">&#8594; Balcão</button>');
       if(prio==='entrega')flowBtns.push('<button class="bmv" style="background:#818cf8" onclick="enviar(\''+o.id+'\',\'expedicao\')">&#8594; Expedição</button>');
     }else if(setor==='balcao_op'&&canAct&&o.status!=='pronto_balcao'){
-      if(parcialActive)flowBtns.push('<button class="bmv" onclick="openPreFatura(\''+o.id+'\')">&#8594; Faturamento</button>');
-      else flowBtns.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">&#8594; Faturamento</button>');
+      if(parcialActive){
+        flowBtns.push('<button class="bmv" onclick="openPreFatura(\''+o.id+'\')">&#8594; Faturamento</button>');
+        flowBtns.push('<button class="bmv" style="background:rgba(239,68,68,.6);font-size:11px" onclick="abrirPendenciaAntesNF(\''+o.id+'\')">&#9888; Pend&ecirc;ncia</button>');
+      }else flowBtns.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">&#8594; Faturamento</button>');
     }else if(setor==='expedicao'&&canAct){
       if(o.status==='pronto_expedicao')flowBtns.push('<button class="bmv" style="background:#818cf8" onclick="enviarAgEmbarque(\''+o.id+'\')">Ag. Embarque</button>');
       else if(o.status==='em_entrega'){flowBtns.push('<button class="bfin" onclick="marcarEntregue(\''+o.id+'\')">&#10003; Entregue</button>');flowBtns.push('<button class="boc" onclick="marcarDevolvido(\''+o.id+'\')">&#8617; Retorno</button>');}
       else if(o.status!=='ag_embarque'){
-        if(parcialActive)flowBtns.push('<button class="bmv" onclick="openPreFatura(\''+o.id+'\')">&#8594; Faturamento</button>');
-        else flowBtns.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">&#8594; Faturamento</button>');
-      }
+        if(parcialActive){
+          flowBtns.push('<button class="bmv" onclick="openPreFatura(\''+o.id+'\')">&#8594; Faturamento</button>');
+          flowBtns.push('<button class="bmv" style="background:rgba(239,68,68,.6);font-size:11px" onclick="abrirPendenciaAntesNF(\''+o.id+'\')">&#9888; Pendência</button>');
+        }else flowBtns.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">&#8594; Faturamento</button>');
     }
   }
 
@@ -2886,6 +2896,11 @@ async function confirmarNota(){
     var valorPedidoRef=saldoRef>0?saldoRef:(parseFloat(pedidoRef.valor_pedido)||0);
     if(valorPedidoRef>0&&valorNota>valorPedidoRef){
       toast('⚠ O valor da NF ('+fmtBRL(valorNota)+') não pode ser maior que '+(saldoRef>0?'o saldo em aberto':'o valor do pedido')+' ('+fmtBRL(valorPedidoRef)+').','err',6000);
+      return;
+    }
+    // Block partial billing if parcial icon not active
+    if(valorPedidoRef>0&&valorNota<valorPedidoRef&&!pedidoRef.parcial&&saldoRef===0){
+      toast('⚠ O valor da NF ('+fmtBRL(valorNota)+') é menor que o valor do pedido ('+fmtBRL(valorPedidoRef)+'). Ative o ícone ⚡ Parcial no card para permitir faturamento parcial.','err',8000);
       return;
     }
   }
@@ -3540,22 +3555,35 @@ function renderRelatorios(){
 
   // ── helpers ──
   function _parseObsDate(line){
-    var m=line.match(/\[(\d{2})\/(\d{2})\/(\d{2,4})[,\s]+(\d{2}):(\d{2})/);
+    // Format: [dd/mm/yy hh:mm:ss] or [dd/mm/yyyy hh:mm:ss] (pt-BR from toLocaleString)
+    var m=line.match(/\[(\d{1,2})\/(\d{1,2})\/(\d{2,4})[\s,]+(\d{1,2}):(\d{2})/);
     if(!m)return 0;
     var yr=parseInt(m[3]);if(yr<100)yr+=2000;
-    return new Date(yr,parseInt(m[2])-1,parseInt(m[1]),parseInt(m[4]),parseInt(m[5])).getTime();
+    var dt=new Date(yr,parseInt(m[2])-1,parseInt(m[1]),parseInt(m[4]),parseInt(m[5]));
+    return isNaN(dt.getTime())?0:dt.getTime();
   }
   function msFromObs(obs){
     if(!obs)return 0;
-    var lines=(obs||'').split('\n');
+    var lines=obs.split('\n');
     var starts=[],ends=[];
     lines.forEach(function(l){
-      if(l.indexOf('OCORRÊNCIA')>=0&&l.indexOf('RETORNO')<0){var t=_parseObsDate(l);if(t>0)starts.push(t);}
-      // Only count RETORNO that comes after an OCORRÊNCIA (not RETORNO PENDÊNCIA or other types)
-      if(l.indexOf('] RETORNO')>=0&&l.indexOf('OCORRÊNCIA')<0&&l.indexOf('PENDÊNCIA')<0&&l.indexOf('PENDENCIA')<0&&l.indexOf('Ag. Retira')<0){var t2=_parseObsDate(l);if(t2>0)ends.push(t2);}
+      // OCORRÊNCIA line (but not RETORNO_OCORRENCIA which would also have RETORNO)
+      if(l.indexOf('OCORRÊNCIA')>=0&&l.indexOf('RETORNO')<0){
+        var t=_parseObsDate(l);if(t>0)starts.push(t);
+      }
+      // RETORNO line that is specifically returning from OCORRÊNCIA
+      // matches: "] RETORNO · Ocorrências ·" or "] RETORNO_OCORRENCIA"
+      if((l.indexOf('] RETORNO ')>=0||l.indexOf('] RETORNO·')>=0)&&
+         l.indexOf('OCORRÊNCIA')<0&&l.indexOf('PENDÊNCIA')<0&&
+         l.indexOf('PENDENCIA')<0&&l.indexOf('Ag. Retira')<0&&
+         l.indexOf('Em Trânsito')<0&&l.indexOf('Embarque')<0){
+        var t2=_parseObsDate(l);if(t2>0)ends.push(t2);
+      }
     });
     var total=0;
-    for(var i=0;i<Math.min(starts.length,ends.length);i++){if(starts[i]&&ends[i]&&ends[i]>starts[i])total+=ends[i]-starts[i];}
+    for(var i=0;i<Math.min(starts.length,ends.length);i++){
+      if(ends[i]>starts[i])total+=ends[i]-starts[i];
+    }
     return total;
   }
   function countOccType(obs,tipo){return (obs||'').split('\n').filter(function(l){return l.indexOf('OCORRÊNCIA')>=0&&l.toLowerCase().indexOf(tipo.toLowerCase())>=0;}).length;}
@@ -3702,6 +3730,59 @@ function renderRelatorios(){
       var color=k==='+7d'?'var(--danger)':k==='3-7d'?'var(--warn)':'var(--accent)';
       return '<div class="br"><span class="bn">'+k+'</span><div class="bt"><div class="bf" style="width:'+Math.round(c/maxB*100)+'%;background:'+color+'"></div></div><span class="bv">'+c+' pedido(s)</span></div>';
     }).join('');
+  }
+
+  // ── Separadores: desempenho ──
+  var sepData={};
+  done.forEach(function(o){
+    var sep=o.separador||'(sem separador)';
+    if(!sepData[sep])sepData[sep]={count:0,valor:0,tempoTotal:0,pedidos:[]};
+    sepData[sep].count++;
+    sepData[sep].valor+=(parseFloat(o.valor_nota_fat)||0);
+    var ms=(tsMs(o.finalizado_at)||0)-(tsMs(o.entrada_at)||0);
+    if(ms>0)sepData[sep].tempoTotal+=ms;
+    sepData[sep].pedidos.push(o);
+  });
+  var sepNomes=Object.keys(sepData).sort(function(a,b){return sepData[b].valor-sepData[a].valor;});
+  var sepSec=el('rel-sep-section');
+  if(sepSec)sepSec.style.display=sepNomes.length?'block':'none';
+  if(sepNomes.length){
+    var totalSepVal=sepNomes.reduce(function(s,n){return s+sepData[n].valor;},0);
+    var totalSepCnt=sepNomes.reduce(function(s,n){return s+sepData[n].count;},0);
+    if(el('rel-sep-kpis'))el('rel-sep-kpis').innerHTML=[
+      {l:'Separadores ativos',v:sepNomes.filter(function(n){return n!=='(sem separador)';}).length,c:'var(--accent)'},
+      {l:'Total separações',v:totalSepCnt,c:'var(--blue)'},
+      {l:'Valor total sep.',v:totalSepVal>0?fmtBRL(totalSepVal):'—',c:'var(--sep)'}
+    ].map(function(k){return '<div class="kpi" style="border-left:3px solid '+k.c+'"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+';font-size:20px">'+k.v+'</div></div>';}).join('');
+    if(el('rel-sep-table')){
+      var sepRows=sepNomes.map(function(nome){
+        var d=sepData[nome];
+        var avgTempo=d.count>0&&d.tempoTotal>0?d.tempoTotal/d.count:0;
+        var pct=totalSepVal>0?Math.round(d.valor/totalSepVal*100):0;
+        return '<tr>'+
+          '<td style="font-weight:700">'+nome+'</td>'+
+          '<td style="text-align:center;color:var(--blue)">'+d.count+'</td>'+
+          '<td style="color:var(--accent);font-weight:600">'+fmtBRL(d.valor)+'</td>'+
+          '<td style="color:var(--sep)">'+fmtBRL(d.count>0?d.valor/d.count:0)+'</td>'+
+          '<td style="color:var(--muted)">'+(avgTempo?fmtTs(avgTempo):'--')+'</td>'+
+          '<td>'+
+            '<div style="display:flex;align-items:center;gap:6px">'+
+              '<div class="bt" style="flex:1"><div class="bf" style="width:'+pct+'%;background:var(--accent)"></div></div>'+
+              '<span style="font-size:11px;min-width:28px">'+pct+'%</span>'+
+            '</div>'+
+          '</td>'+
+        '</tr>';
+      }).join('');
+      el('rel-sep-table').innerHTML='<table style="width:100%;border-collapse:collapse;font-size:12px">'+
+        '<thead><tr style="border-bottom:1px solid var(--border)">'+
+          '<th style="text-align:left;padding:8px 0;color:var(--muted)">Separador</th>'+
+          '<th style="text-align:center;padding:8px 4px;color:var(--muted)">Pedidos</th>'+
+          '<th style="text-align:left;padding:8px 4px;color:var(--muted)">Valor total</th>'+
+          '<th style="text-align:left;padding:8px 4px;color:var(--muted)">Ticket médio</th>'+
+          '<th style="text-align:left;padding:8px 4px;color:var(--muted)">Tempo médio</th>'+
+          '<th style="text-align:left;padding:8px 4px;color:var(--muted)">% do valor</th>'+
+        '</tr></thead><tbody>'+sepRows+'</tbody></table>';
+    }
   }
 
   // ── Tabela ──
@@ -5044,8 +5125,8 @@ function renderAgEmbarque() {
       '<td>'+(o.nome_cliente||'—')+'</td>'+
       '<td style="color:var(--sep)">'+(o.num_nota||'—')+'</td>'+
       '<td style="color:#818cf8;font-weight:600">'+(valorNF>0?fmtBRL(valorNF):'—')+'</td>'+
-      '<td style="color:var(--cyan);font-size:11px">'+(o.cidade_destino||'—')+'</td>'+
-      '<td style="font-size:11px;color:var(--muted);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(o.endereco_entrega||'')+'">'+(o.endereco_entrega||'—')+'</td>'+
+      '<td style="color:var(--cyan);font-size:11px">'+(_extractEntregaObs(o).cidade||'—')+'</td>'+
+      '<td style="font-size:11px;color:var(--muted);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(_extractEntregaObs(o).endereco||'')+'">' +(_extractEntregaObs(o).endereco||'—')+'</td>'+
       '<td style="font-size:11px">'+(o.vendedor||'—')+'</td>'+
       '<td><input type="text" data-id="'+o.id+'" value="'+(o.transportadora||'')+'" placeholder="—" style="padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--cyan);font-family:var(--font-mono);font-size:11px;width:110px;outline:none" onblur="salvarTransportadora(this.dataset.id,this.value)" onkeydown="if(event.key===String.fromCharCode(13))this.blur()"/></td>'+
       '<td><input type="text" data-id="'+o.id+'" value="'+(endAloc==='—'?'':endAloc)+'" placeholder="—" style="padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;width:100px;outline:none" onblur="salvarEnderecoAlocacao(this.dataset.id,this.value)" onkeydown="if(event.key===String.fromCharCode(13))this.blur()"/></td>'+
@@ -5297,8 +5378,9 @@ function renderPendencias() {
       '<td style="color:var(--accent)">' + fmtBRL(valorNota) + '</td>' +
       '<td style="color:var(--danger);font-weight:700">' + fmtBRL(saldo) + '</td>' +
       '<td><input type="text" data-id="'+o.id+'" value="'+(endAloc==='—'?'':endAloc)+'" placeholder="—" style="padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;width:110px;outline:none" onblur="salvarEnderecoAlocacao(this.dataset.id,this.value)" onkeydown="if(event.key===String.fromCharCode(13))this.blur()"/></td>'+
-      '<td style="font-size:11px;color:var(--accent);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+itensSep+'">'+itensSep+'</td>'+
-      '<td style="font-size:11px;color:var(--warn);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+itensPend+'">'+itensPend+'</td>'+
+      '<td style="font-size:11px;color:var(--accent);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+itensSep+'">'+itensSep+'</td>'+
+      '<td style="font-size:11px;color:var(--warn);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+itensPend+'">'+itensPend+'</td>'+
+      '<td style="font-size:11px;color:var(--sep);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(_getPendObs(obsP,'PEND_FAT')||'—')+'">'+(_getPendObs(obsP,'PEND_FAT')||'—')+'</td>'+
       '<td style="color:var(--muted)">' + dataFat + '</td>' +
       '<td><div class="act-btns">' +
         '<button class="bmv" style="background:#3b82f6;font-size:11px" onclick="abrirRetornarPendencia(\'' + o.id + '\')">&#8617; Retornar</button>' +
@@ -5690,6 +5772,16 @@ function renderAgRetiraBadge() {
     <div id="adv-timeline-area" style="margin-top:18px"></div>
   </main>
 </div>
+<div class="mb" id="m-pend-antes-nf">
+  <div class="mo" style="max-width:500px;width:95vw">
+    <div class="mt">Registrar Pendência</div>
+    <p id="panf-desc" style="color:var(--muted);font-size:12px;margin-bottom:14px"></p>
+    <div class="f"><label class="fl">Itens separados (já disponíveis)</label><textarea id="panf-sep" style="min-height:60px" placeholder="Liste os itens já separados..."></textarea></div>
+    <div class="f"><label class="fl">Itens pendentes (ainda não disponíveis)</label><textarea id="panf-pend" style="min-height:60px" placeholder="Liste os itens pendentes..."></textarea></div>
+    <div class="f"><label class="fl">Itens enviados ao faturamento (opcional)</label><textarea id="panf-fat" style="min-height:50px" placeholder="Se já houve faturamento parcial, liste os itens faturados..."></textarea></div>
+    <div class="ma"><button class="bcan" onclick="closeM('m-pend-antes-nf');_pendAntesNFId=null">Cancelar</button><button class="bok" onclick="confirmarPendenciaAntesNF()">Registrar Pendência</button></div>
+  </div>
+</div>
 <div class="mb" id="m-confirm-entregue">
   <div class="mo" style="max-width:400px;width:95vw">
     <div class="mt">Confirmar entrega</div>
@@ -5809,7 +5901,64 @@ function syncExpedicaoBadges(){
     }
   });
 }
+// ── Pendência antes do faturamento ──
+var _pendAntesNFId = null;
+function abrirPendenciaAntesNF(id){
+  _pendAntesNFId = id;
+  var p = getPedidoById(id);
+  if(!p) return;
+  if(el('panf-desc')) el('panf-desc').textContent = 'Pedido #'+p.numero+' — '+(p.nome_cliente||'');
+  if(el('panf-sep')) el('panf-sep').value = '';
+  if(el('panf-pend')) el('panf-pend').value = '';
+  if(el('panf-fat')) el('panf-fat').value = '';
+  // Pre-fill from obs
+  var obs = p.obs||'';
+  var prevSep = _getPendObs(obs,'PEND_SEP');
+  var prevPend = _getPendObs(obs,'PEND_ITEMS');
+  if(prevSep&&prevSep!=='—') el('panf-sep')&&(el('panf-sep').value=prevSep);
+  if(prevPend&&prevPend!=='—') el('panf-pend')&&(el('panf-pend').value=prevPend);
+  openM('m-pend-antes-nf');
+}
+async function confirmarPendenciaAntesNF(){
+  var id = _pendAntesNFId;
+  if(!id) return;
+  var pedido = getPedidoById(id);
+  if(!pedido) return;
+  var sep = (el('panf-sep')?el('panf-sep').value:'').trim();
+  var pend = (el('panf-pend')?el('panf-pend').value:'').trim();
+  var fat = (el('panf-fat')?el('panf-fat').value:'').trim();
+  closeM('m-pend-antes-nf');
+  ov(true);
+  try{
+    var obsAtual = pedido.obs||'';
+    // Clear previous tags
+    obsAtual = obsAtual.replace(/\[PEND_SEP:[^\]]*\]/g,'').replace(/\[PEND_ITEMS:[^\]]*\]/g,'').replace(/\[PEND_FAT:[^\]]*\]/g,'').trim();
+    var linhas = [];
+    if(sep) linhas.push('[PEND_SEP: '+sep+']');
+    if(pend) linhas.push('[PEND_ITEMS: '+pend+']');
+    if(fat) linhas.push('[PEND_FAT: '+fat+']');
+    linhas.push(buildOccurrenceLine('PENDÊNCIA_MANUAL', SL[pedido.setor]||pedido.setor, 'Itens sep: '+(sep||'—')+' | Pend: '+(pend||'—')+(fat?' | Fat: '+fat:'')));
+    var novaObs = (obsAtual?obsAtual+'\n':'')+linhas.join('\n');
+    await sb.from('pedidos').update({tem_pendencia:true, pendencia_status:'aberta', obs:novaObs}).eq('id',id);
+    upsertPedidoLocal({id:id, tem_pendencia:true, pendencia_status:'aberta', obs:novaObs});
+    _lastPainelSnap='';atualizarTelasAtivas();renderPendencias();renderPendenciasBadge();
+    toast('Pendência registrada para pedido #'+pedido.numero+'.','ok');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);_pendAntesNFId=null;}
+}
+
 // ── Exportar Ag. Embarque Excel ──
+function _extractEntregaObs(o){
+  var obs=o.obs||'';
+  var mc=obs.match(/cidade=([^|\]]+)/);
+  var me_=obs.match(/end=([^|\]]+)/);
+  var mt=obs.match(/transp=([^\]]+)/);
+  return {
+    cidade: mc?mc[1].trim():(o.cidade_destino||''),
+    endereco: me_?me_[1].trim():(o.endereco_entrega||''),
+    transp: mt?mt[1].trim():(o.transportadora||'')
+  };
+}
 function exportarAgEmbarqueExcel(){
   var filtTransp=el('agEmb-filtro-transp')?el('agEmb-filtro-transp').value:'';
   var all=PEDIDOS.filter(function(o){return o.status==='ag_embarque';});
@@ -5820,20 +5969,21 @@ function exportarAgEmbarqueExcel(){
   items.forEach(function(o){
     var dataEntrada=o.pendente_desde?new Date(o.pendente_desde).toLocaleDateString('pt-BR'):'—';
     var valorNF=parseFloat(o.valor_nota_fat)||0;
+    var ef=_extractEntregaObs(o);
     linhas.push([
       escapeCsv(dataEntrada),
-      escapeCsv('#'+(o.numero||'')),
+      escapeCsv(o.numero||''),
       escapeCsv(o.nome_cliente||'—'),
       escapeCsv(o.num_nota||'—'),
       escapeCsv(valorNF>0?valorNF.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'),
-      escapeCsv(o.cidade_destino||'—'),
-      escapeCsv(o.endereco_entrega||'—'),
+      escapeCsv(ef.cidade||'—'),
+      escapeCsv(ef.endereco||'—'),
       escapeCsv(o.vendedor||'—'),
-      escapeCsv(o.transportadora||'—')
+      escapeCsv(ef.transp||o.transportadora||'—')
     ].join(';'));
   });
   var totalV=items.reduce(function(s,o){return s+(parseFloat(o.valor_nota_fat)||0);},0);
-  if(totalV>0)linhas.push(['','','','TOTAL',totalV.toFixed(2),'','','',''].join(';'));
+  if(totalV>0)linhas.push(['','','','TOTAL',totalV.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}),'','','',''].join(';'));
   var blob=new Blob(['\ufeff'+linhas.join('\r\n')],{type:'text/csv;charset=utf-8;'});
   var a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
