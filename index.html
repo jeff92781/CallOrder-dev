@@ -668,7 +668,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <button class="tab adm-only" onclick="go('usuarios')" style="display:none">Usuários</button>
     <button class="tab" onclick="go('senha')">Minha Senha</button>
 
-    <button class="tab" onclick="go('recebimento')" id="tab-recebimento" style="display:none">Recebimento <span id="recebimento-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <button class="tab" onclick="go('recebimento')" id="tab-recebimento">Recebimento <span id="recebimento-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('devolucoes')" id="tab-devolucoes">Devoluções <span id="devolucoes-badge" style="display:none;background:rgba(245,158,11,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('agretira')" id="tab-agretira" style="display:none">Ag. Retira <span id="agretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('agEmbarque')" id="tab-agembarque" style="display:none">Ag. Embarque <span id="agembarque-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
@@ -683,7 +683,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
         <button class="tab-drop-item" id="di-agretira" onclick="go('agretira');closeExpedicaoMenu()">Ag. Retira <span id="dagretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
         <button class="tab-drop-item" id="di-agembarque" onclick="go('agEmbarque');closeExpedicaoMenu()">Ag. Embarque <span id="dagembarque-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
         <button class="tab-drop-item" id="di-emtransito" onclick="go('emTransito');closeExpedicaoMenu()">Em Trânsito <span id="demtransito-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
-        <button class="tab-drop-item" id="di-recebimento" onclick="go('recebimento');closeExpedicaoMenu()">Recebimento <span id="drecebimento-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
+
 
       </div>
     </div>
@@ -842,6 +842,23 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
       <div id="rel-sep-table"></div>
     </div>
 
+    <!-- Devoluções -->
+    <div id="rel-dev-section" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:20px;display:none">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px">Devoluções</div>
+      <div id="rel-dev-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div><div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:8px">Por vendedor</div><div id="rel-dev-vendedor"></div></div>
+        <div><div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:8px">Por data</div><div id="rel-dev-data"></div></div>
+      </div>
+    </div>
+    <!-- Ocorrências por dia/vendedor -->
+    <div id="rel-occ-section" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:20px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px">Ocorrências — detalhe</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div><div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:8px">Por vendedor</div><div id="rel-occ-vendedor"></div></div>
+        <div><div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:8px">Por dia</div><div id="rel-occ-dia"></div></div>
+      </div>
+    </div>
     <div id="bars-conf" class="adm-only" style="display:none"></div>
     <div id="pedidos-dia-body" style="display:none"></div>
     <div id="pedidos-dia-tfoot" style="display:none"></div>
@@ -3774,31 +3791,70 @@ function renderRelatorios(){
     }
   }
 
-  // ── Tabela ──
-  var totalValorRel=all.reduce(function(s,o){return s+(parseFloat(o.valor_nota_fat)||0);},0);
-  if(el('pedidos-dia-body'))el('pedidos-dia-body').innerHTML=all.length?all.map(function(o){
-    var totalMs=(o.finalizado_at?tsMs(o.finalizado_at):now())-tsMs(o.entrada_at);
-    var occMs2=msFromObs(o.obs);
-    var destino=getDestinoFinal(o);
-    var valorNF=parseFloat(o.valor_nota_fat)||0;
-    var statusColor=o.status==='cancelado'?'var(--danger)':o.status==='finalizado'?'var(--accent)':o.status==='em_ocorrencia'?'var(--warn)':'var(--muted)';
-    var dt=o.entrada_at?new Date(o.entrada_at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
-    return '<tr>'+
-      '<td style="color:var(--muted);font-size:11px">'+dt+'</td>'+
-      '<td style="font-family:var(--font-head);font-size:14px;font-weight:700">#'+o.numero+'</td>'+
-      '<td>'+(o.nome_cliente||'—')+'</td>'+
-      '<td style="color:var(--sep)">'+(o.num_nota||'—')+'</td>'+
-      '<td style="color:var(--accent);font-weight:600">'+(valorNF>0?fmtBRL(valorNF):'—')+'</td>'+
-      '<td style="color:var(--muted)">'+(o.separador||'—')+'</td>'+
-      '<td style="color:'+(totalMs>45*60000?'var(--danger)':totalMs>25*60000?'var(--warn)':'var(--text)')+'">'+fmtTs(totalMs)+'</td>'+
-      '<td style="color:'+(occMs2>0?'var(--warn)':'var(--muted2)')+';">'+(occMs2>0?fmtTs(occMs2):'—')+'</td>'+
-      '<td>'+(o.prioridade==='balcao'?'<span style="color:#f59e0b">Balcão</span>':o.prioridade==='entrega'?'<span style="color:var(--accent)">Entrega</span>':'<span style="color:#818cf8">Retira</span>')+'</td>'+
-      '<td style="color:'+statusColor+'">'+(SL[o.status]||o.status)+'</td>'+
-    '</tr>';
-  }).join(''):'<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:40px">Nenhum dado no período.</td></tr>';
+  // ── Devoluções ──
+  var devs = (typeof REC_DEVOLUCOES !== 'undefined' ? REC_DEVOLUCOES : []);
+  var devSec=el('rel-dev-section');
+  if(devSec)devSec.style.display=devs.length?'block':'none';
+  if(devs.length){
+    var totalDevVal=devs.reduce(function(s,d){return s+(parseFloat(d.valor_entrada)||0);},0);
+    var devParc=devs.filter(function(d){var vo=parseFloat(d.valor_original)||0;var ve=parseFloat(d.valor_entrada)||0;return vo>0&&ve>0&&ve<vo;}).length;
+    if(el('rel-dev-kpis'))el('rel-dev-kpis').innerHTML=[
+      {l:'Total devoluções',v:devs.length,c:'var(--danger)'},
+      {l:'Valor devolvido',v:fmtBRL(totalDevVal),c:'var(--warn)'},
+      {l:'Parciais',v:devParc,c:'var(--muted)'},
+      {l:'Totais',v:devs.length-devParc,c:'var(--muted)'}
+    ].map(function(k){return '<div class="kpi" style="border-left:3px solid '+k.c+'"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+';font-size:20px">'+k.v+'</div></div>';}).join('');
+    // Por vendedor
+    var dv={};devs.forEach(function(d){var v=d.vendedor||'(sem vendedor)';if(!dv[v])dv[v]={count:0,valor:0};dv[v].count++;dv[v].valor+=parseFloat(d.valor_entrada)||0;});
+    var dvNomes=Object.keys(dv).sort(function(a,b){return dv[b].valor-dv[a].valor;});
+    var maxDV=Math.max.apply(null,dvNomes.map(function(n){return dv[n].valor;}))||1;
+    if(el('rel-dev-vendedor'))el('rel-dev-vendedor').innerHTML=dvNomes.map(function(n){
+      var pct=Math.round(dv[n].valor/maxDV*100);
+      return '<div class="br"><span class="bn" style="min-width:90px">'+n+'</span><div class="bt"><div class="bf" style="width:'+pct+'%;background:var(--danger)"></div></div><span class="bv" style="min-width:70px">'+dv[n].count+'× '+fmtBRL(dv[n].valor)+'</span></div>';
+    }).join('');
+    // Por data
+    var dd={};devs.forEach(function(d){var dt=d.recebido_at?new Date(d.recebido_at).toLocaleDateString('pt-BR'):'—';if(!dd[dt])dd[dt]={count:0,valor:0};dd[dt].count++;dd[dt].valor+=parseFloat(d.valor_entrada)||0;});
+    var ddDatas=Object.keys(dd).sort();
+    if(el('rel-dev-data'))el('rel-dev-data').innerHTML=ddDatas.map(function(dt){
+      return '<div class="br"><span class="bn" style="min-width:70px">'+dt+'</span><div class="bt"><div class="bf" style="width:100%;background:var(--warn)"></div></div><span class="bv">'+dd[dt].count+'× '+fmtBRL(dd[dt].valor)+'</span></div>';
+    }).join('');
+  }
 
-  if(el('pedidos-dia-tfoot'))el('pedidos-dia-tfoot').innerHTML=totalValorRel>0?
-    '<tr><td colspan="4" style="text-align:right;font-weight:700;color:var(--muted)">Total faturado:</td><td style="font-weight:700;color:var(--accent)">'+fmtBRL(totalValorRel)+'</td><td colspan="5"></td></tr>':'';
+  // ── Ocorrências por vendedor e por dia ──
+  var occPorVend={},occPorDia={};
+  all.forEach(function(o){
+    var obs=o.obs||'';
+    var lines2=obs.split('
+');
+    lines2.forEach(function(l){
+      if(l.indexOf('OCORRÊNCIA')<0||l.indexOf('RETORNO')>=0)return;
+      var vend=o.vendedor||'(sem vendedor)';
+      if(!occPorVend[vend])occPorVend[vend]={count:0};
+      occPorVend[vend].count++;
+      // Extract date
+      var m=l.match(/\[(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+      if(m){
+        var dt=(m[1].length<2?'0':'')+m[1]+'/'+(m[2].length<2?'0':'')+m[2]+'/'+m[3];
+        if(!occPorDia[dt])occPorDia[dt]={count:0};
+        occPorDia[dt].count++;
+      }
+    });
+  });
+  var maxOV=Math.max.apply(null,Object.values(occPorVend).map(function(v){return v.count;}))||1;
+  if(el('rel-occ-vendedor'))el('rel-occ-vendedor').innerHTML=Object.keys(occPorVend).sort(function(a,b){return occPorVend[b].count-occPorVend[a].count;}).map(function(v){
+    var pct=Math.round(occPorVend[v].count/maxOV*100);
+    return '<div class="br"><span class="bn" style="min-width:90px">'+v+'</span><div class="bt"><div class="bf" style="width:'+pct+'%;background:var(--warn)"></div></div><span class="bv">'+occPorVend[v].count+' ocorr.</span></div>';
+  }).join('')||'<span style="color:var(--muted);font-size:12px">Nenhuma ocorrência no período.</span>';
+  var maxOD=Math.max.apply(null,Object.values(occPorDia).map(function(v){return v.count;}))||1;
+  if(el('rel-occ-dia'))el('rel-occ-dia').innerHTML=Object.keys(occPorDia).sort().map(function(d){
+    var pct=Math.round(occPorDia[d].count/maxOD*100);
+    return '<div class="br"><span class="bn" style="min-width:70px">'+d+'</span><div class="bt"><div class="bf" style="width:'+pct+'%;background:var(--warn)"></div></div><span class="bv">'+occPorDia[d].count+'</span></div>';
+  }).join('')||'<span style="color:var(--muted);font-size:12px">Nenhuma ocorrência.</span>';
+
+  // ── Tabela (hidden) ──
+  var totalValorRel=all.reduce(function(s,o){return s+(parseFloat(o.valor_nota_fat)||0);},0);
+  if(el('pedidos-dia-body'))el('pedidos-dia-body').innerHTML='';
+  if(el('pedidos-dia-tfoot'))el('pedidos-dia-tfoot').innerHTML='';
 }
 var SETORlabel={todos:'Todos',atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',balcao_op:'Balcão',separacao:'Balcão',faturamento:'Faturamento',expedicao:'Expedição'};
 function setoresLabel(u){
@@ -5117,7 +5173,7 @@ function renderAgEmbarque() {
       '<td style="color:var(--cyan);font-size:11px">'+(_extractEntregaObs(o).cidade||'—')+'</td>'+
       '<td style="font-size:11px;color:var(--muted);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(_extractEntregaObs(o).endereco||'')+'">' +(_extractEntregaObs(o).endereco||'—')+'</td>'+
       '<td style="font-size:11px">'+(o.vendedor||'—')+'</td>'+
-      '<td><input type="text" data-id="'+o.id+'" value="'+(o.transportadora||'')+'" placeholder="—" style="padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--cyan);font-family:var(--font-mono);font-size:11px;width:110px;outline:none" onblur="salvarTransportadora(this.dataset.id,this.value)" onkeydown="if(event.key===String.fromCharCode(13))this.blur()"/></td>'+
+      '<td><input type="text" data-id="'+o.id+'" value="'+(_extractEntregaObs(o).transp||o.transportadora||'')+'" placeholder="—" style="padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--cyan);font-family:var(--font-mono);font-size:11px;width:110px;outline:none" onblur="salvarTransportadora(this.dataset.id,this.value)" onkeydown="if(event.key===String.fromCharCode(13))this.blur()"/></td>'+
       '<td><input type="text" data-id="'+o.id+'" value="'+(endAloc==='—'?'':endAloc)+'" placeholder="—" style="padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;width:100px;outline:none" onblur="salvarEnderecoAlocacao(this.dataset.id,this.value)" onkeydown="if(event.key===String.fromCharCode(13))this.blur()"/></td>'+
       '<td><div class="act-btns">'+
         '<button class="bmv" style="background:#818cf8;font-size:11px" onclick="abrirEmbarqueUnitario(\''+o.id+'\')">Embarcar</button>'+
@@ -5367,8 +5423,8 @@ function renderPendencias() {
       '<td style="color:var(--accent)">' + fmtBRL(valorNota) + '</td>' +
       '<td style="color:var(--danger);font-weight:700">' + fmtBRL(saldo) + '</td>' +
       '<td><input type="text" data-id="'+o.id+'" value="'+(endAloc==='—'?'':endAloc)+'" placeholder="—" style="padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;width:110px;outline:none" onblur="salvarEnderecoAlocacao(this.dataset.id,this.value)" onkeydown="if(event.key===String.fromCharCode(13))this.blur()"/></td>'+
-      '<td style="font-size:11px;color:var(--accent);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+itensSep+'">'+itensSep+'</td>'+
-      '<td style="font-size:11px;color:var(--warn);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+itensPend+'">'+itensPend+'</td>'+
+      '<td style="max-width:110px"><input type="text" data-id="'+o.id+'" data-tag="PEND_SEP" value="'+(itensSep==='—'?'':itensSep)+'" placeholder="—" style="padding:2px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--accent);font-family:var(--font-mono);font-size:11px;width:100%;outline:none" onblur="salvarItemPendencia(this.dataset.id,\'PEND_SEP\',this.value)" onkeydown="if(event.key===String.fromCharCode(13))this.blur()"/></td>'+
+      '<td style="max-width:110px"><input type="text" data-id="'+o.id+'" data-tag="PEND_ITEMS" value="'+(itensPend==='—'?'':itensPend)+'" placeholder="—" style="padding:2px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--warn);font-family:var(--font-mono);font-size:11px;width:100%;outline:none" onblur="salvarItemPendencia(this.dataset.id,\'PEND_ITEMS\',this.value)" onkeydown="if(event.key===String.fromCharCode(13))this.blur()"/></td>'+
       '<td style="font-size:11px;color:var(--sep);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(_getPendObs(obsP,'PEND_FAT')||'—')+'">'+(_getPendObs(obsP,'PEND_FAT')||'—')+'</td>'+
       '<td style="color:var(--muted)">' + dataFat + '</td>' +
       '<td><div class="act-btns">' +
@@ -5379,6 +5435,20 @@ function renderPendencias() {
   }).join('');
 }
 
+
+async function salvarItemPendencia(id, tag, val){
+  var pedido = getPedidoById(id);
+  if(!pedido) return;
+  try{
+    var obs = pedido.obs||'';
+    var regex = new RegExp('\\['+tag+':[^\\]]*\\]','g');
+    obs = obs.replace(regex,'').trim();
+    if(val.trim()) obs = (obs?obs+'
+':'')+('['+tag+': '+val.trim()+']');
+    await sb.from('pedidos').update({obs:obs||null}).eq('id',id);
+    upsertPedidoLocal({id:id, obs:obs});
+  }catch(e){toast(e.message,'err');}
+}
 
 async function pendenciaRetornar(id) {
   var pedido = getPedidoById(id);
@@ -5850,7 +5920,7 @@ function closeExpedicaoMenu(){
 document.addEventListener('click',function(){closeExpedicaoMenu();});
 
 // Highlight Expedição tab when sub-screen is active
-var EXPEDICAO_SCREENS=['agretira','agEmbarque','emTransito','recebimento','pendencias'];
+var EXPEDICAO_SCREENS=['agretira','agEmbarque','emTransito','pendencias'];
 var _goOrig=window.go;
 window.go=async function(name){
   await _goOrig(name);
