@@ -668,7 +668,6 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <button class="tab adm-only" onclick="go('usuarios')" style="display:none">Usuários</button>
     <button class="tab" onclick="go('senha')">Minha Senha</button>
 
-    <button class="tab" onclick="go('recebimento')" id="tab-recebimento">Recebimento <span id="recebimento-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('devolucoes')" id="tab-devolucoes">Devoluções <span id="devolucoes-badge" style="display:none;background:rgba(245,158,11,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('agretira')" id="tab-agretira" style="display:none">Ag. Retira <span id="agretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('agEmbarque')" id="tab-agembarque" style="display:none">Ag. Embarque <span id="agembarque-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
@@ -1973,6 +1972,7 @@ async function submitOccurrenceModal(){
       if(resOcc.error)throw resOcc.error;
       upsertPedidoLocal({id:_occCtx.id,status:'em_ocorrencia',pendente_desde:agOcc,setor_pendente:setorParaSalvar});
       _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(500);
+      await logOcorrencia(_occCtx.id, pedido.numero, pedido.nome_cliente, pedido.num_nota, textoFinal.split(' — ')[0]||textoFinal, textoFinal);
       toast('Ocorrência registrada. Pedido #'+pedido.numero+' em ocorrências.','warn');
     }
 
@@ -2997,6 +2997,17 @@ async function confirmarNota(){
       confirmado_at:agora,
       tempo_confirmacao_ms:0
     });
+    // Registra NF na tabela notas_fiscais (histórico multi-NF para pedidos parciais)
+    sb.from('notas_fiscais').insert({
+      pedido_id:_notaTarget,
+      numero_nf:nota,
+      valor_total:valorNota,
+      valor_pago:valorNota,
+      tipo:isEntrega?'entrega':(temPendencia?'parcial':'total'),
+      registrado_por:ME?ME.login:'',
+      registrado_at:agora,
+      obs:(window._pfItensFat||'')+(temPendencia?' [SALDO:'+Math.round(saldo*100)/100+']':'')
+    }).then(function(){}).catch(function(e){console.warn('notas_fiscais:',e);});
     refreshPedidosSoon(500);
     if(isEntrega){
       toast('Faturado! NF emitida. Pedido retornou para Expedição.','move');
@@ -3475,7 +3486,8 @@ async function verTimelineAdv(id){
   try{
     var movRes=await sb.from('movimentacoes').select('*').eq('pedido_id',id).order('saida_at',{ascending:true});
     var devRes=await sb.from('devolucoes').select('*').eq('numero_pedido',pedido.numero);
-    area.innerHTML='<div style="margin-top:8px;padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg)"><div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--accent)">📋 Timeline — Pedido #'+pedido.numero+' — '+(pedido.nome_cliente||'')+'</div>'+renderTimeline(pedido,movRes.data||[],devRes.data||[])+'</div>';
+    var nfAdvRes=await sb.from('notas_fiscais').select('*').eq('pedido_id',id).order('registrado_at',{ascending:true});
+    area.innerHTML='<div style="margin-top:8px;padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg)"><div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--accent)">📋 Timeline — Pedido #'+pedido.numero+' — '+(pedido.nome_cliente||'')+'</div>'+renderTimeline(pedido,movRes.data||[],devRes.data||[],nfAdvRes.data||[])+'</div>';
     area.scrollIntoView({behavior:'smooth',block:'start'});
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
@@ -4004,14 +4016,17 @@ async function buscarRastreamento(){
     var nums=pedidos.map(function(p){return p.numero||'';}).filter(Boolean);
     var devRes=nums.length?await sb.from('devolucoes').select('*').in('numero_pedido',nums).order('recebido_at',{ascending:true}):{data:[]};
     var devs=devRes.data||[];
+    var nfRes=ids.length?await sb.from('notas_fiscais').select('*').in('pedido_id',ids).order('registrado_at',{ascending:true}):{data:[]};
+    var nfsList=nfRes.data||[];
     if(res)res.innerHTML=pedidos.map(function(p){
       var pDevs=devs.filter(function(d){return d.numero_pedido===p.numero;});
-      return renderTimeline(p,movs.filter(function(m){return m.pedido_id===p.id;}),pDevs);
+      var pNfs=nfsList.filter(function(nf){return nf.pedido_id===p.id;});
+      return renderTimeline(p,movs.filter(function(m){return m.pedido_id===p.id;}),pDevs,pNfs);
     }).join('<hr style="border:none;border-top:1px solid rgba(99,179,237,.15);margin:24px 0"/>');
   }catch(e){if(res)res.innerHTML='<p style="color:#ef4444">Erro ao buscar: '+e.message+'</p>';}
 }
 
-function renderTimeline(p, movs, devs){
+function renderTimeline(p, movs, devs, nfs){
   devs=devs||[];
   var statusAtual=SL[p.status]||p.status||'Em andamento';
   var concluido=p.status==='finalizado';
@@ -4119,14 +4134,22 @@ function renderTimeline(p, movs, devs){
     });
   }
 
-  // Faturamento / NF
-  if(p.num_nota){
+  // Faturamento / NF — suporta múltiplas notas (pedidos parciais)
+  var _nfsParaMostrar = nfs && nfs.length > 0
+    ? nfs
+    : (p.num_nota ? [{numero_nf:p.num_nota, valor_total:p.valor_nota_fat||0, registrado_at:p.finalizado_at, registrado_por:'', obs:'', tipo:''}] : []);
+  _nfsParaMostrar.forEach(function(nf, nfi){
+    var ehParcial = _nfsParaMostrar.length > 1;
     steps.push({
-      label:'Nota Fiscal emitida — NF '+p.num_nota,
-      sub:'Valor: '+fmtBRL(p.valor_nota_fat)+(p.separador?' · Separador: '+p.separador:''),
-      time:p.finalizado_at,done:true,icon:'🧾',color:'#22d3a7'
+      label: 'Nota Fiscal emitida — NF ' + nf.numero_nf + (ehParcial ? ' (' + (nfi+1) + '/' + _nfsParaMostrar.length + ')' : ''),
+      sub: 'Valor: ' + fmtBRL(nf.valor_total)
+        + (nf.registrado_por ? ' · Por: ' + nf.registrado_por : '')
+        + (nf.tipo && nf.tipo !== 'total' ? ' · ' + nf.tipo.charAt(0).toUpperCase() + nf.tipo.slice(1) : '')
+        + (p.separador && nfi === 0 ? ' · Separador: ' + p.separador : '')
+        + (nf.obs ? ' — ' + String(nf.obs).substring(0,80) : ''),
+      time: nf.registrado_at, done: true, icon: '🧾', color: '#22d3a7'
     });
-  }
+  });
 
   // Cancelado APÓS a NF
   if(cancelado && p.num_nota){
