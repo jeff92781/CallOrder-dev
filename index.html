@@ -2665,20 +2665,18 @@ function renderRowCard(o,setor,transito){
       if(prio!=='entrega')flowBtns.push('<button class="bcon" style="background:#6366f1" onclick="enviar(\''+o.id+'\',\'balcao_op\')">&#8594; Balcão</button>');
       if(prio==='entrega')flowBtns.push('<button class="bmv" style="background:#818cf8" onclick="enviar(\''+o.id+'\',\'expedicao\')">&#8594; Expedição</button>');
     }else if(setor==='balcao_op'&&canAct&&o.status!=='pronto_balcao'){
-      if(parcialActive){
-        flowBtns.push('<button class="bmv" onclick="openPreFatura(\''+o.id+'\')">&#8594; Faturamento</button>');
-        flowBtns.push('<button class="bmv" style="background:rgba(239,68,68,.6);font-size:11px" onclick="abrirPendenciaAntesNF(\''+o.id+'\')">&#9888; Pend&ecirc;ncia</button>');
-      }else flowBtns.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">&#8594; Faturamento</button>');
+      if(parcialActive)flowBtns.push('<button class="bmv" onclick="openPreFatura(\''+o.id+'\')">&#8594; Faturamento</button>');
+      else flowBtns.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">&#8594; Faturamento</button>');
+      flowBtns.push('<button class="bmv" style="background:rgba(239,68,68,.55);font-size:11px" onclick="abrirPendenciaAntesNF(\''+o.id+'\')">&#9888; Pendência</button>');
     }else if(setor==='expedicao'&&canAct){
       if(o.status==='pronto_expedicao')flowBtns.push('<button class="bmv" style="background:#818cf8" onclick="enviarAgEmbarque(\''+o.id+'\')">Ag. Embarque</button>');
       else if(o.status==='em_entrega'){flowBtns.push('<button class="bfin" onclick="marcarEntregue(\''+o.id+'\')">&#10003; Entregue</button>');flowBtns.push('<button class="boc" onclick="marcarDevolvido(\''+o.id+'\')">&#8617; Retorno</button>');}
       else if(o.status!=='ag_embarque'){
-        if(parcialActive){
-          flowBtns.push('<button class="bmv" onclick="openPreFatura(\''+o.id+'\')">&#8594; Faturamento</button>');
-          flowBtns.push('<button class="bmv" style="background:rgba(239,68,68,.6);font-size:11px" onclick="abrirPendenciaAntesNF(\''+o.id+'\')">&#9888; Pendência</button>');
-        }else flowBtns.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">&#8594; Faturamento</button>');
+        if(parcialActive)flowBtns.push('<button class="bmv" onclick="openPreFatura(\''+o.id+'\')">&#8594; Faturamento</button>');
+        else flowBtns.push('<button class="bmv" onclick="enviar(\''+o.id+'\',\'faturamento\')">&#8594; Faturamento</button>');
+        flowBtns.push('<button class="bmv" style="background:rgba(239,68,68,.55);font-size:11px" onclick="abrirPendenciaAntesNF(\''+o.id+'\')">&#9888; Pendência</button>');
+      }
     }
-  }
 
   if(!transito){
     if(podeExcluirPedido()&&!etapaPosFaturamento)dangerBtns.push('<button class="bexc" onclick="openDeletePedido(\''+o.id+'\')">Excluir</button>');
@@ -2850,35 +2848,25 @@ function openNota(id){
       var label=saldoPend>0?'Saldo em aberto':'Valor do pedido';
       if(el('nota-saldo-preview'))el('nota-saldo-preview').textContent=label+': '+fmtBRL(valorRef)+'. '+(saldoPend>0?'NF deve cobrir este saldo.':'Se o valor da NF for inferior, haverá saldo em Pendências.');
     }
-    // Show pre-filled items from expedicao pre-fatura
+    // Show pre-filled items: PEND_TRAB (from retorno) → PEND_SEP (from pre-fatura) → nothing
     var obsP = pedido.obs || '';
-    var saldoPendAberto = parseFloat(pedido.saldo_pendencia)||0;
     var wrap = el('nota-itens-wrap');
     var itensEl = el('nota-itens');
+    var flEl = wrap ? wrap.querySelector('.fl') : null;
     if(wrap && itensEl){
-      if(saldoPendAberto > 0){
-        // Retorno de saldo: show PEND_ITEMS (items still pending)
-        var itensPend = _getPendObs(obsP, 'PEND_ITEMS');
-        if(itensPend && itensPend !== '—'){
-          wrap.style.display = 'block';
-          itensEl.value = itensPend;
-          wrap.querySelector('.fl').textContent = 'Itens a faturar (do saldo pendente)';
-        } else {
-          // No pending items left — no need to show field
-          wrap.style.display = 'none';
-          itensEl.value = '';
-        }
+      var trabItems = _getPendObs(obsP, 'PEND_TRAB');
+      var sepItems = _getPendObs(obsP, 'PEND_SEP');
+      if(trabItems && trabItems !== '—'){
+        wrap.style.display = 'block';
+        itensEl.value = trabItems;
+        if(flEl) flEl.textContent = 'Itens a faturar (definidos no retorno)';
+      } else if(sepItems && sepItems !== '—'){
+        wrap.style.display = 'block';
+        itensEl.value = sepItems;
+        if(flEl) flEl.textContent = 'Itens a faturar';
       } else {
-        // First billing from expedicao: show PEND_SEP (items to be invoiced now)
-        var itensSep = _getPendObs(obsP, 'PEND_SEP');
-        if(itensSep && itensSep !== '—'){
-          wrap.style.display = 'block';
-          itensEl.value = itensSep;
-          wrap.querySelector('.fl').textContent = 'Itens a faturar';
-        } else {
-          wrap.style.display = 'none';
-          itensEl.value = '';
-        }
+        wrap.style.display = 'none';
+        itensEl.value = '';
       }
     }
   }
@@ -5827,7 +5815,9 @@ function renderAgRetiraBadge() {
         <option value="faturamento">Faturamento</option>
       </select>
     </div>
-    <div class="f"><label class="fl">O que está sendo trabalhado</label><textarea id="rp-item" style="min-height:70px" placeholder="Ex: Separando os itens restantes, aguardando chegada do produto X..."></textarea></div>
+    <div class="f" id="rp-sep-wrap" style="display:none"><label class="fl">Itens separados</label><textarea id="rp-sep" style="min-height:50px" placeholder="Itens já separados..."></textarea></div>
+    <div class="f" id="rp-pend-wrap" style="display:none"><label class="fl">Itens pendentes</label><textarea id="rp-pend" style="min-height:50px" placeholder="Itens ainda pendentes..."></textarea></div>
+    <div class="f"><label class="fl">Itens a trabalhar agora <span style="color:var(--accent);font-size:10px">— ficam salvos para o faturamento</span></label><textarea id="rp-item" style="min-height:60px" placeholder="Ex: Cortar 10m de tecido azul e separar peças X, Y..."></textarea></div>
     <div class="ma"><button class="bcan" onclick="closeM('m-retornar-pend')">Cancelar</button><button class="bok" onclick="confirmarRetornarPendencia()">Retornar</button></div>
   </div>
 </div>
@@ -6214,8 +6204,22 @@ var _rpTarget=null;
 function abrirRetornarPendencia(id){
   _rpTarget=id;
   var pedido=getPedidoById(id);
+  if(!pedido)return;
   if(el('rp-item'))el('rp-item').value='';
-  if(el('rp-setor'))el('rp-setor').value=pedido&&pedido.setor?pedido.setor:'expedicao';
+  if(el('rp-setor'))el('rp-setor').value=pedido.setor||'expedicao';
+  // Pre-fill items from obs
+  var obs=pedido.obs||'';
+  var prevSep=_getPendObs(obs,'PEND_SEP');
+  var prevPend=_getPendObs(obs,'PEND_ITEMS');
+  var prevTrab=_getPendObs(obs,'PEND_TRAB');
+  var hasSep=prevSep&&prevSep!=='—';
+  var hasPend=prevPend&&prevPend!=='—';
+  if(el('rp-sep-wrap'))el('rp-sep-wrap').style.display=hasSep?'block':'none';
+  if(el('rp-pend-wrap'))el('rp-pend-wrap').style.display=hasPend?'block':'none';
+  if(el('rp-sep')&&hasSep)el('rp-sep').value=prevSep;
+  if(el('rp-pend')&&hasPend)el('rp-pend').value=prevPend;
+  // Pre-fill "trabalhar agora" with pending items as suggestion
+  if(el('rp-item'))el('rp-item').value=prevTrab&&prevTrab!=='—'?prevTrab:(hasPend?prevPend:'');
   openM('m-retornar-pend');
 }
 async function confirmarRetornarPendencia(){
@@ -6223,6 +6227,8 @@ async function confirmarRetornarPendencia(){
   if(!id)return;
   var setor=el('rp-setor')?el('rp-setor').value:'expedicao';
   var item=(el('rp-item')?el('rp-item').value:'').trim();
+  var sepEdit=(el('rp-sep')?el('rp-sep').value:'').trim();
+  var pendEdit=(el('rp-pend')?el('rp-pend').value:'').trim();
   var pedido=getPedidoById(id);
   if(!pedido)return;
   closeM('m-retornar-pend');
@@ -6230,17 +6236,20 @@ async function confirmarRetornarPendencia(){
   try{
     var agora=new Date().toISOString();
     var obsAtual=pedido.obs||'';
-    var linha=buildOccurrenceLine('RETORNO_PENDENCIA',SL[setor]||setor,'Retornado para '+( SL[setor]||setor)+(item?' — Item: '+item:''));
-    var novaObs=(obsAtual?obsAtual+'\n':'')+linha;
-    // Update obs with new log and set item being worked
+    // Clear old tags, update with edited values
+    obsAtual=obsAtual.replace(/\[PEND_SEP:[^\]]*\]/g,'').replace(/\[PEND_ITEMS:[^\]]*\]/g,'').replace(/\[PEND_TRAB:[^\]]*\]/g,'').trim();
+    var tagLinhas=[];
+    if(sepEdit)tagLinhas.push('[PEND_SEP: '+sepEdit+']');
+    if(pendEdit)tagLinhas.push('[PEND_ITEMS: '+pendEdit+']');
+    if(item)tagLinhas.push('[PEND_TRAB: '+item+']');
+    var linha=buildOccurrenceLine('RETORNO_PENDENCIA',SL[setor]||setor,'Retornado para '+(SL[setor]||setor)+(item?' — A trabalhar: '+item:''));
+    var novaObs=(obsAtual?obsAtual+'\n':'')+tagLinhas.join('\n')+(tagLinhas.length?'\n':'')+linha;
     var updates={tem_pendencia:false,pendencia_status:'retornada',setor:setor,status:'em_andamento',setor_pendente:'',setor_entrada_at:agora,obs:novaObs};
-    // Save item note to obs
-    if(item){novaObs=novaObs+'\n[PEND_TRAB: '+item+']';updates.obs=novaObs;}
     await sb.from('pedidos').update(updates).eq('id',id);
     upsertPedidoLocal(Object.assign({id:id},updates));
     _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(300);
     renderPendencias();renderPendenciasBadge();
-    toast('Pedido #'+pedido.numero+' retornado para '+(SL[setor]||setor)+'.','ok');
+    toast('Pedido #'+pedido.numero+' retornado para '+(SL[setor]||setor)+(item?' — A trabalhar: '+item.substring(0,40):'')+'.',  'ok');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);_rpTarget=null;}
 }
