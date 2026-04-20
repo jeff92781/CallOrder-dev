@@ -1062,7 +1062,10 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <div class="ph">
       <span class="pt">Ocorrências</span>
       <span style="color:var(--muted);font-size:12px" id="occ-count"></span>
+      <button onclick="buscarOcorrenciasHist()" style="padding:7px 16px;background:var(--accent-dim);border:1px solid rgba(34,211,167,.35);border-radius:var(--radius);color:var(--accent);font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer">&#128269; Buscar</button>
     </div>
+
+    <!-- Seção ativas -->
     <div style="font-size:11px;font-weight:700;color:var(--warn);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">⚡ Ativas agora</div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:auto;margin-bottom:22px">
       <table class="utbl" id="occ-table" style="min-width:860px">
@@ -1071,14 +1074,28 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
       </table>
     </div>
     <div id="occ-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;display:none">Nenhuma ocorrência ativa.</div>
-    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">📋 Histórico do dia</div>
+
+    <!-- Filtros de data para histórico -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">📋 Histórico de ocorrências</div>
+      <div style="display:flex;align-items:center;gap:6px;background:var(--bg2);padding:6px 12px;border-radius:var(--radius);border:1px solid var(--border)">
+        <span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">De</span>
+        <input type="date" id="occ-hist-start" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;padding:3px 7px;outline:none" onchange="filtrarHistOcorr()"/>
+        <span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Até</span>
+        <input type="date" id="occ-hist-end" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;padding:3px 7px;outline:none" onchange="filtrarHistOcorr()"/>
+        <input type="text" id="occ-hist-vendedor" placeholder="Vendedor..." style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;padding:3px 7px;outline:none;width:110px" oninput="filtrarHistOcorr()"/>
+        <input type="text" id="occ-hist-pedido" placeholder="Pedido..." style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;padding:3px 7px;outline:none;width:80px" oninput="filtrarHistOcorr()"/>
+        <button onclick="limparFiltrosOcorrHist()" style="padding:3px 9px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:var(--font-mono);font-size:10px;cursor:pointer">↺</button>
+      </div>
+      <span style="font-size:11px;color:var(--muted)" id="occ-hist-count"></span>
+    </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:auto">
-      <table class="utbl" id="occ-hist-table" style="min-width:1000px">
-        <thead><tr><th>Pedido</th><th>Cliente</th><th>Vendedor</th><th>Entrada ocorr.</th><th>Motivo</th><th>Tempo ocorr.</th><th>Retornou em</th><th>Resolução</th></tr></thead>
+      <table class="utbl" id="occ-hist-table" style="min-width:1100px">
+        <thead><tr><th>Data/Hora</th><th>Pedido</th><th>Cliente</th><th>Vendedor</th><th>NF</th><th>Motivo</th><th>Setor origem</th><th>Tempo ocorr.</th><th>Retornou em</th><th>Resolução</th></tr></thead>
         <tbody id="occ-hist-tbody"></tbody>
       </table>
     </div>
-    <div id="occ-hist-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:16px 0;display:none">Nenhuma ocorrência registrada hoje.</div>
+    <div id="occ-hist-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:16px 0;display:none">Nenhuma ocorrência encontrada no período.</div>
   </main>
 </div>
 <div class="screen" id="screen-pendencias">
@@ -2303,7 +2320,7 @@ async function go(name){
   if(name==='agEmbarque'){ov(true);await fetchPedidos();ov(false);renderAgEmbarque();}
   if(name==='emTransito'){ov(true);await fetchPedidos();ov(false);renderEmTransito();}
   if(name==='canhotos'){ov(true);await Promise.all([fetchPedidos(),fetchCanhotosConfirmados()]);ov(false);_canhotoFilter='aguardando';setCanhotoFilter('aguardando',null);renderCanhotos();}
-  if(name==='ocorrencias'){ov(true);await fetchPedidos();ov(false);renderOcorrencias();}
+  if(name==='ocorrencias'){ov(true);await Promise.all([fetchPedidos(),buscarOcorrenciasHist()]);ov(false);renderOcorrencias();}
   if(name==='pendencias'){ov(true);await fetchPedidos();ov(false);if(!_pendTab)_pendTab='fob';renderPendencias();}
 }
 
@@ -3484,9 +3501,15 @@ async function verTimelineAdv(id){
   if(!area)return;
   ov(true);
   try{
+    // Busca movimentações apenas do registro específico
     var movRes=await sb.from('movimentacoes').select('*').eq('pedido_id',id).order('saida_at',{ascending:true});
     var devRes=await sb.from('devolucoes').select('*').eq('numero_pedido',pedido.numero);
-    var nfAdvRes=await sb.from('notas_fiscais').select('*').eq('pedido_id',id).order('registrado_at',{ascending:true});
+    // Busca TODOS os registros com o mesmo número de pedido (pedidos parciais criam novos registros)
+    var irmaoRes=await sb.from('pedidos').select('id').eq('numero',pedido.numero);
+    var todosIds=(irmaoRes.data||[]).map(function(p){return p.id;});
+    if(todosIds.indexOf(id)<0)todosIds.push(id);
+    // Busca NFs de todos os registros com o mesmo número
+    var nfAdvRes=await sb.from('notas_fiscais').select('*').in('pedido_id',todosIds).order('registrado_at',{ascending:true});
     area.innerHTML='<div style="margin-top:8px;padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg)"><div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--accent)">📋 Timeline — Pedido #'+pedido.numero+' — '+(pedido.nome_cliente||'')+'</div>'+renderTimeline(pedido,movRes.data||[],devRes.data||[],nfAdvRes.data||[])+'</div>';
     area.scrollIntoView({behavior:'smooth',block:'start'});
   }catch(e){toast(e.message,'err');}
@@ -3671,6 +3694,11 @@ function renderRelatorios(){
     return '<div class="br"><span class="bn" style="max-width:100px;overflow:hidden;text-overflow:ellipsis">'+n+'</span>'+bar(dv[n].val/maxDV*100,'var(--danger)')+'<span class="bv">'+dv[n].n+'× '+fmtBRL(dv[n].val)+'</span></div>';
   }).join('')||'<span style="color:var(--muted);font-size:12px">—</span>';
 
+  // Vincula dados do período ao cache de ocorrências (disponível na aba Ocorrências)
+  _OCC_HIST_PEDIDOS = all.filter(function(o){ return (o.obs||'').indexOf('OCORRÊNCIA')>=0; });
+  if(el('occ-hist-start'))el('occ-hist-start').value=REPORT_DATE_START||fmtDateInput(new Date());
+  if(el('occ-hist-end'))el('occ-hist-end').value=REPORT_DATE_END||fmtDateInput(new Date());
+
   // Ocorrências por dia / top vendedores
   var occTot=0,occPV={},occPD={};
   all.forEach(function(o){
@@ -3723,13 +3751,16 @@ function renderRelatorios(){
     }).join('');
   }
 
-  // Separadores
+  // Separadores — tempo médio usa APENAS o tempo no setor de expedição/balcão (não tempo total do pedido)
   var sepData={};
   done.forEach(function(o){
     var sep=o.separador||'(sem sep.)';
     if(!sepData[sep])sepData[sep]={n:0,val:0,tempo:0};
     sepData[sep].n++;sepData[sep].val+=(parseFloat(o.valor_nota_fat)||0);
-    var ms=tsMs(o.finalizado_at)-tsMs(o.entrada_at);if(ms>0)sepData[sep].tempo+=ms;
+    // Soma apenas movimentações com setor_origem = balcao_op ou expedicao
+    var pedMovs=MOVS.filter(function(m){return m.pedido_id===o.id&&(m.setor_origem==='balcao_op'||m.setor_origem==='expedicao');});
+    var ms=pedMovs.reduce(function(s,m){return s+(parseInt(m.tempo_ms)||0);},0);
+    if(ms>0)sepData[sep].tempo+=ms;
   });
   var sepNomes=Object.keys(sepData).sort(function(a,b){return sepData[b].val-sepData[a].val;});
   var sepSec=el('rel-sep-section');if(sepSec)sepSec.style.display=sepNomes.length?'block':'none';
@@ -4134,10 +4165,17 @@ function renderTimeline(p, movs, devs, nfs){
     });
   }
 
-  // Faturamento / NF — suporta múltiplas notas (pedidos parciais)
-  var _nfsParaMostrar = nfs && nfs.length > 0
+  // Faturamento / NF — suporta múltiplas notas (pedidos parciais), com deduplicação por numero_nf
+  var _nfsRaw = nfs && nfs.length > 0
     ? nfs
     : (p.num_nota ? [{numero_nf:p.num_nota, valor_total:p.valor_nota_fat||0, registrado_at:p.finalizado_at, registrado_por:'', obs:'', tipo:''}] : []);
+  // Deduplica por numero_nf mantendo a entrada mais recente
+  var _seenNF={};
+  var _nfsParaMostrar=_nfsRaw.filter(function(nf){
+    if(!nf.numero_nf)return true;
+    if(_seenNF[nf.numero_nf])return false;
+    _seenNF[nf.numero_nf]=true;return true;
+  });
   _nfsParaMostrar.forEach(function(nf, nfi){
     var ehParcial = _nfsParaMostrar.length > 1;
     steps.push({
@@ -4189,6 +4227,14 @@ function renderTimeline(p, movs, devs, nfs){
     };
     steps.push({label:statusLabel[p.status]||statusAtual,sub:'Status atual',time:null,done:false,current:true,icon:'📍',color:'#818cf8'});
   }
+
+  // Ordena steps por timestamp mantendo passos sem tempo no final
+  steps.sort(function(a,b){
+    if(!a.time&&!b.time)return 0;
+    if(!a.time)return 1;
+    if(!b.time)return -1;
+    return new Date(a.time).getTime()-new Date(b.time).getTime();
+  });
 
   var stepsHtml=steps.map(function(s,i){
     var dtStr=s.time?new Date(s.time).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
@@ -5332,9 +5378,13 @@ function renderPendencias() {
   if (el('pend-table')) el('pend-table').style.display = items.length ? '' : 'none';
 
   el('pend-tbody').innerHTML = items.map(function(o) {
-    var saldo = parseFloat(o.saldo_pendencia) || 0;
     var valorPedido = parseFloat(o.valor_pedido) || 0;
     var valorNota = parseFloat(o.valor_nota_fat) || 0;
+    // Saldo: usa saldo_pendencia se definido; caso contrário calcula valor_pedido - valor_nota
+    var saldo = parseFloat(o.saldo_pendencia) || 0;
+    if(saldo === 0 && valorPedido > 0 && valorPedido > valorNota) {
+      saldo = Math.max(0, Math.round((valorPedido - valorNota) * 100) / 100);
+    }
     var dataFat = o.finalizado_at ? new Date(o.finalizado_at).toLocaleDateString('pt-BR') : '—';
     var obsP=o.obs||'';
     var endAloc=_getPendObs(obsP,'END_ALOC');
@@ -5611,6 +5661,114 @@ function exportarAgRetiraExcel() {
 }
 
 // ── Render Ocorrências ──
+// ── Cache de pedidos com ocorrências para o histórico ──
+var _OCC_HIST_PEDIDOS = [];
+
+async function buscarOcorrenciasHist(){
+  try{
+    // Lê os filtros de data (padrão: últimos 30 dias)
+    var hoje = new Date();
+    var inicio = new Date(hoje); inicio.setDate(inicio.getDate()-30);
+    var startEl = el('occ-hist-start'), endEl = el('occ-hist-end');
+    var startStr = startEl&&startEl.value ? startEl.value : fmtDateInput(inicio);
+    var endStr   = endEl&&endEl.value   ? endEl.value   : fmtDateInput(hoje);
+    if(startEl && !startEl.value) startEl.value = startStr;
+    if(endEl   && !endEl.value)   endEl.value   = endStr;
+    var startISO = new Date(startStr+'T00:00:00').toISOString();
+    var endISO   = new Date(endStr  +'T23:59:59').toISOString();
+    // Busca pedidos com obs contendo OCORRÊNCIA no intervalo de datas
+    var res = await sb.from('pedidos')
+      .select('id,numero,nome_cliente,vendedor,num_nota,obs,entrada_at,setor,setor_pendente,status')
+      .gte('entrada_at', startISO)
+      .lte('entrada_at', endISO)
+      .order('entrada_at',{ascending:false});
+    if(res.error) throw res.error;
+    // Filtra apenas os que têm OCORRÊNCIA no obs
+    _OCC_HIST_PEDIDOS = (res.data||[]).filter(function(o){ return (o.obs||'').indexOf('OCORRÊNCIA')>=0; });
+    filtrarHistOcorr();
+  }catch(e){ console.warn('buscarOcorrenciasHist:',e); }
+}
+
+function filtrarHistOcorr(){
+  var fVend = (el('occ-hist-vendedor')&&el('occ-hist-vendedor').value||'').trim().toLowerCase();
+  var fPed  = (el('occ-hist-pedido') &&el('occ-hist-pedido').value ||'').trim();
+  function _pd(line){var m=line.match(/\[(\d{1,2})\/(\d{1,2})\/(\d{2,4})[\s,]+(\d{1,2}):(\d{2})/);if(!m)return 0;var yr=parseInt(m[3]);if(yr<100)yr+=2000;var d=new Date(yr,parseInt(m[2])-1,parseInt(m[1]),parseInt(m[4]),parseInt(m[5]));return isNaN(d.getTime())?0:d.getTime();}
+
+  // Extrai todas as ocorrências de cada pedido
+  var allRows = [];
+  var hist = _OCC_HIST_PEDIDOS.slice();
+  // Também inclui os pedidos ativos com ocorrência que já estão em PEDIDOS
+  PEDIDOS.forEach(function(o){
+    if((o.obs||'').indexOf('OCORRÊNCIA')>=0 && !hist.find(function(h){return h.id===o.id;})){
+      hist.push(o);
+    }
+  });
+
+  hist.forEach(function(o){
+    if(fVend && (o.vendedor||'').toLowerCase().indexOf(fVend)<0) return;
+    if(fPed  && (o.numero||'').indexOf(fPed)<0) return;
+    var obs=o.obs||'';
+    var ls2=obs.split('\n');
+    var occT=0,occM='',setorOcc='',retD='',retMs=0,resol='';
+    ls2.forEach(function(l){
+      if(l.indexOf('OCORRÊNCIA')>=0&&l.indexOf('RETORNO')<0){
+        if(occT&&occM){
+          allRows.push({t:occT,m:occM,rd:'Ainda ativa',rs:'—',ms:now()-occT,o:o,setor:setorOcc});
+          occT=0;occM='';setorOcc='';
+        }
+        occT=_pd(l)||Date.now();
+        var mm=l.match(/—\s*(.+)$/);occM=mm?mm[1].trim():'—';
+        // Extrai setor da linha
+        var ms2=l.match(/·\s*([^·]+)·/);setorOcc=ms2?ms2[1].trim():'—';
+        retD='';retMs=0;resol='';
+      }
+      if(l.indexOf('] RETORNO ')>=0&&l.indexOf('PENDÊNCIA')<0&&l.indexOf('Ag. Retira')<0&&occT>0){
+        var t2=_pd(l);
+        retD=t2?new Date(t2).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+        retMs=t2>occT?t2-occT:0;
+        var mr=l.match(/—\s*(.+)$/);resol=mr?mr[1].trim().substring(0,100):'—';
+        allRows.push({t:occT,m:occM,rd:retD,rs:resol,ms:retMs,o:o,setor:setorOcc});
+        occT=0;occM='';setorOcc='';retD='';retMs=0;resol='';
+      }
+    });
+    if(occT&&occM) allRows.push({t:occT,m:occM,rd:'Ainda ativa',rs:'—',ms:now()-occT,o:o,setor:setorOcc});
+  });
+
+  // Ordena por data de entrada desc
+  allRows.sort(function(a,b){return b.t-a.t;});
+
+  if(el('occ-hist-count'))el('occ-hist-count').textContent=allRows.length+' ocorrência(s)';
+  if(el('occ-hist-empty'))el('occ-hist-empty').style.display=allRows.length?'none':'block';
+  if(el('occ-hist-table'))el('occ-hist-table').style.display=allRows.length?'':'none';
+  if(!el('occ-hist-tbody'))return;
+  el('occ-hist-tbody').innerHTML=allRows.map(function(r){
+    var o=r.o;
+    var ativa=r.rd==='Ainda ativa';
+    return '<tr>'+
+      '<td style="color:var(--muted);font-size:11px;white-space:nowrap">'+new Date(r.t).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})+'</td>'+
+      '<td style="font-family:var(--font-head);font-size:14px;font-weight:700">#'+o.numero+'</td>'+
+      '<td style="font-size:12px">'+(o.nome_cliente||'—')+'</td>'+
+      '<td style="color:var(--cyan);font-size:11px">'+(o.vendedor||'—')+'</td>'+
+      '<td style="color:var(--sep);font-size:11px">'+(o.num_nota||'—')+'</td>'+
+      '<td style="font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+r.m+'">'+r.m+'</td>'+
+      '<td style="color:var(--muted);font-size:11px">'+r.setor+'</td>'+
+      '<td style="color:'+(ativa?'var(--warn)':'var(--muted)')+';font-size:12px;font-weight:600">'+(r.ms>0?fmtTs(r.ms):'—')+'</td>'+
+      '<td style="color:'+(ativa?'var(--warn)':'var(--muted)')+';font-size:11px">'+(ativa?'<span style="color:var(--warn);font-weight:700">⚡ Ativa</span>':r.rd)+'</td>'+
+      '<td style="font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+r.rs+'">'+r.rs+'</td>'+
+    '</tr>';
+  }).join('');
+}
+
+function limparFiltrosOcorrHist(){
+  if(el('occ-hist-vendedor'))el('occ-hist-vendedor').value='';
+  if(el('occ-hist-pedido'))el('occ-hist-pedido').value='';
+  var hoje=new Date();
+  var inicio=new Date(hoje);inicio.setDate(inicio.getDate()-30);
+  if(el('occ-hist-start'))el('occ-hist-start').value=fmtDateInput(inicio);
+  if(el('occ-hist-end'))el('occ-hist-end').value=fmtDateInput(hoje);
+  buscarOcorrenciasHist();
+}
+
 function renderOcorrencias() {
   // ── Ativas ──
   var items = PEDIDOS.filter(function(o) { return o.status === 'em_ocorrencia'; });
@@ -5650,46 +5808,8 @@ function renderOcorrencias() {
     '</tr>';
   }).join('');
 
-  // ── Histórico do dia ──
-  var hoje=new Date();hoje.setHours(0,0,0,0);
-  var hist=PEDIDOS.filter(function(o){
-    return (o.obs||'').indexOf('OCORRÊNCIA')>=0 && tsMs(o.entrada_at)>=hoje.getTime();
-  });
-  if(el('occ-hist-empty'))el('occ-hist-empty').style.display=hist.length?'none':'block';
-  if(el('occ-hist-table'))el('occ-hist-table').style.display=hist.length?'':'none';
-  if(el('occ-hist-tbody'))el('occ-hist-tbody').innerHTML=hist.map(function(o){
-    var obs=o.obs||'';
-    var ls2=obs.split('\n');
-    var rows=[];
-    var occT=0,occM='',retD='',resol='';
-    function _pd(line){var m=line.match(/\[(\d{1,2})\/(\d{1,2})\/(\d{2,4})[\s,]+(\d{1,2}):(\d{2})/);if(!m)return 0;var yr=parseInt(m[3]);if(yr<100)yr+=2000;var d=new Date(yr,parseInt(m[2])-1,parseInt(m[1]),parseInt(m[4]),parseInt(m[5]));return isNaN(d.getTime())?0:d.getTime();}
-    ls2.forEach(function(l){
-      if(l.indexOf('OCORRÊNCIA')>=0&&l.indexOf('RETORNO')<0){
-        if(occT&&occM)rows.push({t:occT,m:occM,rd:retD,rs:resol,ms:0});
-        occT=_pd(l)||Date.now();var mm=l.match(/—\s*(.+)$/);occM=mm?mm[1].trim():'—';retD='';resol='';
-      }
-      if(l.indexOf('] RETORNO ')>=0&&l.indexOf('PENDÊNCIA')<0&&l.indexOf('Ag. Retira')<0&&occT>0){
-        var t2=_pd(l);
-        retD=t2?new Date(t2).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
-        var mr=l.match(/—\s*(.+)$/);resol=mr?mr[1].trim().substring(0,80):'—';
-        rows.push({t:occT,m:occM,rd:retD,rs:resol,ms:t2>occT?t2-occT:0});
-        occT=0;occM='';retD='';resol='';
-      }
-    });
-    if(occT&&occM)rows.push({t:occT,m:occM,rd:'Ainda ativa',rs:'—',ms:Date.now()-occT});
-    return rows.map(function(r){
-      return '<tr>'+
-        '<td style="font-family:var(--font-head);font-size:13px;font-weight:700">#'+o.numero+'</td>'+
-        '<td style="font-size:12px">'+(o.nome_cliente||'—')+'</td>'+
-        '<td style="color:var(--muted);font-size:11px">'+(o.vendedor||'—')+'</td>'+
-        '<td style="color:var(--muted);font-size:11px">'+new Date(r.t).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+'</td>'+
-        '<td style="font-size:11px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+r.m+'">'+r.m+'</td>'+
-        '<td style="color:'+(r.rd==='Ainda ativa'?'var(--warn)':'var(--muted)')+';font-size:12px;font-weight:600">'+(r.ms>0?fmtTs(r.ms):'—')+'</td>'+
-        '<td style="color:var(--muted);font-size:11px">'+r.rd+'</td>'+
-        '<td style="font-size:11px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+r.rs+'">'+r.rs+'</td>'+
-      '</tr>';
-    }).join('');
-  }).filter(Boolean).join('');
+  // O histórico agora é gerenciado por filtrarHistOcorr() que é chamado pelo buscarOcorrenciasHist()
+  filtrarHistOcorr();
 }
 
 function renderOcorrenciasBadge() {
@@ -6131,7 +6251,7 @@ async function confirmarPreFatura(){
     // Save items to obs, then send to faturamento
     var obsAtual = pedido.obs || '';
     var linhas = [];
-    if(itensFat) linhas.push('[PEND_SEP: ' + itensFat + ']');
+    if(itensFat) linhas.push('[PEND_FAT: ' + itensFat + ']');
     if(itensPend) {
       obsAtual = obsAtual.replace(/\[PEND_ITEMS:[^\]]*\]/g, '').trim();
       linhas.push('[PEND_ITEMS: ' + itensPend + ']');
