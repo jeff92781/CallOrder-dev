@@ -3824,8 +3824,7 @@ function renderRelatorios(){
   var occPorVend={},occPorDia={};
   all.forEach(function(o){
     var obs=o.obs||'';
-    var lines2=obs.split('
-');
+    var lines2=obs.split('\n');
     lines2.forEach(function(l){
       if(l.indexOf('OCORRÊNCIA')<0||l.indexOf('RETORNO')>=0)return;
       var vend=o.vendedor||'(sem vendedor)';
@@ -5443,8 +5442,7 @@ async function salvarItemPendencia(id, tag, val){
     var obs = pedido.obs||'';
     var regex = new RegExp('\\['+tag+':[^\\]]*\\]','g');
     obs = obs.replace(regex,'').trim();
-    if(val.trim()) obs = (obs?obs+'
-':'')+('['+tag+': '+val.trim()+']');
+    if(val.trim()) obs = (obs?obs+'\n':'')+('['+tag+': '+val.trim()+']');
     await sb.from('pedidos').update({obs:obs||null}).eq('id',id);
     upsertPedidoLocal({id:id, obs:obs});
   }catch(e){toast(e.message,'err');}
