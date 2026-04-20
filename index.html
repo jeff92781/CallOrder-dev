@@ -2677,6 +2677,7 @@ function renderRowCard(o,setor,transito){
         flowBtns.push('<button class="bmv" style="background:rgba(239,68,68,.55);font-size:11px" onclick="abrirPendenciaAntesNF(\''+o.id+'\')">&#9888; Pendência</button>');
       }
     }
+  }
 
   if(!transito){
     if(podeExcluirPedido()&&!etapaPosFaturamento)dangerBtns.push('<button class="bexc" onclick="openDeletePedido(\''+o.id+'\')">Excluir</button>');
