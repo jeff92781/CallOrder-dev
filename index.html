@@ -817,17 +817,17 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px" id="rel-op-cards"></div>
 
     <!-- Entradas x Saídas por dia -->
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:16px">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">📊 Entradas × Saídas por dia</div>
-        <div id="rel-flux-legend" style="display:flex;gap:10px;font-size:10px;color:var(--muted)">
-          <span><span style="display:inline-block;width:10px;height:10px;background:#3b82f6;border-radius:2px;margin-right:4px"></span>Entradas</span>
-          <span><span style="display:inline-block;width:10px;height:10px;background:#22d3a7;border-radius:2px;margin-right:4px"></span>Faturados</span>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">📊 Entradas × Saídas por dia (Valor)</div>
+        <div id="rel-flux-legend" style="display:flex;gap:16px;font-size:11px;color:var(--muted)">
+          <span><span style="display:inline-block;width:12px;height:12px;background:#3b82f6;border-radius:50%;margin-right:6px;vertical-align:middle"></span>Entradas</span>
+          <span><span style="display:inline-block;width:12px;height:12px;background:#22d3a7;border-radius:50%;margin-right:6px;vertical-align:middle"></span>Faturados</span>
         </div>
       </div>
-      <div id="rel-flux-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px"></div>
-      <div id="rel-flux-chart" style="display:flex;align-items:flex-end;gap:6px;height:160px;border-bottom:1px solid var(--border);padding-bottom:6px;overflow-x:auto"></div>
-      <div id="rel-flux-table" style="margin-top:12px;max-height:220px;overflow:auto"></div>
+      <div id="rel-flux-kpis" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:18px"></div>
+      <div id="rel-flux-chart" style="width:100%;height:340px;position:relative;overflow:hidden"></div>
+      <div id="rel-flux-table" style="margin-top:16px;max-height:240px;overflow:auto"></div>
     </div>
 
     <!-- Linha 3: Setor + Devoluções -->
@@ -2235,10 +2235,26 @@ async function fetchMovs(){
 var _canhotosConfirmados=[];
 var _canhotosNFs=[]; // Fix 4: NFs individuais para exibição por nota
 async function fetchCanhotosConfirmados(){
-  var hoje=new Date();hoje.setHours(0,0,0,0);
-  var res=await sb.from('pedidos').select('*').eq('status','finalizado').gte('canhoto_at',hoje.toISOString()).order('canhoto_at',{ascending:false});
+  // Fix 17: Canhotos ficam registrados permanentemente — janela padrão de 90 dias
+  // Se o usuário definir filtro de data, respeitamos o intervalo escolhido.
+  var filtStart = (typeof el==='function' && el('can-date-start')) ? el('can-date-start').value : '';
+  var filtEnd   = (typeof el==='function' && el('can-date-end'))   ? el('can-date-end').value   : '';
+  var startIso, endIso;
+  if(filtStart){
+    startIso = new Date(filtStart+'T00:00:00').toISOString();
+  }else{
+    var d90=new Date(); d90.setHours(0,0,0,0); d90.setDate(d90.getDate()-90);
+    startIso = d90.toISOString();
+  }
+  if(filtEnd){
+    endIso = new Date(filtEnd+'T23:59:59').toISOString();
+  }
+  var q = sb.from('pedidos').select('*').eq('status','finalizado').gte('canhoto_at',startIso);
+  if(endIso) q = q.lte('canhoto_at',endIso);
+  q = q.order('canhoto_at',{ascending:false});
+  var res=await q;
   _canhotosConfirmados=res.data||[];
-  // Fix 4: busca notas_fiscais para pedidos aguardando canhoto + confirmados hoje (uma linha por NF)
+  // Fix 4: busca notas_fiscais para pedidos aguardando canhoto + confirmados no período (uma linha por NF)
   try{
     var ids=[];
     (PEDIDOS||[]).forEach(function(o){if(o.status==='aguard_canhoto')ids.push(o.id);});
@@ -3766,28 +3782,79 @@ function renderRelatorios(){
     var totEntN=0,totEntV=0,totFaN=0,totFaV=0;
     dias.forEach(function(k){totEntN+=entN[k];totEntV+=entV[k];totFaN+=faN[k];totFaV+=faV[k];});
     if(el('rel-flux-kpis'))el('rel-flux-kpis').innerHTML=[
-      {l:'Entradas (qtde)',v:totEntN,s:'no período',c:'#3b82f6'},
-      {l:'Entradas (valor)',v:totEntV>0?fmtBRL(totEntV):'—',s:'valor pedido',c:'#3b82f6'},
-      {l:'Saídas (qtde)',v:totFaN,s:'faturadas',c:'#22d3a7'},
-      {l:'Saídas (valor)',v:totFaV>0?fmtBRL(totFaV):'—',s:'NF emitida',c:'#22d3a7'}
+      {l:'Entradas (Valor)',v:totEntV>0?fmtBRL(totEntV):'—',s:totEntN+' pedidos no período',c:'#3b82f6'},
+      {l:'Saídas (Valor)',v:totFaV>0?fmtBRL(totFaV):'—',s:totFaN+' NFs emitidas',c:'#22d3a7'}
     ].map(function(v){return bval(v,v.c);}).join('');
-    // Gráfico de barras duplas por dia
-    var maxVal=1;
-    dias.forEach(function(k){if(entN[k]>maxVal)maxVal=entN[k];if(faN[k]>maxVal)maxVal=faN[k];});
+    // Gráfico de linha (valor) por dia
     if(el('rel-flux-chart')){
-      el('rel-flux-chart').innerHTML=dias.map(function(k){
-        var he=Math.round((entN[k]/maxVal)*130);
-        var hs=Math.round((faN[k]/maxVal)*130);
-        return '<div style="display:flex;flex-direction:column;align-items:center;min-width:46px;gap:2px">'+
-          '<div style="display:flex;gap:3px;height:135px;align-items:flex-end">'+
-            '<div title="Entradas: '+entN[k]+' ('+fmtBRL(entV[k])+')" style="width:14px;height:'+Math.max(he,2)+'px;background:#3b82f6;border-radius:2px 2px 0 0"></div>'+
-            '<div title="Faturados: '+faN[k]+' ('+fmtBRL(faV[k])+')" style="width:14px;height:'+Math.max(hs,2)+'px;background:#22d3a7;border-radius:2px 2px 0 0"></div>'+
-          '</div>'+
-          '<div style="font-size:9px;color:var(--muted);font-family:var(--font-mono)">'+_dkeyFmt(k)+'</div>'+
-          '<div style="font-size:9px;color:#3b82f6">'+entN[k]+'</div>'+
-          '<div style="font-size:9px;color:#22d3a7">'+faN[k]+'</div>'+
-        '</div>';
-      }).join('');
+      var chartEl=el('rel-flux-chart');
+      var W=chartEl.clientWidth||800, H=340;
+      var padL=60, padR=20, padT=18, padB=46;
+      var innerW=W-padL-padR, innerH=H-padT-padB;
+      var maxV=1;
+      dias.forEach(function(k){if(entV[k]>maxV)maxV=entV[k];if(faV[k]>maxV)maxV=faV[k];});
+      // arredonda max para "bonito"
+      function _niceMax(v){
+        if(v<=1)return 1;
+        var p=Math.pow(10,Math.floor(Math.log10(v)));
+        var n=Math.ceil(v/p); if(n<=1)n=1; else if(n<=2)n=2; else if(n<=5)n=5; else n=10;
+        return n*p;
+      }
+      maxV=_niceMax(maxV*1.1);
+      function _xOf(i){ return dias.length<=1?padL+innerW/2:padL+(i/(dias.length-1))*innerW; }
+      function _yOf(v){ return padT+innerH-(v/maxV)*innerH; }
+      // Eixo Y: 5 linhas de grade
+      var gridLines='';
+      var yLabels='';
+      for(var g=0;g<=5;g++){
+        var vy=(maxV*g/5);
+        var yy=padT+innerH-(g/5)*innerH;
+        gridLines+='<line x1="'+padL+'" y1="'+yy+'" x2="'+(W-padR)+'" y2="'+yy+'" stroke="var(--border)" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>';
+        yLabels+='<text x="'+(padL-8)+'" y="'+(yy+4)+'" font-size="10" fill="var(--muted)" text-anchor="end" font-family="var(--font-mono),monospace">'+(vy>=1000?('R$ '+(vy/1000).toFixed(vy>=10000?0:1)+'k'):('R$ '+Math.round(vy)))+'</text>';
+      }
+      // Linhas do gráfico
+      var entPath='', faPath='';
+      var entPoints='', faPoints='';
+      dias.forEach(function(k,i){
+        var x=_xOf(i);
+        var yE=_yOf(entV[k]||0), yF=_yOf(faV[k]||0);
+        entPath+=(i===0?'M':'L')+x+','+yE+' ';
+        faPath+=(i===0?'M':'L')+x+','+yF+' ';
+        entPoints+='<circle cx="'+x+'" cy="'+yE+'" r="4" fill="#3b82f6" stroke="var(--bg2)" stroke-width="2"><title>'+_dkeyFmt(k)+' — Entradas: '+fmtBRL(entV[k]||0)+' ('+entN[k]+' ped.)</title></circle>';
+        faPoints+='<circle cx="'+x+'" cy="'+yF+'" r="4" fill="#22d3a7" stroke="var(--bg2)" stroke-width="2"><title>'+_dkeyFmt(k)+' — Saídas: '+fmtBRL(faV[k]||0)+' ('+faN[k]+' NFs)</title></circle>';
+      });
+      // Área sob as linhas (leve)
+      var entArea=entPath+' L'+_xOf(dias.length-1)+','+(padT+innerH)+' L'+_xOf(0)+','+(padT+innerH)+' Z';
+      var faArea=faPath+' L'+_xOf(dias.length-1)+','+(padT+innerH)+' L'+_xOf(0)+','+(padT+innerH)+' Z';
+      // Labels X (dias) - mostra todos se <= 15, senão amostra
+      var stepX=dias.length>15?Math.ceil(dias.length/12):1;
+      var xLabels='';
+      dias.forEach(function(k,i){
+        if(i%stepX!==0 && i!==dias.length-1)return;
+        var x=_xOf(i);
+        xLabels+='<text x="'+x+'" y="'+(H-padB+18)+'" font-size="10" fill="var(--muted)" text-anchor="middle" font-family="var(--font-mono),monospace">'+_dkeyFmt(k)+'</text>';
+      });
+      chartEl.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="width:100%;height:100%;display:block">'+
+        '<defs>'+
+          '<linearGradient id="gradEnt" x1="0" x2="0" y1="0" y2="1">'+
+            '<stop offset="0%" stop-color="#3b82f6" stop-opacity="0.25"/>'+
+            '<stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>'+
+          '</linearGradient>'+
+          '<linearGradient id="gradFa" x1="0" x2="0" y1="0" y2="1">'+
+            '<stop offset="0%" stop-color="#22d3a7" stop-opacity="0.25"/>'+
+            '<stop offset="100%" stop-color="#22d3a7" stop-opacity="0"/>'+
+          '</linearGradient>'+
+        '</defs>'+
+        gridLines+
+        '<line x1="'+padL+'" y1="'+padT+'" x2="'+padL+'" y2="'+(padT+innerH)+'" stroke="var(--border)" stroke-width="1"/>'+
+        '<line x1="'+padL+'" y1="'+(padT+innerH)+'" x2="'+(W-padR)+'" y2="'+(padT+innerH)+'" stroke="var(--border)" stroke-width="1"/>'+
+        '<path d="'+entArea+'" fill="url(#gradEnt)"/>'+
+        '<path d="'+faArea+'" fill="url(#gradFa)"/>'+
+        '<path d="'+entPath+'" stroke="#3b82f6" stroke-width="2.2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>'+
+        '<path d="'+faPath+'" stroke="#22d3a7" stroke-width="2.2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>'+
+        entPoints+faPoints+
+        yLabels+xLabels+
+        '</svg>';
     }
     // Tabela compacta por dia
     if(el('rel-flux-table')){
@@ -5179,19 +5246,21 @@ function setCanhotoFilter(f,btn){
 async function filtrarCanhotos(){
   ov(true);await Promise.all([fetchPedidos(),fetchCanhotosConfirmados()]);ov(false);renderCanhotos();
 }
-function limparFiltrosCanhotos(){
+async function limparFiltrosCanhotos(){
   ['can-date-start','can-date-end','can-filtro-pedido','can-filtro-nf'].forEach(function(id){if(el(id))el(id).value='';});
   _canhotoFilter='aguardando';
+  // Recarrega com janela padrão (últimos 90 dias) após limpar
+  ov(true);await fetchCanhotosConfirmados();ov(false);
   setCanhotoFilter('aguardando',null);
 }
 function renderCanhotos(){
-  var hoje=new Date();hoje.setHours(0,0,0,0);
-  // Base: aguardando (from PEDIDOS) + confirmados hoje (from dedicated fetch)
+  // Fix 17: canhotos ficam registrados permanentemente — sem corte por dia
+  // Base: aguardando (from PEDIDOS) + confirmados (do fetch dedicado com janela ampla)
   var aguardandoList=PEDIDOS.filter(function(o){return o.status==='aguard_canhoto';});
   var confirmadosIds={};
   _canhotosConfirmados.forEach(function(o){confirmadosIds[o.id]=true;});
   var confirmadosFromPedidos=PEDIDOS.filter(function(o){
-    return o.status==='finalizado'&&o.canhoto_at&&tsMs(o.canhoto_at)>=hoje.getTime()&&!confirmadosIds[o.id];
+    return o.status==='finalizado'&&o.canhoto_at&&!confirmadosIds[o.id];
   });
   var confirmadosList=_canhotosConfirmados.concat(confirmadosFromPedidos);
   var basePedidos=aguardandoList.concat(confirmadosList);
@@ -6746,14 +6815,20 @@ function openPreFatura(id){
   window._pfItensFat = '';
   window._pfItensPend = '';
   // Fix: pré-popular "Itens a faturar" com PEND_SEP (itens separados) — o operador vai faturar o que já está pronto
+  // MAS excluindo qualquer item que já foi faturado (PEND_FAT) para não duplicar em NFs seguintes.
   var obsP = pedido.obs || '';
   var prevSep = _getPendObs(obsP,'PEND_SEP');
   var prevPend = _getPendObs(obsP,'PEND_ITEMS');
-  var hasPrevSep = prevSep && prevSep !== '—';
-  var hasPrevPend = prevPend && prevPend !== '—';
-  if(el('pf-itens-fat')) el('pf-itens-fat').value = hasPrevSep ? prevSep : '';
+  var prevFat = _getPendObs(obsP,'PEND_FAT');
+  var fatLowerListPf = (prevFat && prevFat!=='—') ? _parsePendItems(prevFat).map(function(x){return x.toLowerCase();}) : [];
+  function _pfExclude(lista){
+    return _parsePendItems(lista).filter(function(it){return fatLowerListPf.indexOf(it.toLowerCase())<0;});
+  }
+  var sepPf = (prevSep && prevSep!=='—') ? _formatPendItems(_pfExclude(prevSep)) : '';
+  var pendPf = (prevPend && prevPend!=='—') ? _formatPendItems(_pfExclude(prevPend)) : '';
+  if(el('pf-itens-fat')) el('pf-itens-fat').value = sepPf;
   if(el('pf-pend-wrap')) el('pf-pend-wrap').style.display = 'block';
-  if(el('pf-itens-pend')) el('pf-itens-pend').value = hasPrevPend ? prevPend : '';
+  if(el('pf-itens-pend')) el('pf-itens-pend').value = pendPf;
   openM('m-pre-fatura');
 }
 
@@ -6947,16 +7022,26 @@ function abrirRetornarPendencia(id){
   var obs=pedido.obs||'';
   var prevSep=_getPendObs(obs,'PEND_SEP');
   var prevPend=_getPendObs(obs,'PEND_ITEMS');
-  var prevTrab=_getPendObs(obs,'PEND_TRAB');
+  var prevFat=_getPendObs(obs,'PEND_FAT');
   var hasSep=prevSep&&prevSep!=='—';
   var hasPend=prevPend&&prevPend!=='—';
-  if(el('rp-sep-wrap'))el('rp-sep-wrap').style.display=hasSep?'block':'none';
-  if(el('rp-pend-wrap'))el('rp-pend-wrap').style.display=hasPend?'block':'none';
-  if(el('rp-sep')&&hasSep)el('rp-sep').value=prevSep;
-  if(el('rp-pend')&&hasPend)el('rp-pend').value=prevPend;
-  // Fix: pré-popular "trabalhar agora" com os itens separados (usuário pediu que a trabalhar = separados)
-  // Preferência: PEND_TRAB salvo > PEND_SEP > PEND_ITEMS
-  if(el('rp-item'))el('rp-item').value=prevTrab&&prevTrab!=='—'?prevTrab:(hasSep?prevSep:(hasPend?prevPend:''));
+  var hasFat=prevFat&&prevFat!=='—';
+  // Fix: remover de sep/pend tudo que já foi faturado (PEND_FAT)
+  var fatLowerList = hasFat ? _parsePendItems(prevFat).map(function(x){return x.toLowerCase();}) : [];
+  function _excludeFat(lista){
+    return _parsePendItems(lista).filter(function(it){return fatLowerList.indexOf(it.toLowerCase())<0;});
+  }
+  var sepLimpo = hasSep ? _formatPendItems(_excludeFat(prevSep)) : '';
+  var pendLimpo = hasPend ? _formatPendItems(_excludeFat(prevPend)) : '';
+  var hasSepLimpo = sepLimpo.length>0;
+  var hasPendLimpo = pendLimpo.length>0;
+  if(el('rp-sep-wrap'))el('rp-sep-wrap').style.display=hasSepLimpo?'block':'none';
+  if(el('rp-pend-wrap'))el('rp-pend-wrap').style.display=hasPendLimpo?'block':'none';
+  if(el('rp-sep'))el('rp-sep').value=sepLimpo;
+  if(el('rp-pend'))el('rp-pend').value=pendLimpo;
+  // Fix: "trabalhar agora" sempre preenchido com PEND_SEP (menos o que já foi faturado).
+  // NÃO usamos PEND_TRAB como cache (fica desatualizado após segundo retorno).
+  if(el('rp-item'))el('rp-item').value=hasSepLimpo?sepLimpo:(hasPendLimpo?pendLimpo:'');
   openM('m-retornar-pend');
 }
 async function confirmarRetornarPendencia(){
