@@ -792,8 +792,8 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px;margin-bottom:18px;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
       <div class="f" style="margin:0;min-width:130px"><label class="fl">Data inicial</label><input type="date" id="rel-date-start"/></div>
       <div class="f" style="margin:0;min-width:130px"><label class="fl">Data final</label><input type="date" id="rel-date-end"/></div>
-      <div class="f" style="margin:0;min-width:130px"><label class="fl">Nº Pedido</label><input type="text" id="rel-pedido-num" placeholder="Ex: 058156" onkeydown="if(event.key==='Enter')aplicarTodosFiltros()"/></div>
-      <div class="f" style="margin:0;min-width:130px"><label class="fl">Nº Nota</label><input type="text" id="rel-nota-num" placeholder="Ex: 060038" onkeydown="if(event.key==='Enter')aplicarTodosFiltros()"/></div>
+      <input type="hidden" id="rel-pedido-num" value=""/>
+      <input type="hidden" id="rel-nota-num" value=""/>
       <div style="display:flex;gap:6px;align-items:flex-end">
         <button onclick="aplicarTodosFiltros()" style="padding:8px 18px;background:#3b82f6;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:12px;font-weight:700;cursor:pointer">🔍 Buscar</button>
         <button onclick="limparTodosFiltros()" style="padding:8px 12px;background:var(--bg4);border:1px solid var(--border2);border-radius:var(--radius);color:var(--muted);font-family:var(--font-mono);font-size:12px;cursor:pointer">↺</button>
@@ -1559,6 +1559,7 @@ const ALERT_MS = 5*60*1000;
 const JANELA_NARRACAO_BALCAO_MS = 90*1000;
 let ME=null, PEDIDOS=[], MOVS=[], _ti=null, _notaTarget=null, _ch=null;
 let REPORT_DATE_START='', REPORT_DATE_END='', REPORT_PEDIDOS_EXPORT=[], REPORT_PEDIDOS_DATA=[];
+let REC_DEVOLUCOES=[];
 let _tvPub=[], _tvAudioReady=false;
 let _tvSpeakQueue=[], _tvSpeaking=false;
 let _occCtx=null, _audioCtx=null;
@@ -2247,6 +2248,13 @@ async function fetchMovsRelatorio(startStr,endStr){
   var res=await sb.from('movimentacoes').select('*').gte('saida_at',r.startIso).lte('saida_at',r.endIso);
   MOVS=res.data||[];
 }
+async function fetchDevolucoesRelatorio(startStr,endStr){
+  try{
+    var r=getPeriodRange(startStr,endStr);
+    var res=await sb.from('devolucoes').select('*').gte('recebido_at',r.startIso).lte('recebido_at',r.endIso).order('recebido_at',{ascending:false});
+    REC_DEVOLUCOES=res.data||[];
+  }catch(e){console.warn('fetchDevolucoesRelatorio:',e);REC_DEVOLUCOES=[];}
+}
 function irHojeRelatorios(){
   var hoje=fmtDateInput(new Date());
   REPORT_DATE_START=hoje;
@@ -2264,7 +2272,7 @@ async function aplicarFiltroRelatorios(){
   REPORT_DATE_END=end;
   ov(true);
   try{
-    await Promise.all([fetchPedidosRelatorio(start,end),fetchMovsRelatorio(start,end)]);
+    await Promise.all([fetchPedidosRelatorio(start,end),fetchMovsRelatorio(start,end),fetchDevolucoesRelatorio(start,end)]);
     renderRelatorios();
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
@@ -2325,7 +2333,7 @@ async function go(name){
     }
     if(el('rel-date-start'))el('rel-date-start').value=REPORT_DATE_START;
     if(el('rel-date-end'))el('rel-date-end').value=REPORT_DATE_END;
-    ov(true);await Promise.all([fetchPedidosRelatorio(REPORT_DATE_START,REPORT_DATE_END),fetchMovsRelatorio(REPORT_DATE_START,REPORT_DATE_END)]);ov(false);renderRelatorios();
+    ov(true);await Promise.all([fetchPedidosRelatorio(REPORT_DATE_START,REPORT_DATE_END),fetchMovsRelatorio(REPORT_DATE_START,REPORT_DATE_END),fetchDevolucoesRelatorio(REPORT_DATE_START,REPORT_DATE_END)]);ov(false);renderRelatorios();
   }
   if(name==='usuarios'){ov(true);var u=await fetchUsuarios();ov(false);renderUsers(u);}
   if(name==='config'){setTimeout(carregarVozes,100);}
@@ -2968,6 +2976,16 @@ async function confirmarNota(){
     toast('⚠ NF '+nota+' já está registrada no pedido #'+dupNF.numero+' ('+dupNF.nome_cliente+') lançado por '+dupNF.criado_por+' em '+dtDup+'.','err',8000);
     return;
   }
+  // Fix: Bloquear numero_nf duplicado dentro do MESMO pedido (notas_fiscais) - regra de não duplicidade em faturamento parcial
+  try{
+    var dupNFSelfRes = await sb.from('notas_fiscais').select('id,numero_nf,registrado_at,registrado_por').eq('pedido_id', _notaTarget).eq('numero_nf', nota).limit(1);
+    if(dupNFSelfRes && (dupNFSelfRes.data||[]).length > 0){
+      var dSelf = dupNFSelfRes.data[0];
+      var dtSelf = dSelf.registrado_at ? new Date(dSelf.registrado_at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+      toast('⚠ NF '+nota+' já foi registrada neste pedido em '+dtSelf+' por '+(dSelf.registrado_por||'—')+'. Use uma numeração diferente.','err',8000);
+      return;
+    }
+  }catch(e){console.warn('dedup NF self-check:',e);}
   closeM('m-nota');ov(true);
   try{
     var o=PEDIDOS.find(function(p){return p.id===_notaTarget;});
@@ -5080,9 +5098,18 @@ function renderCanhotos(){
   var basePedidos=aguardandoList.concat(confirmadosList);
 
   // Fix 4: Expandir em uma linha por NF (todas as notas emitidas para o pedido)
-  // Agrupa NFs por pedido_id
+  // Agrupa NFs por pedido_id, deduplicando por (pedido_id, numero_nf) — regra de não duplicidade
   var nfsByPedido={};
-  (_canhotosNFs||[]).forEach(function(nf){
+  var nfSeenKeys={};
+  (_canhotosNFs||[]).slice().sort(function(a,b){
+    // Preferir NF já confirmada (canhoto_at) e mais antiga em caso de duplicata
+    var ta = a.canhoto_at?0:1, tb = b.canhoto_at?0:1;
+    if(ta!==tb)return ta-tb;
+    return tsMs(a.registrado_at||a.created_at||0) - tsMs(b.registrado_at||b.created_at||0);
+  }).forEach(function(nf){
+    var k = nf.pedido_id + '|' + (nf.numero_nf||'');
+    if(nfSeenKeys[k])return;
+    nfSeenKeys[k]=true;
     if(!nfsByPedido[nf.pedido_id])nfsByPedido[nf.pedido_id]=[];
     nfsByPedido[nf.pedido_id].push(nf);
   });
@@ -5212,9 +5239,20 @@ async function canhotoScanConfirmar(){
   if(nfMatch){
     pedido=PEDIDOS.find(function(o){return o.id===nfMatch.pedido_id;}) || getPedidoById(nfMatch.pedido_id);
   }else{
-    // Fallback legacy: match pelo chave_nfe do próprio pedido (quando só há uma NF e ela não está em notas_fiscais)
+    // Fallback legacy: match pelo chave_nfe do próprio pedido (notas_fiscais sem chave_nfe backfilled)
     var aguardando=PEDIDOS.filter(function(o){return o.status==='aguard_canhoto';});
     pedido=aguardando.find(function(o){return o.chave_nfe===chave;});
+    if(pedido){
+      // Encontra a NF mais antiga sem canhoto confirmado e faz backfill da chave_nfe
+      var nfsLegacy=(_canhotosNFs||[]).filter(function(nf){return nf.pedido_id===pedido.id && !nf.canhoto_at;})
+        .sort(function(a,b){return tsMs(a.registrado_at||0)-tsMs(b.registrado_at||0);});
+      if(nfsLegacy.length>0){
+        nfMatch=nfsLegacy[0];
+        // Backfill da chave nesta NF
+        try{await sb.from('notas_fiscais').update({chave_nfe:chave}).eq('id',nfMatch.id);}catch(e){console.warn('backfill chave_nfe:',e);}
+        nfMatch.chave_nfe=chave;
+      }
+    }
   }
   if(!pedido){
     if(fb){fb.style.color='var(--danger)';fb.textContent='⚠ Nenhuma NF aguardando canhoto com essa chave NF-e.';}
@@ -5238,6 +5276,9 @@ async function canhotoScanConfirmar(){
     }
     // 2) Verifica se TODAS as NFs do pedido foram confirmadas (canhoto_at preenchido)
     var nfsDoPedido=(_canhotosNFs||[]).filter(function(nf){return nf.pedido_id===pedido.id;});
+    // Dedup por numero_nf (duplicatas legadas não devem bloquear finalização)
+    var _seenNF={};
+    nfsDoPedido=nfsDoPedido.filter(function(nf){var k=(nf.numero_nf||'');if(_seenNF[k])return false;_seenNF[k]=true;return true;});
     var todasConfirmadas=nfsDoPedido.length>0 && nfsDoPedido.every(function(nf){return !!nf.canhoto_at;});
     // Se não há NFs em notas_fiscais (legacy), assume única NF confirmada = finalizado
     if(nfsDoPedido.length===0)todasConfirmadas=true;
@@ -5562,6 +5603,9 @@ function _getPendObs(obs,tag){
 }
 function renderPendencias() {
   var all = PEDIDOS.filter(function(o) { return o.tem_pendencia && o.pendencia_status === 'aberta'; });
+  // Dedup por id (evita duplicidade em re-renderização concorrente/cache)
+  var _seenPend = {};
+  all = all.filter(function(o){ if(_seenPend[o.id])return false; _seenPend[o.id]=true; return true; });
   var items = all.filter(function(o){
     if(_pendTab==='fob') return o.prioridade==='balcao'||o.prioridade==='retira'||!o.prioridade;
     if(_pendTab==='cif') return o.prioridade==='entrega';
@@ -5995,6 +6039,34 @@ function filtrarHistOcorr(){
   });
 
   // Ordena por data de entrada desc
+  allRows.sort(function(a,b){return b.t-a.t;});
+
+  // Dedup final por chave composta (pedido_id + timestamp arredondado ao minuto + hash da mensagem)
+  // Prefere registros persistidos (_reg=true) em caso de duplicata.
+  var _dedupSeen = {};
+  allRows.sort(function(a,b){
+    // ordena primeiro por _reg desc (persistidos primeiro), depois por t desc
+    var ra = a._reg?0:1, rb = b._reg?0:1;
+    if(ra!==rb) return ra-rb;
+    return b.t-a.t;
+  });
+  allRows = allRows.filter(function(r){
+    var pid = (r.o&&r.o.id)||'';
+    var minute = Math.floor((r.t||0)/60000); // arredonda ao minuto
+    var msg = (r.m||'').toString().toLowerCase().replace(/\s+/g,' ').trim().substring(0,120);
+    // Chave composta
+    var k1 = pid+'|'+minute+'|'+msg;
+    if(_dedupSeen[k1]) return false;
+    _dedupSeen[k1] = true;
+    // Chave alternativa: mesma mensagem do mesmo pedido em janela de 2 minutos
+    for(var dm=-2; dm<=2; dm++){
+      if(dm===0) continue;
+      var k2 = pid+'|'+(minute+dm)+'|'+msg;
+      if(_dedupSeen[k2]) return false;
+    }
+    return true;
+  });
+  // Re-ordena por data desc
   allRows.sort(function(a,b){return b.t-a.t;});
 
   if(el('occ-hist-count'))el('occ-hist-count').textContent=allRows.length+' ocorrência(s)';
