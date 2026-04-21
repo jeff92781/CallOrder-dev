@@ -6745,13 +6745,15 @@ function openPreFatura(id){
   // Always start fresh (don't carry over from previous pedido)
   window._pfItensFat = '';
   window._pfItensPend = '';
-  if(el('pf-itens-fat')) el('pf-itens-fat').value = '';
-  // Only show pending items field if it's the first billing (check if there are previous pend_items)
+  // Fix: pré-popular "Itens a faturar" com PEND_SEP (itens separados) — o operador vai faturar o que já está pronto
   var obsP = pedido.obs || '';
+  var prevSep = _getPendObs(obsP,'PEND_SEP');
   var prevPend = _getPendObs(obsP,'PEND_ITEMS');
+  var hasPrevSep = prevSep && prevSep !== '—';
   var hasPrevPend = prevPend && prevPend !== '—';
+  if(el('pf-itens-fat')) el('pf-itens-fat').value = hasPrevSep ? prevSep : '';
   if(el('pf-pend-wrap')) el('pf-pend-wrap').style.display = 'block';
-  if(el('pf-itens-pend')) el('pf-itens-pend').value = '';
+  if(el('pf-itens-pend')) el('pf-itens-pend').value = hasPrevPend ? prevPend : '';
   openM('m-pre-fatura');
 }
 
@@ -6829,24 +6831,54 @@ window.confirmarNota = async function(){
   var pedido = getPedidoById(id);
   if(!pedido) return;
   var obsAtual = pedido.obs || '';
-  // Accumulate PEND_FAT: existing + items just billed on this NF
-  var pendFatAcumulado = '';
-  if(_prevPendFat && itensFat){
-    pendFatAcumulado = _prevPendFat + ' + ' + itensFat;
-  } else if(_prevPendFat){
-    pendFatAcumulado = _prevPendFat;
-  } else if(itensFat){
-    pendFatAcumulado = itensFat;
+  // Fix: merge PEND_FAT como lista com dedup (evita "1,2 + 1,2")
+  // Base confirmarNota já move SEP→FAT. Aqui unimos: FAT atual (pós-base) + _prevPendFat + itensFat digitados
+  var _curFatStr = _getPendObs(obsAtual,'PEND_FAT');
+  var _curFatList = _parsePendItems(_curFatStr==='—'?'':_curFatStr);
+  var _allFat = _parsePendItems(_prevPendFat||'').concat(_parsePendItems(itensFat||'')).concat(_curFatList);
+  var pendFatAcumulado = _formatPendItems(_allFat);
+  // Fix: também remover do PEND_SEP qualquer item que acabou de ir para FAT (se base não limpou)
+  var _sepRemainingStr = _getPendObs(obsAtual,'PEND_SEP');
+  var _sepRemaining = _parsePendItems(_sepRemainingStr==='—'?'':_sepRemainingStr);
+  if(_sepRemaining.length>0 && pendFatAcumulado){
+    var _fatLower = _parsePendItems(pendFatAcumulado).map(function(x){return x.toLowerCase();});
+    _sepRemaining = _sepRemaining.filter(function(it){return _fatLower.indexOf(it.toLowerCase())<0;});
   }
-  // Remove old PEND_FAT tag (we'll re-insert accumulated)
-  obsAtual = obsAtual.replace(/\[PEND_FAT:[^\]]*\]/g,'').trim();
+  // Fix: atualizar PEND_ITEMS = TODO - FAT - SEP (itens ainda pendentes)
+  var _todoStr = _getPendObs(obsAtual,'PEND_TODO');
+  var _todoList = _parsePendItems(_todoStr==='—'?'':_todoStr);
+  if(_todoList.length===0){
+    var _curPendStr = _getPendObs(obsAtual,'PEND_ITEMS');
+    _todoList = _parsePendItems(_curPendStr==='—'?'':_curPendStr)
+      .concat(_parsePendItems(pendFatAcumulado))
+      .concat(_sepRemaining);
+  }
+  // Inclui itensPend digitados pelo operador no TODO (caso sejam novos)
+  if(itensPend){
+    _parsePendItems(itensPend).forEach(function(it){
+      if(_todoList.map(function(x){return x.toLowerCase();}).indexOf(it.toLowerCase())<0) _todoList.push(it);
+    });
+  }
+  var _fatLower2 = _parsePendItems(pendFatAcumulado).map(function(x){return x.toLowerCase();});
+  var _sepLower2 = _sepRemaining.map(function(x){return x.toLowerCase();});
+  var _pendAuto = _todoList.filter(function(it){
+    var k = it.toLowerCase();
+    return _fatLower2.indexOf(k)<0 && _sepLower2.indexOf(k)<0;
+  });
+  var _pendFinal = _formatPendItems(_pendAuto);
+
+  // Remove tags antigas antes de reinserir
+  obsAtual = obsAtual.replace(/\[PEND_FAT:[^\]]*\]/g,'')
+                     .replace(/\[PEND_SEP:[^\]]*\]/g,'')
+                     .replace(/\[PEND_ITEMS:[^\]]*\]/g,'')
+                     .replace(/\[PEND_TODO:[^\]]*\]/g,'').trim();
   var linhas = [];
   if(pendFatAcumulado) linhas.push('[PEND_FAT: ' + pendFatAcumulado + ']');
+  if(_sepRemaining.length>0) linhas.push('[PEND_SEP: ' + _formatPendItems(_sepRemaining) + ']');
+  if(_pendFinal) linhas.push('[PEND_ITEMS: ' + _pendFinal + ']');
+  if(_todoList.length>0) linhas.push('[PEND_TODO: ' + _formatPendItems(_todoList) + ']');
   if(itensFat) linhas.push(buildOccurrenceLine('ITENS_FATURADOS', SL[pedido.setor]||pedido.setor, 'Faturados: ' + itensFat + (pedido.num_nota ? ' (NF '+pedido.num_nota+')' : '')));
   if(itensPend){
-    // Mark pending items in obs so they appear pre-filled in Pendências
-    obsAtual = obsAtual.replace(/\[PEND_ITEMS:[^\]]*\]/g,'').trim();
-    linhas.push('[PEND_ITEMS: ' + itensPend + ']');
     linhas.push(buildOccurrenceLine('ITENS_PENDENTES', SL[pedido.setor]||pedido.setor, 'Pendentes: ' + itensPend));
   }
   // Sempre gravamos pelo menos o PEND_FAT atualizado (remoção + reinserção)
@@ -6922,8 +6954,9 @@ function abrirRetornarPendencia(id){
   if(el('rp-pend-wrap'))el('rp-pend-wrap').style.display=hasPend?'block':'none';
   if(el('rp-sep')&&hasSep)el('rp-sep').value=prevSep;
   if(el('rp-pend')&&hasPend)el('rp-pend').value=prevPend;
-  // Pre-fill "trabalhar agora" with pending items as suggestion
-  if(el('rp-item'))el('rp-item').value=prevTrab&&prevTrab!=='—'?prevTrab:(hasPend?prevPend:'');
+  // Fix: pré-popular "trabalhar agora" com os itens separados (usuário pediu que a trabalhar = separados)
+  // Preferência: PEND_TRAB salvo > PEND_SEP > PEND_ITEMS
+  if(el('rp-item'))el('rp-item').value=prevTrab&&prevTrab!=='—'?prevTrab:(hasSep?prevSep:(hasPend?prevPend:''));
   openM('m-retornar-pend');
 }
 async function confirmarRetornarPendencia(){
