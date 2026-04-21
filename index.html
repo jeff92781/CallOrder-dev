@@ -668,7 +668,13 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <button class="tab adm-only" onclick="go('usuarios')" style="display:none">Usuários</button>
     <button class="tab" onclick="go('senha')">Minha Senha</button>
 
-    <button class="tab" onclick="go('devolucoes')" id="tab-devolucoes">Devoluções <span id="devolucoes-badge" style="display:none;background:rgba(245,158,11,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <div class="tab-drop" id="drop-faturamento">
+      <button class="tab" id="tab-faturamento-drop" onclick="toggleFaturamentoMenu(event)">Faturamento <span class="tab-drop-arrow">▾</span></button>
+      <div class="tab-drop-menu" id="faturamento-menu">
+        <button class="tab-drop-item" id="di-devolucoes" onclick="go('devolucoes');closeFaturamentoMenu()">Devoluções <span id="devolucoes-badge" style="display:none;background:rgba(245,158,11,.2);color:var(--warn);padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
+        <button class="tab-drop-item" id="di-agendamentos" onclick="go('agendamentos');closeFaturamentoMenu()">Agendamentos <span id="agendamentos-badge" style="display:none;background:rgba(236,72,153,.2);color:var(--fat);padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
+      </div>
+    </div>
     <button class="tab" onclick="go('agretira')" id="tab-agretira" style="display:none">Ag. Retira <span id="agretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('agEmbarque')" id="tab-agembarque" style="display:none">Ag. Embarque <span id="agembarque-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
     <button class="tab" onclick="go('emTransito')" id="tab-emtransito" style="display:none">Em Trânsito <span id="emtransito-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
@@ -1047,6 +1053,44 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
   </main>
 </div>
 
+<!-- ╔══════════════════════════════════════════╗ -->
+<!-- ║         TELA — AGENDAMENTOS              ║ -->
+<!-- ╚══════════════════════════════════════════╝ -->
+<div class="screen" id="screen-agendamentos">
+  <main>
+    <div class="ph">
+      <span class="pt">Agendamentos de Faturamento</span>
+      <span style="color:var(--muted);font-size:12px" id="agend-count"></span>
+    </div>
+    <!-- Info box -->
+    <div style="background:rgba(236,72,153,.06);border:1px solid rgba(236,72,153,.25);border-radius:var(--radius-lg);padding:10px 16px;margin-bottom:14px;font-size:12px;color:var(--muted)">
+      🗓 Pedidos agendados para faturamento em data futura. Um alerta será exibido ao faturista na data selecionada.
+    </div>
+    <!-- Filtros -->
+    <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px">
+      <div class="f" style="margin:0;min-width:130px"><label class="fl">Status</label>
+        <select id="agend-filtro-status" onchange="renderAgendamentos()" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:12px;padding:8px 10px;outline:none;width:100%">
+          <option value="todos">Todos</option>
+          <option value="pendente" selected>Pendentes</option>
+          <option value="vencido">Vencidos (data passou)</option>
+        </select>
+      </div>
+      <button onclick="renderAgendamentos()" style="padding:9px 16px;background:#3b82f6;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:12px;font-weight:700;cursor:pointer;align-self:flex-end">Atualizar</button>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
+      <table class="utbl" id="agend-table" style="min-width:900px">
+        <thead>
+          <tr>
+            <th>Pedido</th><th>Cliente</th><th>Vendedor</th><th>Data Agendada</th><th>Motivo</th><th>Status</th><th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="agend-tbody"></tbody>
+      </table>
+    </div>
+    <div id="agend-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhum agendamento encontrado.</div>
+  </main>
+</div>
+
 <div class="screen" id="screen-agretira">
   <main>
     <div class="ph">
@@ -1372,6 +1416,11 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
         <div class="f" style="margin-bottom:0;grid-column:span 2"><label class="fl">Endereço de entrega</label><input type="text" id="no-endereco" placeholder="Ex: Rua das Flores, 123 — Bairro"/></div>
       </div>
     </div>
+    <!-- CAMPO OBSERVAÇÃO DO PEDIDO -->
+    <div class="f" style="margin-top:10px;margin-bottom:0">
+      <label class="fl">Observação <span style="color:var(--muted);font-size:10px;text-transform:none;letter-spacing:0">(opcional — particularidade do pedido, repassada setor a setor)</span></label>
+      <textarea id="no-obs" style="width:100%;min-height:64px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;resize:vertical" placeholder="Ex: Cliente solicita embalagem especial; aguardar liberação financeira; entregar somente com NF..."></textarea>
+    </div>
     <div class="ma" style="margin-top:14px"><button class="bcan" onclick="closeM('m-new-order')">Cancelar</button><button class="bok" onclick="createOrder()">Criar Pedido</button></div>
   </div>
 </div>
@@ -1413,10 +1462,24 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
   </div>
 </div>
 <div class="mb" id="m-nota">
-  <div class="mo">
-    <div class="mt">Faturamento — Nota Fiscal</div>
-    <p id="nota-desc" style="color:var(--muted);font-size:12px;margin-bottom:16px">Informe o número da NF. Após faturar, o pedido volta para a Separação com o botão de chamar balcão.</p>
-    <div class="f"><label class="fl">Número da Nota Fiscal *</label><input type="text" id="nota-num" placeholder="000123"/></div>
+  <div class="mo" style="max-width:520px;width:95vw">
+    <!-- Cabeçalho com botão de Agendamento -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="mt" style="margin-bottom:0">Faturamento — Nota Fiscal</div>
+      <button id="btn-agendar-fat" onclick="openAgendarFat()" style="padding:7px 14px;background:rgba(236,72,153,.15);border:1px solid rgba(236,72,153,.4);border-radius:var(--radius);color:var(--fat);font-family:var(--font-mono);font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap" title="Agendar este faturamento para outra data">🗓 Agendar</button>
+    </div>
+    <p id="nota-desc" style="color:var(--muted);font-size:12px;margin-bottom:16px;margin-top:6px">Informe a chave NF-e. O número da nota será extraído automaticamente. Após faturar, o pedido retorna para Balcão ou Expedição.</p>
+    <!-- Observação do pedido (se houver) -->
+    <div id="nota-obs-wrap" style="display:none;background:rgba(34,211,167,.06);border:1px solid rgba(34,211,167,.22);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);margin-bottom:4px;font-weight:700">📝 Observação do pedido</div>
+      <div id="nota-obs-text" style="font-size:12px;color:var(--text);white-space:pre-wrap;line-height:1.5"></div>
+    </div>
+    <!-- Chave NF-e com extração automática do número -->
+    <div class="f">
+      <label class="fl">Chave NF-e * <span style="color:var(--muted);font-size:10px;text-transform:none;letter-spacing:0">(44 dígitos — o número da nota será extraído automaticamente)</span></label>
+      <input type="text" id="nota-chave" placeholder="00000000000000000000000000000000000000000000" maxlength="44" oninput="notaChaveCheck(this.value)" style="font-size:12px;letter-spacing:.04em"/>
+      <div id="nota-chave-preview" style="margin-top:6px;font-size:12px;min-height:16px;color:var(--accent)"></div>
+    </div>
     <div class="f"><label class="fl">Valor da Nota Fiscal R$ *</label><input type="number" id="nota-valor" placeholder="0.00" step="0.01" min="0"/>
       <div id="nota-saldo-preview" style="margin-top:8px;font-size:12px;color:var(--muted);min-height:16px"></div>
     </div>
@@ -1532,8 +1595,389 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
   </div>
 </div>
 
+<!-- ╔══════════════════════════════════════════╗ -->
+<!-- ║      MODAL — OBSERVAÇÃO DO CARD          ║ -->
+<!-- ╚══════════════════════════════════════════╝ -->
+<div class="mb" id="m-obs-card">
+  <div class="mo" style="max-width:500px;width:95vw">
+    <div class="mt">📝 Observação do Pedido</div>
+    <p id="obs-card-desc" style="color:var(--muted);font-size:12px;margin-bottom:10px"></p>
+    <!-- Observação atual -->
+    <div id="obs-card-atual-wrap" style="display:none;margin-bottom:12px;background:rgba(34,211,167,.06);border:1px solid rgba(34,211,167,.22);border-radius:var(--radius);padding:10px 12px">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);margin-bottom:6px;font-weight:700">Observação atual</div>
+      <div id="obs-card-atual-text" style="font-size:12px;color:var(--text);white-space:pre-wrap;line-height:1.5"></div>
+    </div>
+    <div class="f">
+      <label class="fl">Nova observação / complemento</label>
+      <textarea id="obs-card-nova" style="width:100%;min-height:80px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;resize:vertical" placeholder="Digite a observação para este pedido..."></textarea>
+    </div>
+    <div class="ma">
+      <button class="bcan" onclick="closeM('m-obs-card');_obsCardTarget=null">Cancelar</button>
+      <button class="bok" onclick="confirmarObsCard()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════╗ -->
+<!-- ║      MODAL — AGENDAR FATURAMENTO         ║ -->
+<!-- ╚══════════════════════════════════════════╝ -->
+<div class="mb" id="m-agendar-fat">
+  <div class="mo" style="max-width:480px;width:95vw">
+    <div class="mt" style="color:var(--fat)">🗓 Agendar Faturamento</div>
+    <p id="agend-fat-desc" style="color:var(--muted);font-size:12px;margin-bottom:14px"></p>
+    <div class="f">
+      <label class="fl">Motivo do agendamento *</label>
+      <textarea id="agend-fat-motivo" style="width:100%;min-height:80px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;resize:vertical" placeholder="Ex: Aguardando aprovação do cliente, nota de complemento pendente, liberação financeira..."></textarea>
+    </div>
+    <div class="f">
+      <label class="fl">Data para faturar *</label>
+      <input type="date" id="agend-fat-data" style="width:100%;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+      <div id="agend-fat-data-feedback" style="margin-top:5px;font-size:11px;color:var(--muted);min-height:14px"></div>
+    </div>
+    <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:var(--radius);padding:10px 12px;font-size:11px;color:var(--warn);margin-bottom:4px">
+      ⚠ O pedido ficará na aba <strong>Agendamentos</strong> e um alerta será exibido ao faturista na data selecionada.
+    </div>
+    <div class="ma">
+      <button class="bcan" onclick="closeM('m-agendar-fat');_agendFatTarget=null">Cancelar</button>
+      <button class="bok" style="background:var(--fat)" onclick="confirmarAgendarFat()">🗓 Confirmar Agendamento</button>
+    </div>
+  </div>
+</div>
+
 
 <script>
+
+// ══════════════════════════════════════════════════════════════════
+// NOVOS RECURSOS: Faturamento Dropdown, Agendamentos, Obs, Chave NF-e
+// ══════════════════════════════════════════════════════════════════
+
+// ── Dropdown Faturamento na nav ──
+function toggleFaturamentoMenu(e){
+  e.stopPropagation();
+  var menu=document.getElementById('faturamento-menu');
+  var drop=document.getElementById('drop-faturamento');
+  if(!menu)return;
+  var isOpen=menu.classList.contains('open');
+  // Fecha outros dropdowns
+  document.querySelectorAll('.tab-drop-menu.open').forEach(function(m){m.classList.remove('open');});
+  document.querySelectorAll('.tab-drop.open').forEach(function(d){d.classList.remove('open');});
+  if(!isOpen){
+    menu.classList.add('open');
+    drop.classList.add('open');
+  }
+}
+function closeFaturamentoMenu(){
+  var menu=document.getElementById('faturamento-menu');
+  var drop=document.getElementById('drop-faturamento');
+  if(menu)menu.classList.remove('open');
+  if(drop)drop.classList.remove('open');
+}
+document.addEventListener('click',function(e){
+  var drop=document.getElementById('drop-faturamento');
+  if(drop&&!drop.contains(e.target))closeFaturamentoMenu();
+});
+
+// ── Extração do Nº da NF a partir da Chave NF-e ──
+function extrairNumNFDaChave(chave){
+  if(!chave||chave.length!==44)return null;
+  // Posições 26-34 (1-indexed) = índices 25-33 (0-indexed) = 9 dígitos do nNF
+  var raw=chave.substring(25,34);
+  var num=parseInt(raw,10);
+  return isNaN(num)?null:String(num);
+}
+
+function notaChaveCheck(val){
+  var prev=document.getElementById('nota-chave-preview');
+  if(!prev)return;
+  var v=(val||'').replace(/\D/g,'').substring(0,44);
+  if(document.getElementById('nota-chave'))document.getElementById('nota-chave').value=v;
+  if(v.length===44){
+    var num=extrairNumNFDaChave(v);
+    prev.style.color='var(--accent)';
+    prev.textContent='✓ Nº da NF extraído: '+(num||'(não identificado)');
+  }else if(v.length>0){
+    prev.style.color='var(--muted)';
+    prev.textContent='Aguardando '+(44-v.length)+' dígito(s) restante(s)...';
+  }else{
+    prev.textContent='';
+  }
+}
+
+// ── Observação do card (botão Obs no card) ──
+var _obsCardTarget=null;
+function openObsCard(id){
+  var pedido=typeof getPedidoById==='function'?getPedidoById(id):null;
+  _obsCardTarget=id;
+  var descEl=document.getElementById('obs-card-desc');
+  var atualWrap=document.getElementById('obs-card-atual-wrap');
+  var atualText=document.getElementById('obs-card-atual-text');
+  var novaEl=document.getElementById('obs-card-nova');
+  if(novaEl)novaEl.value='';
+  if(descEl)descEl.textContent=pedido?('Pedido #'+pedido.numero+' — '+(pedido.nome_cliente||'')):'';
+  // Extrai obs existente
+  var obsAtual='';
+  if(pedido&&pedido.obs){
+    var mObs=pedido.obs.match(/\[OBS_PEDIDO:\s*([\s\S]*?)\]/);
+    if(mObs&&mObs[1].trim())obsAtual=mObs[1].trim();
+  }
+  if(atualWrap&&atualText){
+    if(obsAtual){
+      atualText.textContent=obsAtual;
+      atualWrap.style.display='';
+    }else{
+      atualWrap.style.display='none';
+    }
+  }
+  if(typeof openM==='function')openM('m-obs-card');
+}
+async function confirmarObsCard(){
+  var nova=(document.getElementById('obs-card-nova')&&document.getElementById('obs-card-nova').value||'').trim();
+  if(!nova){if(typeof closeM==='function')closeM('m-obs-card');return;}
+  if(!_obsCardTarget){if(typeof closeM==='function')closeM('m-obs-card');return;}
+  if(typeof closeM==='function')closeM('m-obs-card');
+  if(typeof ov==='function')ov(true);
+  try{
+    var pedido=typeof getPedidoById==='function'?getPedidoById(_obsCardTarget):null;
+    var obsAtual=(pedido&&pedido.obs)||'';
+    // Extrai obs anterior para acumular
+    var mObs=obsAtual.match(/\[OBS_PEDIDO:\s*([\s\S]*?)\]/);
+    var anteriorObs=mObs&&mObs[1].trim()?mObs[1].trim():'';
+    var novaObsCompleta=anteriorObs?(anteriorObs+'\n'+nova):nova;
+    // Atualiza tag
+    var obsNova=obsAtual.replace(/\[OBS_PEDIDO:[\s\S]*?\]/,'').trim();
+    obsNova=(obsNova?obsNova+'\n':'')+'[OBS_PEDIDO: '+novaObsCompleta+']';
+    var res=await sb.from('pedidos').update({obs:obsNova}).eq('id',_obsCardTarget);
+    if(res.error)throw res.error;
+    if(typeof upsertPedidoLocal==='function')upsertPedidoLocal({id:_obsCardTarget,obs:obsNova});
+    if(typeof toast==='function')toast('Observação salva com sucesso.','ok');
+    if(typeof refreshPedidosSoon==='function')refreshPedidosSoon(300);
+  }catch(e){if(typeof toast==='function')toast(e.message,'err');}
+  finally{if(typeof ov==='function')ov(false);_obsCardTarget=null;}
+}
+
+// ── Agendamento de Faturamento ──
+var _agendFatTarget=null;
+var _agendFatNotaId=null; // id do pedido no modal de nota (m-nota)
+
+function openAgendarFat(){
+  // Chamado de dentro do modal m-nota
+  var id=_notaTarget; // variável global já usada pelo modal de nota
+  if(!id){if(typeof toast==='function')toast('Abra primeiro o modal de faturamento.','warn');return;}
+  _agendFatTarget=id;
+  var pedido=typeof getPedidoById==='function'?getPedidoById(id):null;
+  var descEl=document.getElementById('agend-fat-desc');
+  var motivoEl=document.getElementById('agend-fat-motivo');
+  var dataEl=document.getElementById('agend-fat-data');
+  var fbEl=document.getElementById('agend-fat-data-feedback');
+  if(descEl)descEl.textContent=pedido?('Pedido #'+pedido.numero+' — '+(pedido.nome_cliente||'')):'';
+  if(motivoEl)motivoEl.value='';
+  if(dataEl){
+    // Data mínima = amanhã
+    var amanha=new Date();amanha.setDate(amanha.getDate()+1);
+    dataEl.min=amanha.toISOString().split('T')[0];
+    dataEl.value='';
+  }
+  if(fbEl)fbEl.textContent='';
+  if(typeof closeM==='function')closeM('m-nota');
+  if(typeof openM==='function')openM('m-agendar-fat');
+}
+
+async function confirmarAgendarFat(){
+  var motivo=(document.getElementById('agend-fat-motivo')&&document.getElementById('agend-fat-motivo').value||'').trim();
+  var data=(document.getElementById('agend-fat-data')&&document.getElementById('agend-fat-data').value||'').trim();
+  var fbEl=document.getElementById('agend-fat-data-feedback');
+  if(!motivo){if(typeof toast==='function')toast('Informe o motivo do agendamento.','warn');return;}
+  if(!data){if(fbEl){fbEl.style.color='var(--danger)';fbEl.textContent='Selecione uma data.';}return;}
+  var hoje=new Date();hoje.setHours(0,0,0,0);
+  var dataAgend=new Date(data+'T00:00:00');
+  if(dataAgend<=hoje){if(fbEl){fbEl.style.color='var(--danger)';fbEl.textContent='A data deve ser futura (a partir de amanhã).';}return;}
+  if(!_agendFatTarget){if(typeof closeM==='function')closeM('m-agendar-fat');return;}
+  if(typeof closeM==='function')closeM('m-agendar-fat');
+  if(typeof ov==='function')ov(true);
+  try{
+    var pedido=typeof getPedidoById==='function'?getPedidoById(_agendFatTarget):null;
+    if(!pedido)throw new Error('Pedido não encontrado.');
+    var agora=new Date().toISOString();
+    // Salva o agendamento no obs com tags e muda status para ag_faturamento
+    var obsAtual=(pedido.obs||'');
+    // Remove agendamento anterior se houver
+    obsAtual=obsAtual.replace(/\[FAT_AGEND_DATA:[^\]]*\]/g,'').replace(/\[FAT_AGEND_MOTIVO:[^\]]*\]/g,'').trim();
+    var stamp=new Date().toLocaleString('pt-BR');
+    var obsNova=(obsAtual?obsAtual+'\n':'')+
+      '[FAT_AGEND_DATA: '+data+']\n'+
+      '[FAT_AGEND_MOTIVO: '+motivo+']\n'+
+      '[FAT_AGEND_BY: '+(typeof ME!=='undefined'&&ME?ME.login:'?')+' em '+stamp+']';
+    var res=await sb.from('pedidos').update({
+      status:'ag_faturamento',
+      setor_pendente:'',
+      pendente_desde:agora,
+      obs:obsNova
+    }).eq('id',_agendFatTarget);
+    if(res.error)throw res.error;
+    if(typeof upsertPedidoLocal==='function')upsertPedidoLocal({id:_agendFatTarget,status:'ag_faturamento',setor_pendente:'',pendente_desde:agora,obs:obsNova});
+    if(typeof _lastPainelSnap!=='undefined')window._lastPainelSnap='';
+    if(typeof atualizarTelasAtivas==='function')atualizarTelasAtivas();
+    if(typeof refreshPedidosSoon==='function')refreshPedidosSoon(500);
+    if(typeof renderAgendamentosBadge==='function')renderAgendamentosBadge();
+    var dtFmt=dataAgend.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
+    if(typeof toast==='function')toast('Faturamento de #'+pedido.numero+' agendado para '+dtFmt+'.','ok',5000);
+  }catch(e){if(typeof toast==='function')toast(e.message,'err');}
+  finally{if(typeof ov==='function')ov(false);_agendFatTarget=null;}
+}
+
+// ── Renderizar tela de Agendamentos ──
+var _AGENDAMENTOS_DATA=[];
+async function fetchAgendamentos(){
+  try{
+    var res=await sb.from('pedidos').select('*').eq('status','ag_faturamento').order('entrada_at',{ascending:false});
+    _AGENDAMENTOS_DATA=res.data||[];
+  }catch(e){_AGENDAMENTOS_DATA=[];}
+}
+
+function extrairAgendInfo(obs){
+  if(!obs)return{data:null,motivo:null,by:null};
+  var mD=obs.match(/\[FAT_AGEND_DATA:\s*([^\]]+)\]/);
+  var mM=obs.match(/\[FAT_AGEND_MOTIVO:\s*([^\]]+)\]/);
+  var mB=obs.match(/\[FAT_AGEND_BY:\s*([^\]]+)\]/);
+  return{
+    data:mD?mD[1].trim():null,
+    motivo:mM?mM[1].trim():null,
+    by:mB?mB[1].trim():null
+  };
+}
+
+function renderAgendamentos(){
+  var tbody=document.getElementById('agend-tbody');
+  var empty=document.getElementById('agend-empty');
+  var countEl=document.getElementById('agend-count');
+  if(!tbody)return;
+  var filtroStatus=(document.getElementById('agend-filtro-status')&&document.getElementById('agend-filtro-status').value)||'pendente';
+  var hoje=new Date();hoje.setHours(0,0,0,0);
+  var items=(_AGENDAMENTOS_DATA||[]).map(function(o){
+    var inf=extrairAgendInfo(o.obs);
+    var dataAgend=inf.data?new Date(inf.data+'T00:00:00'):null;
+    var vencido=dataAgend&&dataAgend<=hoje;
+    return{o:o,inf:inf,dataAgend:dataAgend,vencido:vencido};
+  });
+  var filtrados=items.filter(function(it){
+    if(filtroStatus==='pendente')return!it.vencido;
+    if(filtroStatus==='vencido')return it.vencido;
+    return true;
+  });
+  if(countEl)countEl.textContent=filtrados.length+' agendamento(s)';
+  if(empty)empty.style.display=filtrados.length?'none':'block';
+  tbody.innerHTML=filtrados.map(function(it){
+    var o=it.o;
+    var dataStr=it.dataAgend?it.dataAgend.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'}):'—';
+    var statusHtml=it.vencido
+      ?'<span style="background:rgba(239,68,68,.15);color:var(--danger);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">⚠ Vencido</span>'
+      :'<span style="background:rgba(236,72,153,.1);color:var(--fat);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">🗓 Pendente</span>';
+    var podeFat=typeof podeFaturar==='function'&&podeFaturar();
+    var acoes='';
+    if(podeFat){
+      acoes+='<button class="bfin" style="font-size:10px;padding:4px 10px" onclick="abrirFaturarAgendado(\''+o.id+'\')">Faturar agora</button> ';
+    }
+    acoes+='<button class="bcan" style="font-size:10px;padding:4px 10px;cursor:pointer" onclick="cancelarAgendamento(\''+o.id+'\')">Cancelar agend.</button>';
+    return '<tr>'+
+      '<td style="font-weight:700">'+o.numero+'</td>'+
+      '<td>'+( o.nome_cliente||'—')+'</td>'+
+      '<td style="color:var(--cyan)">'+( o.vendedor||'—')+'</td>'+
+      '<td style="font-weight:700;color:'+(it.vencido?'var(--danger)':'var(--fat)')+'">'+dataStr+'</td>'+
+      '<td style="font-size:11px;color:var(--muted)">'+( it.inf.motivo||'—')+'</td>'+
+      '<td>'+statusHtml+'</td>'+
+      '<td class="act-btns">'+acoes+'</td>'+
+    '</tr>';
+  }).join('');
+}
+
+function abrirFaturarAgendado(id){
+  // Retorna o pedido para o setor de faturamento e abre o modal
+  var pedido=typeof getPedidoById==='function'?getPedidoById(id):null;
+  if(!pedido){
+    // busca nos agendamentos
+    pedido=(_AGENDAMENTOS_DATA||[]).find(function(o){return o.id===id;});
+  }
+  if(!pedido){if(typeof toast==='function')toast('Pedido não encontrado.','err');return;}
+  // Coloca o pedido novamente no setor de faturamento antes de abrir a nota
+  sb.from('pedidos').update({status:'em_andamento',setor:'faturamento',setor_pendente:'',pendente_desde:null}).eq('id',id).then(function(res){
+    if(res.error){if(typeof toast==='function')toast(res.error.message,'err');return;}
+    if(typeof upsertPedidoLocal==='function')upsertPedidoLocal({id:id,status:'em_andamento',setor:'faturamento',setor_pendente:'',pendente_desde:null});
+    // Remove da lista local
+    _AGENDAMENTOS_DATA=_AGENDAMENTOS_DATA.filter(function(o){return o.id!==id;});
+    renderAgendamentos();
+    renderAgendamentosBadge();
+    if(typeof openNota==='function')openNota(id);
+  });
+}
+
+async function cancelarAgendamento(id){
+  if(!confirm('Cancelar o agendamento e retornar o pedido para Faturamento?'))return;
+  if(typeof ov==='function')ov(true);
+  try{
+    var pedido=(_AGENDAMENTOS_DATA||[]).find(function(o){return o.id===id;});
+    // Remove tags de agendamento do obs
+    var obsAtual=(pedido&&pedido.obs)||'';
+    var obsNova=obsAtual.replace(/\[FAT_AGEND_DATA:[^\]]*\]\n?/g,'').replace(/\[FAT_AGEND_MOTIVO:[^\]]*\]\n?/g,'').replace(/\[FAT_AGEND_BY:[^\]]*\]\n?/g,'').trim();
+    var res=await sb.from('pedidos').update({status:'em_andamento',setor:'faturamento',setor_pendente:'',pendente_desde:null,obs:obsNova||null}).eq('id',id);
+    if(res.error)throw res.error;
+    _AGENDAMENTOS_DATA=_AGENDAMENTOS_DATA.filter(function(o){return o.id!==id;});
+    renderAgendamentos();
+    renderAgendamentosBadge();
+    if(typeof refreshPedidosSoon==='function')refreshPedidosSoon(300);
+    if(typeof toast==='function')toast('Agendamento cancelado. Pedido voltou para Faturamento.','ok');
+  }catch(e){if(typeof toast==='function')toast(e.message,'err');}
+  finally{if(typeof ov==='function')ov(false);}
+}
+
+function renderAgendamentosBadge(){
+  var hoje=new Date();hoje.setHours(0,0,0,0);
+  var vencidos=(_AGENDAMENTOS_DATA||[]).filter(function(o){
+    var inf=extrairAgendInfo(o.obs);
+    if(!inf.data)return false;
+    return new Date(inf.data+'T00:00:00')<=hoje;
+  }).length;
+  var badge=document.getElementById('agendamentos-badge');
+  if(badge){
+    badge.style.display=(_AGENDAMENTOS_DATA.length>0)?'':'none';
+    badge.textContent=_AGENDAMENTOS_DATA.length;
+    if(vencidos>0){badge.style.background='rgba(239,68,68,.2)';badge.style.color='var(--danger)';}
+    else{badge.style.background='rgba(236,72,153,.2)';badge.style.color='var(--fat)';}
+  }
+}
+
+function checkAgendamentosAlerts(){
+  // Chamado periodicamente pelo clock — emite alerta se há agendamentos para hoje
+  if(!_AGENDAMENTOS_DATA||!_AGENDAMENTOS_DATA.length)return;
+  var hoje=new Date();hoje.setHours(0,0,0,0);
+  _AGENDAMENTOS_DATA.forEach(function(o){
+    var inf=extrairAgendInfo(o.obs);
+    if(!inf.data)return;
+    var dataAgend=new Date(inf.data+'T00:00:00');
+    if(dataAgend.getTime()===hoje.getTime()){
+      var key='agend_alert_'+o.id+'_'+inf.data;
+      try{if(sessionStorage.getItem(key))return;sessionStorage.setItem(key,'1');}catch(e){}
+      if(typeof toast==='function')toast('🗓 AGENDAMENTO HOJE: Pedido #'+o.numero+' deve ser faturado agora!','warn',10000);
+    }
+  });
+}
+
+function getObsPedido(obs){
+  if(!obs)return null;
+  var m=obs.match(/\[OBS_PEDIDO:\s*([\s\S]*?)\]/);
+  return m&&m[1].trim()?m[1].trim():null;
+}
+
+function getObsPedidoResumido(obs,max){
+  var t=getObsPedido(obs);
+  if(!t)return null;
+  max=max||60;
+  return t.length>max?t.substring(0,max)+'…':t;
+}
+
+function getStatusLabel(s){
+  var SL_local={atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',balcao_op:'Balcão',separacao:'Balcão',faturamento:'Faturamento',expedicao:'Expedição',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira',em_ocorrencia:'Ocorrência',em_pendencia:'Pendência',em_entrega:'Em Trânsito',ag_embarque:'Ag. Embarque',pronto_expedicao:'Pronto p/ Embarque',aguard_canhoto:'Aguardando Canhoto',ag_faturamento:'Ag. Faturamento'};
+  return SL_local[s]||s;
+}
 
 function getStoredTheme(){try{return localStorage.getItem('co_theme')||'dark';}catch(e){return 'dark';}}
 function applyTheme(t){
@@ -1549,7 +1993,7 @@ const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 const SETORES = ['atendimento','estoque','corte','expedicao','balcao_op','faturamento'];
 const PROXIMO_SETOR = {atendimento:'estoque',estoque:'corte',corte:'balcao_op',balcao_op:'faturamento',expedicao:'faturamento'};
 const RETORNO_PADRAO = {estoque:'atendimento',corte:'estoque',balcao_op:'corte',faturamento:'balcao_op',expedicao:'corte'};
-const SL = {atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',balcao_op:'Balcão',separacao:'Balcão',faturamento:'Faturamento',expedicao:'Expedição',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira',em_ocorrencia:'Ocorrência',em_pendencia:'Pendência',em_entrega:'Em Trânsito',ag_embarque:'Ag. Embarque',pronto_expedicao:'Pronto p/ Embarque',aguard_canhoto:'Aguardando Canhoto'};
+const SL = {atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',balcao_op:'Balcão',separacao:'Balcão',faturamento:'Faturamento',expedicao:'Expedição',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira',em_ocorrencia:'Ocorrência',em_pendencia:'Pendência',em_entrega:'Em Trânsito',ag_embarque:'Ag. Embarque',pronto_expedicao:'Pronto p/ Embarque',aguard_canhoto:'Aguardando Canhoto',ag_faturamento:'Ag. Faturamento'};
 const SC = {atendimento:'tag-at',estoque:'tag-es',corte:'tag-co',balcao_op:'tag-se',separacao:'tag-se',faturamento:'tag-fa',expedicao:'tag-ex',pronto_balcao:'tag-rd',balcao_chamado:'tag-rd',finalizado:'tag-do'};
 const SD = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',balcao_op:'#FAC775',separacao:'#FAC775',faturamento:'#ED93B1',expedicao:'#818cf8'};
 const SICONCOLOR = {atendimento:'#a78bfa',estoque:'#c49a6c',corte:'#ef4444',balcao_op:'#f1f5f9',separacao:'#f1f5f9',faturamento:'#22d3a7',expedicao:'#818cf8'};
@@ -1913,9 +2357,10 @@ async function restoreSession(){
     applyLoggedUser(res.data);
     allHide();
     el('screen-painel').classList.add('active');
-    await Promise.all([fetchPedidos(), fetchSeparadores()]);
+    await Promise.all([fetchPedidos(), fetchSeparadores(), fetchAgendamentos()]);
     _lastPainelSnap = buildSnapshot(PEDIDOS);
     renderPainel();
+    renderAgendamentosBadge();
     startRealtime();
     startClock();
     startPolling();
@@ -2179,9 +2624,10 @@ async function doLogin(){
     saveSession(res.data);
     allHide();
     el('screen-painel').classList.add('active');
-    await Promise.all([fetchPedidos(), fetchSeparadores()]);
+    await Promise.all([fetchPedidos(), fetchSeparadores(), fetchAgendamentos()]);
     _lastPainelSnap = buildSnapshot(PEDIDOS);
     renderPainel();
+    renderAgendamentosBadge();
     startRealtime();
     startClock();
     startPolling();
@@ -2370,6 +2816,7 @@ async function go(name){
   if(name==='agretira'){ov(true);await fetchPedidos();ov(false);renderAgRetira();}
   if(name==='recebimento'){ov(true);await fetchRecebimentos();ov(false);renderRecebimentos();}
   if(name==='devolucoes'){ov(true);await fetchDevolucoes();ov(false);renderDevolucoes();}
+  if(name==='agendamentos'){ov(true);await fetchAgendamentos();ov(false);renderAgendamentos();renderAgendamentosBadge();}
   if(name==='agEmbarque'){ov(true);await fetchPedidos();ov(false);renderAgEmbarque();}
   if(name==='emTransito'){ov(true);await fetchPedidos();ov(false);renderEmTransito();}
   if(name==='canhotos'){ov(true);await Promise.all([fetchPedidos(),fetchCanhotosConfirmados()]);ov(false);_canhotoFilter='aguardando';setCanhotoFilter('aguardando',null);renderCanhotos();}
@@ -2397,6 +2844,8 @@ function startClock(){
     renderAgEmbarqueBadge();
     renderEmTransitoBadge();
     renderCanhotosBadge();
+    renderAgendamentosBadge();
+    checkAgendamentosAlerts();
 
     // Alertas de 10min (raro, não causa render)
     PEDIDOS.forEach(function(o){
@@ -2411,7 +2860,7 @@ function isOperacionalVisivel(o){
   if(o.status==='em_pendencia')return false;
   // FIX 1: pendência registrada sem NF emitida (pré-faturamento) retira o card do fluxo operacional
   if(o.tem_pendencia && o.pendencia_status==='aberta' && !o.num_nota)return false;
-  return o.status!=='finalizado' && o.status!=='cancelado' && o.status!=='balcao_chamado' && o.status!=='ag_retira' && o.status!=='em_ocorrencia' && o.status!=='ag_embarque' && o.status!=='em_entrega' && o.status!=='aguard_canhoto';
+  return o.status!=='finalizado' && o.status!=='cancelado' && o.status!=='balcao_chamado' && o.status!=='ag_retira' && o.status!=='em_ocorrencia' && o.status!=='ag_embarque' && o.status!=='em_entrega' && o.status!=='aguard_canhoto' && o.status!=='ag_faturamento';
 }
 function isTVVisivel(o){
   // TV mostra APENAS pedidos balcão em andamento — sai quando aguard_canhoto
@@ -2673,9 +3122,11 @@ function renderRowCard(o,setor,transito){
 
   /* ── COL 1: número + botões parcial/alterar + hora ── */
   var parcialActive=!!o.parcial;
+  var hasObs=!!(getObsPedido&&getObsPedido(o.obs));
   var parcialBtnSt='position:absolute;left:14px;bottom:8px;width:26px;height:26px;border-radius:6px;border:1px solid rgba(245,158,11,'+(parcialActive?'.55':'.2')+');background:'+(parcialActive?'rgba(245,158,11,.22)':'rgba(245,158,11,.05)')+';color:'+(parcialActive?'var(--warn)':'rgba(245,158,11,.3)')+';font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;'+(parcialActive?'box-shadow:0 0 8px rgba(245,158,11,.35);':'');
   var alterarBtnSt='position:absolute;left:46px;bottom:8px;width:26px;height:26px;border-radius:6px;border:1px solid rgba(59,130,246,.25);background:rgba(59,130,246,.08);color:var(--blue);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;font-weight:700';
   var retornarBtnSt='position:absolute;left:78px;bottom:8px;width:26px;height:26px;border-radius:6px;border:1px solid rgba(249,115,22,.25);background:rgba(249,115,22,.08);color:#fb923c;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;font-weight:700';
+  var obsBtnSt='position:absolute;right:8px;bottom:8px;width:26px;height:26px;border-radius:6px;border:1px solid rgba(34,211,167,'+(hasObs?'.45':'.18')+');background:rgba(34,211,167,'+(hasObs?'.14':'.05')+');color:'+(hasObs?'var(--accent)':'rgba(34,211,167,.4)')+';font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s';
   var utilInCol1='';
   if(canAct&&!etapaPosFaturamento){
     utilInCol1+='<button style="'+parcialBtnSt+'" title="'+(parcialActive?'Remover parcial':'Marcar parcial')+'" onclick="toggleParcialCard(\''+o.id+'\','+parcialActive+')">&#9889;</button>';
@@ -2689,7 +3140,14 @@ function renderRowCard(o,setor,transito){
   if(transito&&podeAtuarNoSetor(o.setor)){
     utilInCol1+='<button style="'+retornarBtnSt+'" title="Retornar envio" onclick="openReturnTransit(\''+o.id+'\')">&#8617;</button>';
   }
+  // Botão de Observação — sempre visível
+  utilInCol1+='<button style="'+obsBtnSt+'" title="'+(hasObs?'Ver/adicionar observação (obs ativa)':'Adicionar observação')+'" onclick="openObsCard(\''+o.id+'\')">&#128203;</button>';
+
+  /* Obs resumida exibida acima do número do pedido */
+  var obsResumo=hasObs?('<div style="font-size:9px;color:var(--accent);font-weight:600;letter-spacing:.03em;line-height:1.2;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%" title="'+getObsPedido(o.obs)+'">📝 '+getObsPedidoResumido(o.obs,28)+'</div>'):'';
+
   var col1='<div class="orc-col orc-id">'+
+    obsResumo+
     '<div class="orc-num">'+o.numero+'</div>'+
     '<div class="orc-time" style="bottom:38px">'+hora+' · '+o.criado_por+'</div>'+
     utilInCol1+
@@ -2937,11 +3395,21 @@ async function confirmarRec(id){
 }
 function openNota(id){
   _notaTarget=id;
-  el('nota-num').value='';
+  // Limpa campos da chave NF-e
+  if(el('nota-chave'))el('nota-chave').value='';
+  if(el('nota-chave-preview'))el('nota-chave-preview').textContent='';
   el('nota-valor').value='';
   if(el('nota-saldo-preview'))el('nota-saldo-preview').textContent='';
   var pedido=getPedidoById(id);
   if(pedido){
+    // Exibe observação do pedido se houver
+    var obsGeral=getObsPedido(pedido.obs);
+    var obsWrap=el('nota-obs-wrap');
+    var obsText=el('nota-obs-text');
+    if(obsWrap&&obsText){
+      if(obsGeral){obsText.textContent=obsGeral;obsWrap.style.display='';}
+      else{obsWrap.style.display='none';}
+    }
     var saldoPend=parseFloat(pedido.saldo_pendencia)||0;
     var valorRef=saldoPend>0?saldoPend:(parseFloat(pedido.valor_pedido)||0);
     if(valorRef>0){
@@ -2973,9 +3441,13 @@ function openNota(id){
   openM('m-nota');
 }
 async function confirmarNota(){
-  var nota=normalizarNumero(el('nota-num').value.trim());
+  // Extrai número da NF a partir da chave NF-e
+  var chaveNFe=(el('nota-chave')&&el('nota-chave').value||'').replace(/\D/g,'').trim();
+  if(!chaveNFe||chaveNFe.length!==44){toast('Informe a chave NF-e de 44 dígitos.','err');return;}
+  var nota=extrairNumNFDaChave(chaveNFe);
+  if(!nota){toast('Não foi possível extrair o número da nota da chave informada.','err');return;}
+  nota=normalizarNumero(nota);
   var valorNota=parseFloat(el('nota-valor').value)||0;
-  if(!nota){toast('Informe o número da nota fiscal.','err');return;}
   if(valorNota<=0){toast('Informe o valor da nota fiscal.','err');return;}
   // Fix 5: valor da NF não pode ser maior que o valor do pedido
   var pedidoRef=PEDIDOS.find(function(p){return p.id===_notaTarget;});
@@ -3071,6 +3543,7 @@ async function confirmarNota(){
       setor_entrada_at:agora,
       finalizado_at:agora,
       num_nota:nota,
+      chave_nfe:chaveNFe,
       valor_nota_fat:valorNota,
       tem_pendencia:temPendencia,
       saldo_pendencia:temPendencia?saldo:0,
@@ -3078,7 +3551,7 @@ async function confirmarNota(){
       obs:obsAtualNota||undefined
     }).eq('id',_notaTarget);
     if(res.error)throw res.error;
-    upsertPedidoLocal({id:_notaTarget,setor:setorDestino,status:novoStatus,setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,finalizado_at:agora,num_nota:nota,valor_nota_fat:valorNota,tem_pendencia:temPendencia,saldo_pendencia:temPendencia?saldo:0,pendencia_status:temPendencia?'aberta':''});
+    upsertPedidoLocal({id:_notaTarget,setor:setorDestino,status:novoStatus,setor_pendente:'',pendente_desde:null,setor_entrada_at:agora,finalizado_at:agora,num_nota:nota,chave_nfe:chaveNFe,valor_nota_fat:valorNota,tem_pendencia:temPendencia,saldo_pendencia:temPendencia?saldo:0,pendencia_status:temPendencia?'aberta':''});
     _lastPainelSnap='';
     atualizarTelasAtivas();
     sb.from('movimentacoes').insert({
@@ -3340,7 +3813,7 @@ async function confirmarChamaBalcao(){
 }
 // Mantido para compatibilidade (Ag. Retira chama direto)
 async function chamarBalcao(id){abrirChamaBalcao(id);}
-function openNewOrder(){el('no-num').value='';el('no-cli').value='';el('no-retirada').value='';el('no-prio').value='retira';el('no-valor').value='';el('no-vendedor').value='';if(el('no-parcial'))el('no-parcial').checked=false;if(el('no-num-feedback'))el('no-num-feedback').textContent='';if(el('no-cidade'))el('no-cidade').value='';if(el('no-endereco'))el('no-endereco').value='';if(el('no-transportadora'))el('no-transportadora').value='';if(el('no-entrega-fields'))el('no-entrega-fields').style.display='none';openM('m-new-order');}
+function openNewOrder(){el('no-num').value='';el('no-cli').value='';el('no-retirada').value='';el('no-prio').value='retira';el('no-valor').value='';el('no-vendedor').value='';if(el('no-parcial'))el('no-parcial').checked=false;if(el('no-num-feedback'))el('no-num-feedback').textContent='';if(el('no-cidade'))el('no-cidade').value='';if(el('no-endereco'))el('no-endereco').value='';if(el('no-transportadora'))el('no-transportadora').value='';if(el('no-entrega-fields'))el('no-entrega-fields').style.display='none';if(el('no-obs'))el('no-obs').value='';openM('m-new-order');}
 
 var _dupCheckTimer=null;
 function verificarDuplicataLive(val){
@@ -3406,11 +3879,16 @@ async function createOrder(){
     var cidadeEntrega=(el('no-cidade')?el('no-cidade').value.trim():'');
     var enderecoEntrega=(el('no-endereco')?el('no-endereco').value.trim():'');
     var transportadoraEntrega=(el('no-transportadora')?el('no-transportadora').value.trim():'');
+    var obsPedido=(el('no-obs')?el('no-obs').value.trim():'');
     var payload={numero:numNorm,setor:'atendimento',setor_pendente:'',status:'em_andamento',criado_por:ME.login,entrada_at:agora,setor_entrada_at:agora,nome_cliente:cli,prioridade:prio,num_nota:'',valor_pedido:valorPedido,vendedor:vendedor,nome_retirada:(el('no-retirada').value||'').trim(),parcial:parcial};
+    // Observação geral do pedido (viaja setor a setor)
+    if(obsPedido){
+      payload.obs=(payload.obs?payload.obs+'\n':'')+('[OBS_PEDIDO: '+obsPedido+']');
+    }
     // Delivery fields saved to obs if entrega
     if(prio==='entrega'&&(cidadeEntrega||enderecoEntrega||transportadoraEntrega)){
       var entregaInfo='[ENTREGA: cidade='+cidadeEntrega+' | end='+enderecoEntrega+' | transp='+transportadoraEntrega+']';
-      payload.obs=entregaInfo;
+      payload.obs=(payload.obs?payload.obs+'\n':'')+entregaInfo;
     }
     var res=await sb.from('pedidos').insert(payload);
     // Fallback: se coluna 'parcial' ainda não existe no banco, tenta sem ela
