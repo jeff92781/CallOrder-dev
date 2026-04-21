@@ -686,11 +686,10 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
       <button class="tab" id="tab-expedicao-drop" onclick="toggleExpedicaoMenu(event)">Expedição <span class="tab-drop-arrow">▾</span></button>
       <div class="tab-drop-menu" id="expedicao-menu">
         <button class="tab-drop-item" id="di-agretira" onclick="go('agretira');closeExpedicaoMenu()">Ag. Retira <span id="dagretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
-        <button class="tab-drop-item" id="di-recebimento" onclick="go('recebimento');closeExpedicaoMenu()">Recebimento <span id="drecebimento-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
         <button class="tab-drop-item" id="di-agembarque" onclick="go('agEmbarque');closeExpedicaoMenu()">Ag. Embarque <span id="dagembarque-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
         <button class="tab-drop-item" id="di-emtransito" onclick="go('emTransito');closeExpedicaoMenu()">Em Trânsito <span id="demtransito-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
-
-
+        <button class="tab-drop-item" id="di-recebimento" onclick="go('recebimento');closeExpedicaoMenu()">Recebimento <span id="drecebimento-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
+        <button class="tab-drop-item" id="di-reg-devolucao" onclick="go('reg-devolucao');closeExpedicaoMenu()">Registrar Devolução <span id="dregdev-badge" style="display:none;background:rgba(245,158,11,.2);color:var(--warn);padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
       </div>
     </div>
   </div>
@@ -974,6 +973,60 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
       </table>
     </div>
     <div id="rec-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhum recebimento registrado no período.</div>
+  </main>
+</div>
+
+<!-- ╔══════════════════════════════════════════╗ -->
+<!-- ║     TELA — REGISTRAR DEVOLUÇÃO (EXPD)    ║ -->
+<!-- ╚══════════════════════════════════════════╝ -->
+<div class="screen" id="screen-reg-devolucao">
+  <main>
+    <div class="ph">
+      <span class="pt">Registrar Devolução</span>
+      <span style="color:var(--muted);font-size:12px" id="rdv-count"></span>
+      <div id="rdv-valor-total" style="font-size:12px;color:var(--warn);font-weight:700;background:rgba(245,158,11,.1);padding:5px 14px;border-radius:20px;border:1px solid rgba(245,158,11,.3);display:none"></div>
+      <button class="bok" style="padding:8px 18px;font-size:12px;background:#f59e0b" onclick="abrirRegistrarDevolucaoRec()">↩ Registrar Devolução</button>
+    </div>
+    <!-- Bipe rápido -->
+    <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:18px">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Bipe rápido — Devolução</div>
+      <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div style="flex:2;min-width:260px">
+          <input type="text" id="rdv-scan-chave" maxlength="44"
+            placeholder="Bipe ou cole a chave NF-e de 44 dígitos..."
+            style="width:100%;padding:10px 14px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;box-sizing:border-box"
+            oninput="rdvScanCheck(this.value)"/>
+          <div id="rdv-scan-preview" style="font-size:11px;color:var(--muted);margin-top:6px;min-height:16px"></div>
+        </div>
+        <div style="min-width:130px">
+          <input type="number" id="rdv-scan-valor" placeholder="Valor R$" step="0.01" min="0"
+            style="width:100%;padding:10px 14px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;box-sizing:border-box"
+            onkeydown="if(event.key==='Enter')rdvScanRegistrar()"/>
+        </div>
+        <button class="bok" style="padding:9px 18px;font-size:12px;white-space:nowrap;background:#f59e0b;align-self:flex-start" onclick="rdvScanRegistrar()">↩ Registrar</button>
+        <span id="rdv-scan-feedback" style="font-size:11px;min-width:160px;align-self:center"></span>
+      </div>
+    </div>
+    <!-- Filtros -->
+    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px">
+      <div class="f" style="margin:0;min-width:130px"><label class="fl">Data inicial</label><input type="date" id="rdv-date-start"/></div>
+      <div class="f" style="margin:0;min-width:130px"><label class="fl">Data final</label><input type="date" id="rdv-date-end"/></div>
+      <div class="f" style="margin:0;min-width:130px"><label class="fl">NF Origem</label><input type="text" id="rdv-filtro-nf-orig" placeholder="Ex: 000123" onkeydown="if(event.key==='Enter')filtrarRegDevolucoes()"/></div>
+      <div class="f" style="margin:0;min-width:130px"><label class="fl">NF Entrada</label><input type="text" id="rdv-filtro-nf-entr" placeholder="Ex: 000456" onkeydown="if(event.key==='Enter')filtrarRegDevolucoes()"/></div>
+      <div class="f" style="margin:0;min-width:130px"><label class="fl">Nº Pedido</label><input type="text" id="rdv-filtro-pedido" placeholder="Ex: 60515" onkeydown="if(event.key==='Enter')filtrarRegDevolucoes()"/></div>
+      <div class="f" style="margin:0;min-width:130px"><label class="fl">Vendedor</label><input type="text" id="rdv-filtro-vendedor" placeholder="Nome" onkeydown="if(event.key==='Enter')filtrarRegDevolucoes()"/></div>
+      <button onclick="filtrarRegDevolucoes()" style="padding:9px 16px;background:#3b82f6;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:12px;font-weight:700;cursor:pointer">Buscar</button>
+      <button onclick="limparFiltrosRegDevolucoes()" style="padding:9px 14px;background:var(--bg4);border:1px solid var(--border2);border-radius:var(--radius);color:var(--muted);font-family:var(--font-mono);font-size:12px;cursor:pointer">Limpar</button>
+      <button onclick="exportarRegDevolucoesExcel()" style="padding:9px 16px;background:#10b981;border:none;border-radius:var(--radius);color:#fff;font-family:var(--font-mono);font-size:12px;font-weight:700;cursor:pointer">⬇ Exportar</button>
+    </div>
+    <!-- Tabela -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
+      <table class="utbl" id="rdv-table">
+        <thead><tr><th>Recebimento</th><th>Usuário</th><th>NF Origem</th><th>Pedido</th><th>Vendedor</th><th>Status</th><th>NF Entrada</th><th>Valor Entrada</th><th>Ações</th></tr></thead>
+        <tbody id="rdv-tbody"></tbody>
+      </table>
+    </div>
+    <div id="rdv-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhuma devolução registrada no período.</div>
   </main>
 </div>
 
@@ -2815,6 +2868,7 @@ async function go(name){
   if(name==='config'){setTimeout(carregarVozes,100);}
   if(name==='agretira'){ov(true);await fetchPedidos();ov(false);renderAgRetira();}
   if(name==='recebimento'){ov(true);await fetchRecebimentos();ov(false);renderRecebimentos();}
+  if(name==='reg-devolucao'){ov(true);await fetchRegDevolucoes();ov(false);renderRegDevolucoes();}
   if(name==='devolucoes'){ov(true);await fetchDevolucoes();ov(false);renderDevolucoes();}
   if(name==='agendamentos'){ov(true);await fetchAgendamentos();ov(false);renderAgendamentos();renderAgendamentosBadge();}
   if(name==='agEmbarque'){ov(true);await fetchPedidos();ov(false);renderAgEmbarque();}
@@ -5607,6 +5661,7 @@ async function confirmarRegistrarDevolucaoRec(){
     });
     if(ins.error)throw ins.error;
     await fetchDevolucoes();renderDevolucoes();
+    await fetchRegDevolucoes();renderRegDevolucoes();
     toast('Devolução da NF '+numOrigem+' — '+fmtBRL(valorDev)+' registrada.','warn');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
@@ -5641,6 +5696,7 @@ async function confirmarEntradaDevolucao(){
     if(res.error)throw res.error;
     _devEntradaTarget=null;
     await fetchDevolucoes();renderDevolucoes();
+    await fetchRegDevolucoes();renderRegDevolucoes();
     toast('Entrada da NF '+numEntrada+' confirmada no valor de '+fmtBRL(valor)+'.','ok');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
@@ -5662,6 +5718,161 @@ function exportarDevolucoesExcel(){
   var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');a.href=url;a.download='devolucoes_'+fmtDateInput(new Date())+'.csv';a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Registrar Devolução — Expedição ──
+var _RDV_DATA=[];
+
+async function fetchRegDevolucoes(){
+  var hoje=fmtDateInput(new Date());
+  var startVal=el('rdv-date-start')&&el('rdv-date-start').value?el('rdv-date-start').value:hoje;
+  var endVal=el('rdv-date-end')&&el('rdv-date-end').value?el('rdv-date-end').value:hoje;
+  var r=getPeriodRange(startVal,endVal);
+  var res=await sb.from('devolucoes').select('*').gte('recebido_at',r.startIso).lte('recebido_at',r.endIso).order('recebido_at',{ascending:false});
+  _RDV_DATA=res.data||[];
+}
+
+function renderRegDevolucoes(){
+  var items=_RDV_DATA.slice();
+  var filtNfOrig=(el('rdv-filtro-nf-orig')?el('rdv-filtro-nf-orig').value:'').trim();
+  var filtNfEntr=(el('rdv-filtro-nf-entr')?el('rdv-filtro-nf-entr').value:'').trim();
+  var filtPed=(el('rdv-filtro-pedido')?el('rdv-filtro-pedido').value:'').trim();
+  var filtVend=(el('rdv-filtro-vendedor')?el('rdv-filtro-vendedor').value:'').trim().toLowerCase();
+  if(filtNfOrig)items=items.filter(function(d){return (d.num_nota_origem||'').indexOf(filtNfOrig)>=0;});
+  if(filtNfEntr)items=items.filter(function(d){return (d.num_nota_entrada||'').indexOf(filtNfEntr)>=0;});
+  if(filtPed)items=items.filter(function(d){return (d.numero_pedido||'').indexOf(filtPed)>=0;});
+  if(filtVend)items=items.filter(function(d){return (d.vendedor||'').toLowerCase().indexOf(filtVend)>=0;});
+
+  // Badge
+  var pend=_RDV_DATA.filter(function(d){return d.status==='pendente';});
+  var badge=el('dregdev-badge');
+  if(badge){if(pend.length>0){badge.textContent=pend.length;badge.style.display='inline';}else{badge.style.display='none';}}
+
+  if(el('rdv-count'))el('rdv-count').textContent=items.length+' registro(s)';
+  if(el('rdv-empty'))el('rdv-empty').style.display=items.length?'none':'block';
+  if(el('rdv-table'))el('rdv-table').style.display=items.length?'':'none';
+
+  var totalVal=items.reduce(function(s,d){return s+(parseFloat(d.valor_entrada)||0);},0);
+  if(el('rdv-valor-total')){
+    if(totalVal>0){el('rdv-valor-total').textContent='Total devolvido: '+fmtBRL(totalVal);el('rdv-valor-total').style.display='';}
+    else{el('rdv-valor-total').style.display='none';}
+  }
+
+  if(!el('rdv-tbody'))return;
+  el('rdv-tbody').innerHTML=items.map(function(d){
+    var dt=d.recebido_at?new Date(d.recebido_at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    var statusBadge=d.status==='confirmado'
+      ?'<span style="color:var(--accent);font-size:11px;font-weight:700">✓ Confirmado</span>'
+      :'<span style="color:var(--warn);font-size:11px;font-weight:700">Pendente</span>';
+    var acoes=d.status==='pendente'
+      ?'<button class="bok" style="font-size:11px;padding:5px 12px" onclick="abrirConfirmarEntradaDev(\''+d.id+'\')">✓ Confirmar entrada</button>'
+      :'<span style="font-size:11px;color:var(--muted)">Encerrado</span>';
+    return '<tr>'+
+      '<td style="color:var(--muted)">'+dt+'</td>'+
+      '<td>'+(d.usuario||'—')+'</td>'+
+      '<td style="color:var(--sep);font-weight:700">'+(d.num_nota_origem||'—')+'</td>'+
+      '<td style="font-family:var(--font-head);font-size:14px;font-weight:700">'+(d.numero_pedido?'#'+d.numero_pedido:'—')+'</td>'+
+      '<td>'+(d.vendedor||'—')+'</td>'+
+      '<td>'+statusBadge+'</td>'+
+      '<td style="color:var(--sep)">'+(d.num_nota_entrada||'—')+'</td>'+
+      '<td style="color:var(--warn);font-weight:600">'+(parseFloat(d.valor_entrada)>0?fmtBRL(d.valor_entrada):'—')+'</td>'+
+      '<td>'+acoes+'</td>'+
+    '</tr>';
+  }).join('');
+}
+
+async function filtrarRegDevolucoes(){
+  ov(true);await fetchRegDevolucoes();ov(false);renderRegDevolucoes();
+}
+
+function limparFiltrosRegDevolucoes(){
+  ['rdv-date-start','rdv-date-end','rdv-filtro-nf-orig','rdv-filtro-nf-entr','rdv-filtro-pedido','rdv-filtro-vendedor'].forEach(function(id){
+    if(el(id))el(id).value='';
+  });
+  filtrarRegDevolucoes();
+}
+
+// Bipe rápido da tela Registrar Devolução
+async function rdvScanCheck(val){
+  var fb=el('rdv-scan-preview');
+  if(!fb)return;
+  var v=val.replace(/\D/g,'');
+  if(v.length<44){fb.style.color='var(--muted)';fb.textContent=v.length>0?v.length+' / 44 dígitos':'';return;}
+  var num=_extrairNumNotaChave(v);
+  fb.style.color='var(--accent)';
+  fb.textContent='Nº da nota: '+(num||'—')+' · Buscando pedido...';
+  try{
+    var res=await sb.from('pedidos').select('numero,nome_cliente,vendedor,num_nota,valor_nota_fat').eq('chave_nfe',v).limit(1);
+    var p=res.data&&res.data[0];
+    if(p){
+      fb.textContent='Nº da nota: '+(num||'—')+' · Pedido #'+p.numero+' — '+(p.nome_cliente||'')+(p.vendedor?' · Vendedor: '+p.vendedor:'')+(p.valor_nota_fat?' · Valor NF: '+fmtBRL(p.valor_nota_fat):'');
+      if(el('rdv-scan-valor')&&!el('rdv-scan-valor').value&&p.valor_nota_fat)el('rdv-scan-valor').value=parseFloat(p.valor_nota_fat).toFixed(2);
+    }else{
+      fb.textContent='Nº da nota: '+(num||'—')+' · Pedido não encontrado nos registros';
+    }
+  }catch(e){fb.textContent='Nº da nota: '+(num||'—');}
+}
+
+async function rdvScanRegistrar(){
+  var input=el('rdv-scan-chave');
+  var fb=el('rdv-scan-feedback');
+  if(!input)return;
+  var v=input.value.replace(/\D/g,'');
+  if(v.length!==44){if(fb){fb.style.color='var(--danger)';fb.textContent='Chave deve ter 44 dígitos.';}return;}
+  var valorStr=(el('rdv-scan-valor')?el('rdv-scan-valor').value:'').replace(',','.').trim();
+  var valor=parseFloat(valorStr)||0;
+  if(valor<=0){if(fb){fb.style.color='var(--danger)';fb.textContent='Informe o valor da NF devolvida.';}return;}
+  var num=_extrairNumNotaChave(v);
+  var pedRes=await sb.from('pedidos').select('numero,vendedor,num_nota,valor_nota_fat').eq('chave_nfe',v).limit(1);
+  var ped=pedRes.data&&pedRes.data[0];
+  var valorOriginal=ped&&ped.valor_nota_fat?parseFloat(ped.valor_nota_fat)||0:0;
+  ov(true);
+  try{
+    var agora=new Date().toISOString();
+    var ins=await sb.from('devolucoes').insert({
+      chave_nfe_origem:v,
+      num_nota_origem:num,
+      numero_pedido:ped?ped.numero:'',
+      vendedor:ped?ped.vendedor:'',
+      usuario:ME?ME.login:'',
+      recebido_at:agora,
+      status:'pendente',
+      num_nota_entrada:'',
+      chave_nfe_entrada:'',
+      valor_entrada:valor,
+      valor_original:valorOriginal
+    });
+    if(ins.error)throw ins.error;
+    input.value='';
+    if(el('rdv-scan-valor'))el('rdv-scan-valor').value='';
+    if(el('rdv-scan-preview'))el('rdv-scan-preview').textContent='';
+    if(fb){fb.style.color='var(--accent)';fb.textContent='✓ Devolução NF '+num+' — '+fmtBRL(valor)+' registrada!';}
+    await fetchRegDevolucoes();renderRegDevolucoes();
+    // Sincroniza também a tela de Devoluções (Faturamento) se estiver populada
+    if(DEVOLUCOES.length||el('dev-tbody'))await fetchDevolucoes().then(function(){renderDevolucoes();}).catch(function(){});
+    setTimeout(function(){if(fb)fb.textContent='';},4000);
+    toast('Devolução da NF '+num+' — '+fmtBRL(valor)+' registrada.','warn');
+  }catch(e){toast(e.message,'err');}
+  finally{ov(false);}
+}
+
+function exportarRegDevolucoesExcel(){
+  if(!_RDV_DATA.length){toast('Nenhuma devolução para exportar.','warn');return;}
+  var rows=[['Recebimento','Usuário','NF Origem','Pedido','Vendedor','Chave NF Devolvida','Status','NF Entrada','Chave NF Entrada','Valor Entrada']];
+  _RDV_DATA.forEach(function(d){
+    rows.push([
+      d.recebido_at?new Date(d.recebido_at).toLocaleString('pt-BR'):'',
+      d.usuario||'',d.num_nota_origem||'',d.numero_pedido?'#'+d.numero_pedido:'',
+      d.vendedor||'',d.chave_nfe_origem||'',d.status||'',
+      d.num_nota_entrada||'',d.chave_nfe_entrada||'',
+      parseFloat(d.valor_entrada)||0
+    ]);
+  });
+  var csv=rows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='devolucoes_expedicao_'+fmtDateInput(new Date())+'.csv';a.click();
   URL.revokeObjectURL(url);
 }
 
@@ -7057,7 +7268,7 @@ function closeExpedicaoMenu(){
 document.addEventListener('click',function(){closeExpedicaoMenu();});
 
 // Highlight Expedição tab when sub-screen is active
-var EXPEDICAO_SCREENS=['agretira','agEmbarque','emTransito','recebimento','pendencias'];
+var EXPEDICAO_SCREENS=['agretira','agEmbarque','emTransito','recebimento','reg-devolucao','pendencias'];
 var _goOrig=window.go;
 window.go=async function(name){
   await _goOrig(name);
