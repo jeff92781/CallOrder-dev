@@ -816,6 +816,20 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <!-- Linha 2: Por operação -->
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px" id="rel-op-cards"></div>
 
+    <!-- Entradas x Saídas por dia -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">📊 Entradas × Saídas por dia</div>
+        <div id="rel-flux-legend" style="display:flex;gap:10px;font-size:10px;color:var(--muted)">
+          <span><span style="display:inline-block;width:10px;height:10px;background:#3b82f6;border-radius:2px;margin-right:4px"></span>Entradas</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#22d3a7;border-radius:2px;margin-right:4px"></span>Faturados</span>
+        </div>
+      </div>
+      <div id="rel-flux-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px"></div>
+      <div id="rel-flux-chart" style="display:flex;align-items:flex-end;gap:6px;height:160px;border-bottom:1px solid var(--border);padding-bottom:6px;overflow-x:auto"></div>
+      <div id="rel-flux-table" style="margin-top:12px;max-height:220px;overflow:auto"></div>
+    </div>
+
     <!-- Linha 3: Setor + Devoluções -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px">
@@ -3021,6 +3035,18 @@ async function confirmarNota(){
       obsAtualNota = obsAtualNota.replace(/\[PEND_ITEMS:[^\]]*\]/g,'').trim();
       obsAtualNota = (obsAtualNota ? obsAtualNota + '\n' : '') + '[PEND_ITEMS: ' + _pfPend + ']';
     }
+    // Fix: ao emitir NF, itens que estavam em PEND_SEP (separados e prontos p/ faturar)
+    // são movidos para PEND_FAT (faturados) e removidos de PEND_SEP
+    try{
+      var _sepItens = _parsePendItems(_getPendObs(obsAtualNota,'PEND_SEP')==='—'?'':_getPendObs(obsAtualNota,'PEND_SEP'));
+      var _fatItens = _parsePendItems(_getPendObs(obsAtualNota,'PEND_FAT')==='—'?'':_getPendObs(obsAtualNota,'PEND_FAT'));
+      if(_sepItens.length>0){
+        // Adiciona ao FAT e limpa SEP
+        var _novoFat = _fatItens.concat(_sepItens);
+        obsAtualNota = _setTagObs(obsAtualNota,'PEND_FAT', _formatPendItems(_novoFat));
+        obsAtualNota = _setTagObs(obsAtualNota,'PEND_SEP','');
+      }
+    }catch(e){console.warn('autosync SEP→FAT na NF:',e);}
     var res=await sb.from('pedidos').update({
       setor:setorDestino,
       status:novoStatus,
@@ -3693,7 +3719,6 @@ function renderRelatorios(){
     {l:'Tempo médio',v:avg?fmtTs(avg):'--',s:'início→fat.',c:'var(--cyan)'},
     {l:'Mais rápido',v:minT?fmtTs(minT):'--',s:'',c:'var(--accent)'},
     {l:'Mais lento',v:maxT?fmtTs(maxT):'--',s:'',c:'var(--danger)'},
-    {l:'Em ocorrência',v:pedComOcc,s:'pedidos afetados',c:'var(--warn)'},
     {l:'Valor total NF',v:totalValor>0?fmtBRL(totalValor):'—',s:'faturado',c:'var(--sep)'},
     {l:'Ticket médio',v:ticket>0?fmtBRL(ticket):'—',s:'por pedido',c:'var(--sep)'}
   ].map(function(v){return bval(v,v.c);}).join('');
@@ -3714,6 +3739,80 @@ function renderRelatorios(){
       '<div><div class="kl">Ticket</div><div style="font-size:12px;color:var(--sep)">'+(items.length&&valOp>0?fmtBRL(valOp/items.length):'—')+'</div></div>'+
       '</div></div>';
   }).join('');
+
+  // ── Entradas × Saídas por dia (dentro do filtro de data)
+  (function(){
+    function _dkey(d){ if(!d)return null; var dd=new Date(d); if(isNaN(dd.getTime()))return null; return dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+String(dd.getDate()).padStart(2,'0'); }
+    function _dkeyFmt(k){ var p=k.split('-'); return p[2]+'/'+p[1]; }
+    var startStr=REPORT_DATE_START||fmtDateInput(new Date());
+    var endStr=REPORT_DATE_END||fmtDateInput(new Date());
+    // Gera chaves de dias do período
+    var dias=[];
+    var dStart=new Date(startStr+'T00:00:00'), dEnd=new Date(endStr+'T00:00:00');
+    for(var dd=new Date(dStart); dd.getTime()<=dEnd.getTime(); dd.setDate(dd.getDate()+1)){
+      dias.push(dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+String(dd.getDate()).padStart(2,'0'));
+    }
+    var entN={}, entV={}, faN={}, faV={};
+    dias.forEach(function(k){entN[k]=0;entV[k]=0;faN[k]=0;faV[k]=0;});
+    all.forEach(function(o){
+      var kE=_dkey(o.entrada_at);
+      if(kE && entN[kE]!==undefined){entN[kE]++; entV[kE]+=parseFloat(o.valor_pedido)||0;}
+      // Saída = faturado (finalizado_at + num_nota preenchida OU status faturado/finalizado/etc.)
+      if(o.num_nota && o.finalizado_at){
+        var kF=_dkey(o.finalizado_at);
+        if(kF && faN[kF]!==undefined){faN[kF]++; faV[kF]+=parseFloat(o.valor_nota_fat)||0;}
+      }
+    });
+    var totEntN=0,totEntV=0,totFaN=0,totFaV=0;
+    dias.forEach(function(k){totEntN+=entN[k];totEntV+=entV[k];totFaN+=faN[k];totFaV+=faV[k];});
+    if(el('rel-flux-kpis'))el('rel-flux-kpis').innerHTML=[
+      {l:'Entradas (qtde)',v:totEntN,s:'no período',c:'#3b82f6'},
+      {l:'Entradas (valor)',v:totEntV>0?fmtBRL(totEntV):'—',s:'valor pedido',c:'#3b82f6'},
+      {l:'Saídas (qtde)',v:totFaN,s:'faturadas',c:'#22d3a7'},
+      {l:'Saídas (valor)',v:totFaV>0?fmtBRL(totFaV):'—',s:'NF emitida',c:'#22d3a7'}
+    ].map(function(v){return bval(v,v.c);}).join('');
+    // Gráfico de barras duplas por dia
+    var maxVal=1;
+    dias.forEach(function(k){if(entN[k]>maxVal)maxVal=entN[k];if(faN[k]>maxVal)maxVal=faN[k];});
+    if(el('rel-flux-chart')){
+      el('rel-flux-chart').innerHTML=dias.map(function(k){
+        var he=Math.round((entN[k]/maxVal)*130);
+        var hs=Math.round((faN[k]/maxVal)*130);
+        return '<div style="display:flex;flex-direction:column;align-items:center;min-width:46px;gap:2px">'+
+          '<div style="display:flex;gap:3px;height:135px;align-items:flex-end">'+
+            '<div title="Entradas: '+entN[k]+' ('+fmtBRL(entV[k])+')" style="width:14px;height:'+Math.max(he,2)+'px;background:#3b82f6;border-radius:2px 2px 0 0"></div>'+
+            '<div title="Faturados: '+faN[k]+' ('+fmtBRL(faV[k])+')" style="width:14px;height:'+Math.max(hs,2)+'px;background:#22d3a7;border-radius:2px 2px 0 0"></div>'+
+          '</div>'+
+          '<div style="font-size:9px;color:var(--muted);font-family:var(--font-mono)">'+_dkeyFmt(k)+'</div>'+
+          '<div style="font-size:9px;color:#3b82f6">'+entN[k]+'</div>'+
+          '<div style="font-size:9px;color:#22d3a7">'+faN[k]+'</div>'+
+        '</div>';
+      }).join('');
+    }
+    // Tabela compacta por dia
+    if(el('rel-flux-table')){
+      el('rel-flux-table').innerHTML='<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:var(--bg3);color:var(--muted)"><th style="padding:6px;text-align:left">Dia</th><th style="padding:6px;text-align:right;color:#3b82f6">Entradas (qtde)</th><th style="padding:6px;text-align:right;color:#3b82f6">Entradas (valor)</th><th style="padding:6px;text-align:right;color:#22d3a7">Faturados (qtde)</th><th style="padding:6px;text-align:right;color:#22d3a7">Faturados (valor)</th><th style="padding:6px;text-align:right;color:var(--muted)">Saldo (qtde)</th></tr></thead><tbody>'+
+        dias.map(function(k){
+          var saldo=entN[k]-faN[k];
+          var cSaldo=saldo>0?'var(--warn)':saldo<0?'var(--accent)':'var(--muted)';
+          return '<tr style="border-bottom:1px solid var(--border)">'+
+            '<td style="padding:6px;font-family:var(--font-mono)">'+_dkeyFmt(k)+'</td>'+
+            '<td style="padding:6px;text-align:right;color:#3b82f6">'+entN[k]+'</td>'+
+            '<td style="padding:6px;text-align:right">'+(entV[k]>0?fmtBRL(entV[k]):'—')+'</td>'+
+            '<td style="padding:6px;text-align:right;color:#22d3a7">'+faN[k]+'</td>'+
+            '<td style="padding:6px;text-align:right">'+(faV[k]>0?fmtBRL(faV[k]):'—')+'</td>'+
+            '<td style="padding:6px;text-align:right;color:'+cSaldo+';font-weight:700">'+(saldo>0?'+':'')+saldo+'</td>'+
+          '</tr>';
+        }).join('')+
+        '<tr style="background:var(--bg3);font-weight:700"><td style="padding:6px">Total</td>'+
+          '<td style="padding:6px;text-align:right;color:#3b82f6">'+totEntN+'</td>'+
+          '<td style="padding:6px;text-align:right">'+(totEntV>0?fmtBRL(totEntV):'—')+'</td>'+
+          '<td style="padding:6px;text-align:right;color:#22d3a7">'+totFaN+'</td>'+
+          '<td style="padding:6px;text-align:right">'+(totFaV>0?fmtBRL(totFaV):'—')+'</td>'+
+          '<td style="padding:6px;text-align:right">'+(totEntN-totFaN)+'</td>'+
+        '</tr></tbody></table>';
+    }
+  })();
 
   // Barras por setor (inclui ocorrências)
   var sA={},sC={};
@@ -5651,16 +5750,80 @@ function renderPendencias() {
 }
 
 
+// Helpers de parsing de itens (tokens separados por vírgula, ponto-e-vírgula ou nova linha)
+function _parsePendItems(s){
+  return (s||'').split(/[,;\n]/).map(function(x){return x.trim();}).filter(function(x){return x.length>0;});
+}
+function _formatPendItems(arr){
+  // Remove duplicatas mantendo ordem
+  var seen={}, out=[];
+  arr.forEach(function(it){var k=it.toLowerCase();if(!seen[k]){seen[k]=true;out.push(it);}});
+  return out.join(', ');
+}
+function _setTagObs(obs, tag, val){
+  var regex = new RegExp('\\['+tag+':[^\\]]*\\]','g');
+  obs = (obs||'').replace(regex,'').trim();
+  if(val && val.trim()) obs = (obs?obs+'\n':'')+('['+tag+': '+val.trim()+']');
+  return obs;
+}
+
 async function salvarItemPendencia(id, tag, val){
   var pedido = getPedidoById(id);
   if(!pedido) return;
   try{
     var obs = pedido.obs||'';
-    var regex = new RegExp('\\['+tag+':[^\\]]*\\]','g');
-    obs = obs.replace(regex,'').trim();
-    if(val.trim()) obs = (obs?obs+'\n':'')+('['+tag+': '+val.trim()+']');
+    var novoVal = (val||'').trim();
+    obs = _setTagObs(obs, tag, novoVal);
+
+    // Fix: autosync entre PEND_SEP, PEND_ITEMS e PEND_FAT
+    // Se operador digita item em SEP, ele deixa de ser pendente (remove de PEND_ITEMS)
+    // Se apaga do SEP, o item volta para PEND_ITEMS
+    // Se digita em PEND_FAT, o item sai de SEP (já foi faturado)
+    if(tag==='PEND_SEP'){
+      var sepItens = _parsePendItems(novoVal);
+      var pendAtuais = _parsePendItems(_getPendObs(obs,'PEND_ITEMS')==='—'?'':_getPendObs(obs,'PEND_ITEMS'));
+      var fatAtuais = _parsePendItems(_getPendObs(obs,'PEND_FAT')==='—'?'':_getPendObs(obs,'PEND_FAT'));
+      // Snapshot original (TODO = union de tudo que já apareceu)
+      var todoAtual = _parsePendItems(_getPendObs(obs,'PEND_TODO')==='—'?'':_getPendObs(obs,'PEND_TODO'));
+      // Base: se PEND_TODO ainda não existe, materializa a união atual
+      if(todoAtual.length===0){
+        todoAtual = pendAtuais.slice();
+        sepItens.forEach(function(it){if(todoAtual.map(function(x){return x.toLowerCase();}).indexOf(it.toLowerCase())<0)todoAtual.push(it);});
+        fatAtuais.forEach(function(it){if(todoAtual.map(function(x){return x.toLowerCase();}).indexOf(it.toLowerCase())<0)todoAtual.push(it);});
+      } else {
+        // Adiciona qualquer item novo que apareceu em SEP e não estava no TODO
+        sepItens.forEach(function(it){if(todoAtual.map(function(x){return x.toLowerCase();}).indexOf(it.toLowerCase())<0)todoAtual.push(it);});
+      }
+      // PEND_ITEMS = TODO - SEP - FAT (o que ainda não foi separado nem faturado)
+      var sepLower = sepItens.map(function(x){return x.toLowerCase();});
+      var fatLower = fatAtuais.map(function(x){return x.toLowerCase();});
+      var novosPend = todoAtual.filter(function(it){
+        var k = it.toLowerCase();
+        return sepLower.indexOf(k)<0 && fatLower.indexOf(k)<0;
+      });
+      obs = _setTagObs(obs, 'PEND_ITEMS', _formatPendItems(novosPend));
+      obs = _setTagObs(obs, 'PEND_TODO', _formatPendItems(todoAtual));
+    }
+    if(tag==='PEND_FAT'){
+      var fatItens = _parsePendItems(novoVal);
+      var sepAtuais = _parsePendItems(_getPendObs(obs,'PEND_SEP')==='—'?'':_getPendObs(obs,'PEND_SEP'));
+      var fatLower2 = fatItens.map(function(x){return x.toLowerCase();});
+      // Remove do SEP tudo que já foi faturado
+      var novosSep = sepAtuais.filter(function(it){return fatLower2.indexOf(it.toLowerCase())<0;});
+      obs = _setTagObs(obs, 'PEND_SEP', _formatPendItems(novosSep));
+    }
+    if(tag==='PEND_ITEMS'){
+      // Ajuste manual dos pendentes — atualiza/reinicia o TODO para considerar também os itens já separados e faturados
+      var pendNovos = _parsePendItems(novoVal);
+      var sepAtuais2 = _parsePendItems(_getPendObs(obs,'PEND_SEP')==='—'?'':_getPendObs(obs,'PEND_SEP'));
+      var fatAtuais2 = _parsePendItems(_getPendObs(obs,'PEND_FAT')==='—'?'':_getPendObs(obs,'PEND_FAT'));
+      var todoNovo = pendNovos.concat(sepAtuais2).concat(fatAtuais2);
+      obs = _setTagObs(obs, 'PEND_TODO', _formatPendItems(todoNovo));
+    }
+
     await sb.from('pedidos').update({obs:obs||null}).eq('id',id);
     upsertPedidoLocal({id:id, obs:obs});
+    renderPendencias();
   }catch(e){toast(e.message,'err');}
 }
 
@@ -5970,6 +6133,11 @@ function filtrarHistOcorr(){
     var t = r.created_at ? new Date(r.created_at).getTime() : 0;
     if(!t) return;
     var tipo = (r.tipo||'').toUpperCase();
+    // Fix: não exibir canhotos/confirmações e eventos operacionais no histórico de ocorrências
+    if(tipo==='CANHOTO' || tipo==='CANHOTO_CONFIRMADO' || tipo==='ENTREGA' || tipo==='EMBARQUE' || tipo==='FATURAMENTO') return;
+    // Fix: também filtra pela descrição caso tipo seja genérico
+    var descLower = (r.descricao||'').toLowerCase();
+    if(descLower.indexOf('canhoto confirmado')>=0) return;
     var isRetorno = tipo==='RETORNO' || tipo==='RETORNO_OCORRÊNCIA';
     var setorOcc = (o.setor_pendente?(SL[o.setor_pendente]||o.setor_pendente):(SL[o.setor]||o.setor||'—'));
     if(!isRetorno){
