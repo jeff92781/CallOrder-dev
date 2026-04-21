@@ -1535,7 +1535,7 @@ const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 const SETORES = ['atendimento','estoque','corte','expedicao','balcao_op','faturamento'];
 const PROXIMO_SETOR = {atendimento:'estoque',estoque:'corte',corte:'balcao_op',balcao_op:'faturamento',expedicao:'faturamento'};
 const RETORNO_PADRAO = {estoque:'atendimento',corte:'estoque',balcao_op:'corte',faturamento:'balcao_op',expedicao:'corte'};
-const SL = {atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',balcao_op:'Balcão',separacao:'Balcão',faturamento:'Faturamento',expedicao:'Expedição',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira',em_ocorrencia:'Ocorrência',em_entrega:'Em Trânsito',ag_embarque:'Ag. Embarque',pronto_expedicao:'Pronto p/ Embarque',aguard_canhoto:'Aguardando Canhoto'};
+const SL = {atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',balcao_op:'Balcão',separacao:'Balcão',faturamento:'Faturamento',expedicao:'Expedição',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira',em_ocorrencia:'Ocorrência',em_pendencia:'Pendência',em_entrega:'Em Trânsito',ag_embarque:'Ag. Embarque',pronto_expedicao:'Pronto p/ Embarque',aguard_canhoto:'Aguardando Canhoto'};
 const SC = {atendimento:'tag-at',estoque:'tag-es',corte:'tag-co',balcao_op:'tag-se',separacao:'tag-se',faturamento:'tag-fa',expedicao:'tag-ex',pronto_balcao:'tag-rd',balcao_chamado:'tag-rd',finalizado:'tag-do'};
 const SD = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',balcao_op:'#FAC775',separacao:'#FAC775',faturamento:'#ED93B1',expedicao:'#818cf8'};
 const SICONCOLOR = {atendimento:'#a78bfa',estoque:'#c49a6c',corte:'#ef4444',balcao_op:'#f1f5f9',separacao:'#f1f5f9',faturamento:'#22d3a7',expedicao:'#818cf8'};
@@ -1802,9 +1802,11 @@ function buildOccurrenceLine(tipo,setor,texto){
 }
 function getPedidoById(id){return PEDIDOS.find(function(p){return p.id===id;});}
 async function appendObsPedido(id,linha){
+  // FIX 2: correção do separador — usava '\\n' (literal barra-n) ao invés de quebra de linha.
+  // Isso impedia o parsing correto por split('\n') em relatórios e histórico.
   var pedido=getPedidoById(id);
   var atual=pedido&&pedido.obs?String(pedido.obs):'';
-  var novo=(atual?atual+'\\n':'')+linha;
+  var novo=(atual?atual+'\n':'')+linha;
   var res=await sb.from('pedidos').update({obs:novo}).eq('id',id);
   if(res.error)throw res.error;
   if(pedido)pedido.obs=novo;
@@ -2216,10 +2218,23 @@ async function fetchMovs(){
   MOVS=res.data||[];
 }
 var _canhotosConfirmados=[];
+var _canhotosNFs=[]; // Fix 4: NFs individuais para exibição por nota
 async function fetchCanhotosConfirmados(){
   var hoje=new Date();hoje.setHours(0,0,0,0);
   var res=await sb.from('pedidos').select('*').eq('status','finalizado').gte('canhoto_at',hoje.toISOString()).order('canhoto_at',{ascending:false});
   _canhotosConfirmados=res.data||[];
+  // Fix 4: busca notas_fiscais para pedidos aguardando canhoto + confirmados hoje (uma linha por NF)
+  try{
+    var ids=[];
+    (PEDIDOS||[]).forEach(function(o){if(o.status==='aguard_canhoto')ids.push(o.id);});
+    (_canhotosConfirmados||[]).forEach(function(o){if(ids.indexOf(o.id)<0)ids.push(o.id);});
+    if(ids.length){
+      var nfRes=await sb.from('notas_fiscais').select('*').in('pedido_id',ids).order('registrado_at',{ascending:true});
+      _canhotosNFs=nfRes.data||[];
+    }else{
+      _canhotosNFs=[];
+    }
+  }catch(e){console.warn('fetch notas_fiscais canhotos:',e);_canhotosNFs=[];}
 }
 async function fetchPedidosRelatorio(startStr,endStr){
   var r=getPeriodRange(startStr,endStr);
@@ -2355,11 +2370,15 @@ function startClock(){
   },1000);
 }
 function isOperacionalVisivel(o){
+  if(o.status==='em_pendencia')return false;
+  // FIX 1: pendência registrada sem NF emitida (pré-faturamento) retira o card do fluxo operacional
+  if(o.tem_pendencia && o.pendencia_status==='aberta' && !o.num_nota)return false;
   return o.status!=='finalizado' && o.status!=='cancelado' && o.status!=='balcao_chamado' && o.status!=='ag_retira' && o.status!=='em_ocorrencia' && o.status!=='ag_embarque' && o.status!=='em_entrega' && o.status!=='aguard_canhoto';
 }
 function isTVVisivel(o){
   // TV mostra APENAS pedidos balcão em andamento — sai quando aguard_canhoto
-  if(o.status==='cancelado'||o.status==='finalizado'||o.status==='balcao_chamado'||o.status==='ag_retira'||o.status==='em_ocorrencia'||o.status==='ag_embarque'||o.status==='aguard_canhoto')return false;
+  if(o.status==='cancelado'||o.status==='finalizado'||o.status==='balcao_chamado'||o.status==='ag_retira'||o.status==='em_ocorrencia'||o.status==='em_pendencia'||o.status==='ag_embarque'||o.status==='aguard_canhoto')return false;
+  if(o.tem_pendencia && o.pendencia_status==='aberta' && !o.num_nota)return false;
   if(o.prioridade==='retira'||o.prioridade==='entrega')return false;
   return true;
 }
@@ -3119,6 +3138,14 @@ async function marcarEntregue(id){
     var res=await sb.from('pedidos').update({status:'aguard_canhoto',entregue_at:agora,confirmado_por_canhoto:entregaPor}).eq('id',id);
     if(res.error)throw res.error;
     upsertPedidoLocal({id:id,status:'aguard_canhoto',entregue_at:agora,confirmado_por_canhoto:entregaPor});
+    // Fix 4: marca a NF individual como entregue (última em_entrega / aberta)
+    try{
+      var rNf=await sb.from('notas_fiscais').select('*').eq('pedido_id',id).is('canhoto_at',null).order('registrado_at',{ascending:false}).limit(1);
+      var nf=(rNf.data||[])[0];
+      if(nf){
+        await sb.from('notas_fiscais').update({entregue_at:agora,status:'aguard_canhoto'}).eq('id',nf.id);
+      }
+    }catch(e){console.warn('update NF entregue:',e);}
     _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(500);
     renderCanhotosBadge();
     renderEmTransitoBadge();
@@ -3234,6 +3261,14 @@ async function confirmarChamaBalcao(){
     }).eq('id',_chamaBalcaoTarget);
     if(res.error)throw res.error;
     upsertPedidoLocal({id:_chamaBalcaoTarget,status:'aguard_canhoto',pendente_desde:agora,entregue_at:agora,chave_nfe:chave,confirmado_por_canhoto:chamadoPor});
+    // Fix 4: salva chave_nfe e entregue_at na NF individual (balcão/retira)
+    try{
+      var rNfB=await sb.from('notas_fiscais').select('*').eq('pedido_id',_chamaBalcaoTarget).is('canhoto_at',null).order('registrado_at',{ascending:false}).limit(1);
+      var nfB=(rNfB.data||[])[0];
+      if(nfB){
+        await sb.from('notas_fiscais').update({chave_nfe:chave,entregue_at:agora,status:'aguard_canhoto'}).eq('id',nfB.id);
+      }
+    }catch(e){console.warn('update NF chama balcão:',e);}
     _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(500);
     renderCanhotosBadge();
     var nomeParaChamar=pedido.nome_retirada||pedido.nome_cliente||'cliente';
@@ -4087,54 +4122,56 @@ function renderTimeline(p, movs, devs, nfs){
     });
   });
 
-  // Ocorrências e retornos — parsed from obs field
+  // Ocorrências, pendências e retornos — parsed from obs field
+  // Fix 5: também captura PENDÊNCIA / RETORNO_PENDENCIA para que apareçam na timeline
   if(p.obs){
     var obsLines=(p.obs||'').split('\n');
+    var _tiposTimeline='OCORRÊNCIA|RETORNO_OCORRÊNCIA|RETORNO_PENDENCIA|PENDÊNCIA|RETORNO';
+    var reFull=new RegExp('^\\[([^\\]]+)\\]\\s*('+_tiposTimeline+')\\s*·\\s*([^·]+)·\\s*([^—]+)—\\s*(.+)$','i');
+    var reSimple=new RegExp('^\\[([^\\]]+)\\]\\s*('+_tiposTimeline+')\\s*·\\s*([^—]+)—\\s*(.+)$','i');
+    function _classify(tipo){
+      var t=(tipo||'').toUpperCase();
+      if(t==='OCORRÊNCIA')return {label:'Pedido entrou em Ocorrência',icon:'⚠️',color:'#f59e0b',subPrefix:'Motivo: '};
+      if(t==='RETORNO_OCORRÊNCIA'||t==='RETORNO')return {label:'Retorno da Ocorrência',icon:'🔄',color:'#3b82f6',subPrefix:'O que foi feito: '};
+      if(t==='PENDÊNCIA')return {label:'Pendência registrada',icon:'⏸️',color:'#f59e0b',subPrefix:'Motivo: '};
+      if(t==='RETORNO_PENDENCIA')return {label:'Retorno da Pendência',icon:'↩️',color:'#3b82f6',subPrefix:'O que foi feito: '};
+      return null;
+    }
     obsLines.forEach(function(linha){
       if(!linha.trim())return;
-      // Format: [dd/mm/aa hh:mm:ss] TIPO · Setor · Usuário — texto
-      var dateMatch=linha.match(/^\[([^\]]+)\]\s*(OCORRÊNCIA|RETORNO_OCORRÊNCIA|RETORNO)\s*·\s*([^·]+)·\s*([^—]+)—\s*(.+)$/i);
+      var dateMatch=linha.match(reFull);
       if(!dateMatch){
-        // simpler format without username
-        var dateMatch2=linha.match(/^\[([^\]]+)\]\s*(OCORRÊNCIA|RETORNO_OCORRÊNCIA|RETORNO)\s*·\s*([^—]+)—\s*(.+)$/i);
+        var dateMatch2=linha.match(reSimple);
         if(dateMatch2){
-          var tipo2=dateMatch2[2].trim().toUpperCase();
-          var isOcc2=tipo2==='OCORRÊNCIA';
-          var isRet2=tipo2==='RETORNO'||tipo2==='RETORNO_OCORRÊNCIA';
-          if(isOcc2||isRet2){
+          var cfg2=_classify(dateMatch2[2]);
+          if(cfg2){
             steps.push({
-              label:isOcc2?'Pedido entrou em Ocorrência':'Retorno da Ocorrência',
+              label:cfg2.label,
               sub:'Setor: '+dateMatch2[3].trim()+' — '+dateMatch2[4].trim(),
               time:null,done:true,
-              icon:isOcc2?'⚠️':'🔄',
-              color:isOcc2?'#f59e0b':'#3b82f6'
+              icon:cfg2.icon,color:cfg2.color
             });
           }
         }
         return;
       }
-      var tipo=dateMatch[2].trim().toUpperCase();
+      var cfg=_classify(dateMatch[2]);
+      if(!cfg)return;
       var setor=dateMatch[3].trim();
       var usuario=dateMatch[4].trim();
       var motivo=dateMatch[5].trim();
-      var isOcc=tipo==='OCORRÊNCIA';
-      var isRet=tipo==='RETORNO'||tipo==='RETORNO_OCORRÊNCIA';
-      if(!isOcc&&!isRet)return;
       // Parse the date string (pt-BR format)
       var dtStr=dateMatch[1].trim();
       var dtParsed=null;
       try{
-        var parts=dtStr.split(/[\s,/]+/);
-        // dd/mm/aa hh:mm:ss
         var dp=dtStr.match(/(\d{2})\/(\d{2})\/(\d{2,4})[,\s]+(\d{2}):(\d{2})/);
         if(dp){dtParsed=new Date(2000+parseInt(dp[3]%100),parseInt(dp[2])-1,parseInt(dp[1]),parseInt(dp[4]),parseInt(dp[5])).toISOString();}
       }catch(e){}
       steps.push({
-        label:isOcc?'Pedido entrou em Ocorrência':'Retorno da Ocorrência',
-        sub:(isOcc?'Acionado por '+usuario+' · Setor: '+setor+' — Motivo: '+motivo:'Retornado por '+usuario+' · Setor: '+setor+' — O que foi feito: '+motivo),
+        label:cfg.label,
+        sub:'Por '+usuario+' · Setor: '+setor+' — '+cfg.subPrefix+motivo,
         time:dtParsed,done:true,
-        icon:isOcc?'⚠️':'🔄',
-        color:isOcc?'#f59e0b':'#3b82f6'
+        icon:cfg.icon,color:cfg.color
       });
     });
   }
@@ -4165,10 +4202,17 @@ function renderTimeline(p, movs, devs, nfs){
     });
   }
 
-  // Faturamento / NF — suporta múltiplas notas (pedidos parciais), com deduplicação por numero_nf
+  // Fix 5: Ciclo completo por NF — NF emitida → embarque → entrega → canhoto (para cada NF)
   var _nfsRaw = nfs && nfs.length > 0
     ? nfs
-    : (p.num_nota ? [{numero_nf:p.num_nota, valor_total:p.valor_nota_fat||0, registrado_at:p.finalizado_at, registrado_por:'', obs:'', tipo:''}] : []);
+    : (p.num_nota ? [{
+        numero_nf:p.num_nota, valor_total:p.valor_nota_fat||0,
+        registrado_at:p.finalizado_at, registrado_por:'', obs:'', tipo:'',
+        chave_nfe:p.chave_nfe||'', placa_veiculo:p.placa_veiculo||'',
+        transportadora:p.transportadora||'', motorista:p.motorista||'',
+        entregue_at:p.entregue_at||null, canhoto_at:p.canhoto_at||null,
+        confirmado_por_canhoto:p.confirmado_por_canhoto||'', status:''
+      }] : []);
   // Deduplica por numero_nf mantendo a entrada mais recente
   var _seenNF={};
   var _nfsParaMostrar=_nfsRaw.filter(function(nf){
@@ -4176,17 +4220,68 @@ function renderTimeline(p, movs, devs, nfs){
     if(_seenNF[nf.numero_nf])return false;
     _seenNF[nf.numero_nf]=true;return true;
   });
+  // Ordena as NFs pela data de registro para manter a ordem cronológica
+  _nfsParaMostrar.sort(function(a,b){
+    var ta=a.registrado_at?new Date(a.registrado_at).getTime():0;
+    var tb=b.registrado_at?new Date(b.registrado_at).getTime():0;
+    return ta-tb;
+  });
+  var totalNFs=_nfsParaMostrar.length;
+  var ehParcialGeral = totalNFs > 1;
   _nfsParaMostrar.forEach(function(nf, nfi){
-    var ehParcial = _nfsParaMostrar.length > 1;
+    var seqLabel = ehParcialGeral ? ' (' + (nfi+1) + '/' + totalNFs + ')' : '';
+    var isColetaCiclo = (prio==='balcao'||prio==='retira');
+    // Fallback: para a ÚLTIMA NF, se o registro de notas_fiscais não tem dados de embarque/entrega/canhoto,
+    // usa os campos atuais do pedido (legacy ou NF mais recente que ainda não teve backfill)
+    var ehUltima = (nfi === totalNFs - 1);
+    var nfChave = nf.chave_nfe || (ehUltima ? (p.chave_nfe||'') : '');
+    var nfPlaca = nf.placa_veiculo || (ehUltima ? (p.placa_veiculo||'') : '');
+    var nfTransp = nf.transportadora || (ehUltima ? (p.transportadora||'') : '');
+    var nfMotor = nf.motorista || (ehUltima ? (p.motorista||'') : '');
+    var nfEntregue = nf.entregue_at || (ehUltima ? (p.entregue_at||null) : null);
+    var nfCanhoto = nf.canhoto_at || (ehUltima ? (p.canhoto_at||null) : null);
+    var nfConfPor = nf.confirmado_por_canhoto || (ehUltima ? (p.confirmado_por_canhoto||'') : '');
+
+    // 1) NF emitida
     steps.push({
-      label: 'Nota Fiscal emitida — NF ' + nf.numero_nf + (ehParcial ? ' (' + (nfi+1) + '/' + _nfsParaMostrar.length + ')' : ''),
+      label: 'Nota Fiscal emitida — NF ' + nf.numero_nf + seqLabel,
       sub: 'Valor: ' + fmtBRL(nf.valor_total)
         + (nf.registrado_por ? ' · Por: ' + nf.registrado_por : '')
-        + (nf.tipo && nf.tipo !== 'total' ? ' · ' + nf.tipo.charAt(0).toUpperCase() + nf.tipo.slice(1) : '')
+        + (nf.tipo && nf.tipo !== 'total' ? ' · ' + String(nf.tipo).charAt(0).toUpperCase() + String(nf.tipo).slice(1) : '')
         + (p.separador && nfi === 0 ? ' · Separador: ' + p.separador : '')
         + (nf.obs ? ' — ' + String(nf.obs).substring(0,80) : ''),
       time: nf.registrado_at, done: true, icon: '🧾', color: '#22d3a7'
     });
+
+    // 2) Embarque / Coleta (se tem placa ou chave_nfe da NF)
+    if(nfPlaca || nfChave){
+      // Tenta estimar o tempo de embarque: usa pendente_desde do pedido se for última NF,
+      // caso contrário usa o registrado_at da NF (fallback aproximado)
+      var tEmbarque = ehUltima ? (p.pendente_desde||nf.registrado_at) : nf.registrado_at;
+      steps.push({
+        label: (isColetaCiclo?'Pedido coletado':'Pedido embarcado') + ' — NF ' + nf.numero_nf + seqLabel,
+        sub: (nfTransp||'—') + (nfPlaca?' · Placa: '+nfPlaca:'') + (nfMotor?' · Motorista: '+nfMotor:'') + (nfChave?' · Chave: '+String(nfChave).substring(0,8)+'...':''),
+        time: tEmbarque, done: true, icon: isColetaCiclo?'📦':'🚚', color: isColetaCiclo?'#22d3a7':'#818cf8'
+      });
+    }
+
+    // 3) Entrega / Coleta confirmada (se entregue_at preenchido e não em ag_retira)
+    if(nfEntregue && p.status!=='ag_retira'){
+      steps.push({
+        label: (isColetaCiclo?'Coleta confirmada':'Entrega confirmada') + ' — NF ' + nf.numero_nf + seqLabel,
+        sub: 'Aguardando validação do canhoto',
+        time: nfEntregue, done: true, icon: '✅', color: '#22d3a7'
+      });
+    }
+
+    // 4) Canhoto confirmado (se canhoto_at preenchido)
+    if(nfCanhoto){
+      steps.push({
+        label: 'Canhoto confirmado — NF ' + nf.numero_nf + seqLabel,
+        sub: (nfConfPor ? 'Confirmado por '+nfConfPor : 'Entrega concluída') + (ehParcialGeral ? ' · NF ' + (nfi+1) + ' de ' + totalNFs : ''),
+        time: nfCanhoto, done: true, icon: '🏁', color: '#22d3a7'
+      });
+    }
   });
 
   // Cancelado APÓS a NF
@@ -4194,26 +4289,12 @@ function renderTimeline(p, movs, devs, nfs){
     steps.push({label:'Pedido cancelado após emissão da NF',sub:'NF: '+p.num_nota,time:p.finalizado_at,done:true,icon:'❌',color:'#ef4444'});
   }
 
-  // Embarque / Coleta
-  if(p.placa_veiculo||p.chave_nfe){
-    var isColeta=(prio==='balcao'||prio==='retira');
-    steps.push({
-      label:isColeta?'Pedido coletado':'Pedido embarcado',
-      sub:(p.transportadora||'—')+(p.placa_veiculo?' · Placa: '+p.placa_veiculo:'')+(p.motorista?' · Motorista: '+p.motorista:''),
-      time:p.pendente_desde,done:true,icon:isColeta?'📦':'🚚',color:isColeta?'#22d3a7':'#818cf8'
-    });
-  }
-
-  // Entrega / Coleta confirmada
-  if(p.entregue_at&&p.status!=='ag_retira'){
-    var isColetaConf=(prio==='balcao'||prio==='retira');
-    steps.push({label:isColetaConf?'Coleta confirmada':'Entrega confirmada',sub:isColetaConf?'Aguardando validação do canhoto':'Aguardando validação do canhoto',time:p.entregue_at,done:true,icon:'✅',color:'#22d3a7'});
-  }
-
-  // Canhoto / Finalizado
-  if(p.canhoto_at||(concluido&&p.prioridade==='entrega')){
-    steps.push({label:'Canhoto confirmado — Processo encerrado',sub:'Entrega concluída com sucesso',time:p.canhoto_at||p.finalizado_at,done:true,icon:'🏁',color:'#22d3a7'});
-  }else if(concluido&&p.prioridade==='balcao'){
+  // Finalização geral (quando o pedido é marcado como finalizado sem canhotos por NF — legacy / balcão)
+  if(concluido && !nfs.some && !p.canhoto_at){
+    if(p.prioridade==='balcao'){
+      steps.push({label:'Retirado no balcão',sub:'Processo encerrado',time:p.finalizado_at,done:true,icon:'🏁',color:'#22d3a7'});
+    }
+  }else if(concluido && p.prioridade==='balcao' && _nfsParaMostrar.length===0){
     steps.push({label:'Retirado no balcão',sub:'Processo encerrado',time:p.finalizado_at,done:true,icon:'🏁',color:'#22d3a7'});
   }
 
@@ -4990,52 +5071,106 @@ function renderCanhotos(){
   var hoje=new Date();hoje.setHours(0,0,0,0);
   // Base: aguardando (from PEDIDOS) + confirmados hoje (from dedicated fetch)
   var aguardandoList=PEDIDOS.filter(function(o){return o.status==='aguard_canhoto';});
-  // Merge: avoid duplicates (PEDIDOS may also have some finalizado from today)
   var confirmadosIds={};
   _canhotosConfirmados.forEach(function(o){confirmadosIds[o.id]=true;});
   var confirmadosFromPedidos=PEDIDOS.filter(function(o){
     return o.status==='finalizado'&&o.canhoto_at&&tsMs(o.canhoto_at)>=hoje.getTime()&&!confirmadosIds[o.id];
   });
   var confirmadosList=_canhotosConfirmados.concat(confirmadosFromPedidos);
-  var base=aguardandoList.concat(confirmadosList);
+  var basePedidos=aguardandoList.concat(confirmadosList);
+
+  // Fix 4: Expandir em uma linha por NF (todas as notas emitidas para o pedido)
+  // Agrupa NFs por pedido_id
+  var nfsByPedido={};
+  (_canhotosNFs||[]).forEach(function(nf){
+    if(!nfsByPedido[nf.pedido_id])nfsByPedido[nf.pedido_id]=[];
+    nfsByPedido[nf.pedido_id].push(nf);
+  });
+
+  // Gera linhas: para cada pedido, emite uma linha por NF. Se não tiver NFs salvos, usa os campos do pedido como fallback.
+  var rows=[];
+  basePedidos.forEach(function(o){
+    var nfs=nfsByPedido[o.id]||[];
+    if(nfs.length===0){
+      // Fallback legacy: única NF (dados no próprio pedido)
+      rows.push({
+        pedido:o, nf:null,
+        num_nota:o.num_nota||'',
+        valor:parseFloat(o.valor_nota_fat)||0,
+        chave_nfe:o.chave_nfe||'',
+        placa_veiculo:o.placa_veiculo||'',
+        transportadora:o.transportadora||'',
+        motorista:o.motorista||'',
+        entregue_at:o.entregue_at||null,
+        canhoto_at:o.canhoto_at||null,
+        confirmado_por:o.confirmado_por_canhoto||'',
+        status_nf:(o.status==='finalizado'||o.canhoto_at)?'confirmado':'aguardando',
+        registrado_at:o.finalizado_at||o.entrada_at||''
+      });
+    }else{
+      nfs.forEach(function(nf){
+        rows.push({
+          pedido:o, nf:nf,
+          num_nota:nf.numero_nf||'',
+          valor:parseFloat(nf.valor_total)||0,
+          chave_nfe:nf.chave_nfe||(nfs.length===1?o.chave_nfe||'':''),
+          placa_veiculo:nf.placa_veiculo||o.placa_veiculo||'',
+          transportadora:nf.transportadora||o.transportadora||'',
+          motorista:nf.motorista||o.motorista||'',
+          entregue_at:nf.entregue_at||null,
+          canhoto_at:nf.canhoto_at||null,
+          confirmado_por:nf.confirmado_por_canhoto||'',
+          status_nf:nf.canhoto_at?'confirmado':'aguardando',
+          registrado_at:nf.registrado_at||''
+        });
+      });
+    }
+  });
+
   // Aplicar filtro de status
   var items;
-  if(_canhotoFilter==='aguardando')items=base.filter(function(o){return o.status==='aguard_canhoto';});
-  else if(_canhotoFilter==='confirmados')items=base.filter(function(o){return o.status==='finalizado';});
-  else items=base;
+  if(_canhotoFilter==='aguardando')items=rows.filter(function(r){return r.status_nf==='aguardando';});
+  else if(_canhotoFilter==='confirmados')items=rows.filter(function(r){return r.status_nf==='confirmado';});
+  else items=rows;
   // Filtros de pesquisa
   var filtPed=(el('can-filtro-pedido')?el('can-filtro-pedido').value:'').trim();
   var filtNF=(el('can-filtro-nf')?el('can-filtro-nf').value:'').trim();
   var filtStart=el('can-date-start')?el('can-date-start').value:'';
   var filtEnd=el('can-date-end')?el('can-date-end').value:'';
-  if(filtPed)items=items.filter(function(o){return (o.numero||'').indexOf(filtPed)>=0;});
-  if(filtNF)items=items.filter(function(o){return (o.num_nota||'').indexOf(filtNF)>=0;});
-  if(filtStart){var ds=new Date(filtStart+'T00:00:00');items=items.filter(function(o){return tsMs(o.entrada_at)>=ds.getTime();});}
-  if(filtEnd){var de=new Date(filtEnd+'T23:59:59');items=items.filter(function(o){return tsMs(o.entrada_at)<=de.getTime();});}
-  // Sort: aguardando primeiro
-  items=items.sort(function(a,b){return (a.status==='aguard_canhoto'?0:1)-(b.status==='aguard_canhoto'?0:1);});
+  if(filtPed)items=items.filter(function(r){return (r.pedido.numero||'').indexOf(filtPed)>=0;});
+  if(filtNF)items=items.filter(function(r){return (r.num_nota||'').indexOf(filtNF)>=0;});
+  if(filtStart){var ds=new Date(filtStart+'T00:00:00');items=items.filter(function(r){return tsMs(r.pedido.entrada_at)>=ds.getTime();});}
+  if(filtEnd){var de=new Date(filtEnd+'T23:59:59');items=items.filter(function(r){return tsMs(r.pedido.entrada_at)<=de.getTime();});}
+  // Sort: aguardando primeiro, depois por pedido/NF
+  items=items.sort(function(a,b){
+    var sA=a.status_nf==='aguardando'?0:1, sB=b.status_nf==='aguardando'?0:1;
+    if(sA!==sB)return sA-sB;
+    if(a.pedido.numero!==b.pedido.numero)return String(a.pedido.numero).localeCompare(String(b.pedido.numero));
+    return String(a.num_nota).localeCompare(String(b.num_nota));
+  });
   renderCanhotosBadge();
-  var pendentes=PEDIDOS.filter(function(o){return o.status==='aguard_canhoto';}).length;
-  var conf=confirmadosList.length;
-  if(el('canhoto-count'))el('canhoto-count').textContent=pendentes+' aguardando · '+conf+' confirmado(s) hoje';
+  var pendentes=rows.filter(function(r){return r.status_nf==='aguardando';}).length;
+  var conf=rows.filter(function(r){return r.status_nf==='confirmado';}).length;
+  if(el('canhoto-count'))el('canhoto-count').textContent=pendentes+' NF(s) aguardando · '+conf+' confirmada(s)';
   if(el('canhoto-empty'))el('canhoto-empty').style.display=items.length?'none':'block';
   if(el('canhoto-table'))el('canhoto-table').style.display=items.length?'':'none';
   if(!el('canhoto-tbody'))return;
-  el('canhoto-tbody').innerHTML=items.map(function(o){
-    var entregueAt=o.entregue_at?new Date(o.entregue_at):null;
+  el('canhoto-tbody').innerHTML=items.map(function(r){
+    var o=r.pedido;
+    var entregueAt=r.entregue_at?new Date(r.entregue_at):null;
     var dtEntrega=entregueAt?entregueAt.toLocaleDateString('pt-BR')+' '+entregueAt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';
-    var statusBadge=o.status==='finalizado'
+    var statusBadge=r.status_nf==='confirmado'
       ?'<span style="color:var(--accent);font-size:11px;font-weight:700;background:rgba(34,211,167,.1);padding:2px 8px;border-radius:6px">✓ Confirmado</span>'
       :'<span style="color:var(--warn);font-size:11px;font-weight:700">⏳ Aguardando</span>';
     return '<tr>'+
       '<td style="font-family:var(--font-head);font-size:15px;font-weight:700">#'+o.numero+'</td>'+
       '<td>'+(o.nome_cliente||'—')+'</td>'+
-      '<td style="color:var(--sep)">'+(o.num_nota||'—')+'</td>'+
-      '<td style="color:#818cf8;font-weight:600">'+(parseFloat(o.valor_nota_fat)>0?fmtBRL(o.valor_nota_fat):'—')+'</td>'+
-      '<td>'+(o.transportadora||'—')+'</td>'+
-      '<td>'+(o.motorista||'—')+'</td>'+
+      '<td style="color:var(--sep)">'+(r.num_nota||'—')+'</td>'+
+      '<td style="color:#818cf8;font-weight:600">'+(r.valor>0?fmtBRL(r.valor):'—')+'</td>'+
+      '<td>'+(r.transportadora||'—')+'</td>'+
+      '<td>'+(r.motorista||'—')+'</td>'+
       '<td style="color:var(--accent)">'+dtEntrega+'</td>'+
-      '<td style="color:var(--muted);font-size:12px">'+(o.confirmado_por_canhoto||'—')+'</td>'+
+      '<td style="color:var(--muted);font-size:12px">'+(r.confirmado_por||'—')+'</td>'+
       '<td>'+statusBadge+'</td>'+
     '</tr>';
   }).join('');
@@ -5049,14 +5184,19 @@ function canhotoScanCheck(val){
   if(v.length===0){fb.style.color='var(--muted)';fb.textContent='';return;}
   if(v.length<44){fb.style.color='var(--muted)';fb.textContent=v.length+' / 44 dígitos';return;}
   if(v.length===44){
-    // Preview: encontrar pedido correspondente
-    var match=PEDIDOS.filter(function(o){return o.status==='aguard_canhoto';}).find(function(o){return o.chave_nfe===v;});
-    if(match){
+    // Preview: procura primeiro em notas_fiscais por chave_nfe
+    var nfMatch=(_canhotosNFs||[]).find(function(nf){return (nf.chave_nfe||'')===v && !nf.canhoto_at;});
+    var ped=null;
+    if(nfMatch){ped=PEDIDOS.find(function(o){return o.id===nfMatch.pedido_id;})||getPedidoById(nfMatch.pedido_id);}
+    if(!ped){
+      ped=PEDIDOS.filter(function(o){return o.status==='aguard_canhoto';}).find(function(o){return o.chave_nfe===v;});
+    }
+    if(ped){
       fb.style.color='var(--accent)';
-      fb.textContent='✓ Chave encontrada — Pedido #'+match.numero+' / '+( match.nome_cliente||'—')+' — Pressione Enter ou clique Confirmar';
+      fb.textContent='✓ Chave encontrada — Pedido #'+ped.numero+(nfMatch?' / NF '+(nfMatch.numero_nf||''):'')+' / '+(ped.nome_cliente||'—')+' — Pressione Enter ou clique Confirmar';
     }else{
       fb.style.color='var(--warn)';
-      fb.textContent='⚠ Nenhum pedido aguardando canhoto com essa chave.';
+      fb.textContent='⚠ Nenhuma NF aguardando canhoto com essa chave.';
     }
   }
 }
@@ -5066,24 +5206,58 @@ async function canhotoScanConfirmar(){
   if(!input)return;
   var chave=(input.value||'').replace(/\D/g,'').trim();
   if(chave.length!==44){if(fb){fb.style.color='var(--danger)';fb.textContent='A chave deve ter 44 dígitos.';}return;}
-  var aguardando=PEDIDOS.filter(function(o){return o.status==='aguard_canhoto';});
-  var pedido=aguardando.find(function(o){return o.chave_nfe===chave;});
+  // Fix 4: procura primeiro em notas_fiscais (por chave_nfe) — uma NF pode ser confirmada individualmente mesmo com outras ainda pendentes
+  var nfMatch=(_canhotosNFs||[]).find(function(nf){return (nf.chave_nfe||'')===chave && !nf.canhoto_at;});
+  var pedido=null;
+  if(nfMatch){
+    pedido=PEDIDOS.find(function(o){return o.id===nfMatch.pedido_id;}) || getPedidoById(nfMatch.pedido_id);
+  }else{
+    // Fallback legacy: match pelo chave_nfe do próprio pedido (quando só há uma NF e ela não está em notas_fiscais)
+    var aguardando=PEDIDOS.filter(function(o){return o.status==='aguard_canhoto';});
+    pedido=aguardando.find(function(o){return o.chave_nfe===chave;});
+  }
   if(!pedido){
-    if(fb){fb.style.color='var(--danger)';fb.textContent='⚠ Nenhum pedido aguardando canhoto com essa chave NF-e.';}
+    if(fb){fb.style.color='var(--danger)';fb.textContent='⚠ Nenhuma NF aguardando canhoto com essa chave NF-e.';}
     return;
   }
   ov(true);
   try{
     var agora=new Date().toISOString();
-    var canhotoUser = (ME&&ME.login)?ME.login:'(sistema)';
-    var res=await sb.from('pedidos').update({status:'finalizado',finalizado_at:agora,canhoto_at:agora,confirmado_por_canhoto:canhotoUser}).eq('id',pedido.id);
-    if(res.error)throw res.error;
-    upsertPedidoLocal({id:pedido.id,status:'finalizado',finalizado_at:agora,canhoto_at:agora,confirmado_por_canhoto:canhotoUser});
+    var canhotoUser=(ME&&ME.login)?ME.login:'(sistema)';
+    // 1) Confirma canhoto da NF individual
+    if(nfMatch){
+      var nfRes=await sb.from('notas_fiscais').update({
+        canhoto_at:agora,
+        confirmado_por_canhoto:canhotoUser,
+        status:'canhoto_confirmado'
+      }).eq('id',nfMatch.id);
+      if(nfRes.error)throw nfRes.error;
+      nfMatch.canhoto_at=agora;
+      nfMatch.confirmado_por_canhoto=canhotoUser;
+      nfMatch.status='canhoto_confirmado';
+    }
+    // 2) Verifica se TODAS as NFs do pedido foram confirmadas (canhoto_at preenchido)
+    var nfsDoPedido=(_canhotosNFs||[]).filter(function(nf){return nf.pedido_id===pedido.id;});
+    var todasConfirmadas=nfsDoPedido.length>0 && nfsDoPedido.every(function(nf){return !!nf.canhoto_at;});
+    // Se não há NFs em notas_fiscais (legacy), assume única NF confirmada = finalizado
+    if(nfsDoPedido.length===0)todasConfirmadas=true;
+    if(todasConfirmadas){
+      var res=await sb.from('pedidos').update({status:'finalizado',finalizado_at:agora,canhoto_at:agora,confirmado_por_canhoto:canhotoUser}).eq('id',pedido.id);
+      if(res.error)throw res.error;
+      upsertPedidoLocal({id:pedido.id,status:'finalizado',finalizado_at:agora,canhoto_at:agora,confirmado_por_canhoto:canhotoUser});
+      if(fb){fb.style.color='var(--accent)';fb.textContent='✓ Canhoto do pedido #'+pedido.numero+' confirmado! Todas as NFs concluídas — processo encerrado.';}
+      toast('Pedido #'+pedido.numero+' finalizado (todas as NFs confirmadas).','ok');
+    }else{
+      var pendentes=nfsDoPedido.filter(function(nf){return !nf.canhoto_at;}).length;
+      if(fb){fb.style.color='var(--accent)';fb.textContent='✓ NF '+(nfMatch.numero_nf||'')+' confirmada! Ainda faltam '+pendentes+' NF(s) para finalizar o pedido #'+pedido.numero+'.';}
+      toast('NF '+(nfMatch.numero_nf||'')+' confirmada. '+pendentes+' restante(s) no pedido #'+pedido.numero+'.','move',5000);
+    }
+    // Log ocorrência
+    try{await logOcorrencia(pedido.id,pedido.numero,pedido.nome_cliente,nfMatch?nfMatch.numero_nf:pedido.num_nota,'CANHOTO','Canhoto confirmado. Chave NF-e: '+chave);}catch(e){}
     input.value='';
-    if(fb){fb.style.color='var(--accent)';fb.textContent='✓ Canhoto do pedido #'+pedido.numero+' confirmado! Processo encerrado.';}
     _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(500);
+    await fetchCanhotosConfirmados();
     renderCanhotos();renderCanhotosBadge();
-    toast('Canhoto #'+pedido.numero+' confirmado!','ok');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
 }
@@ -5282,6 +5456,28 @@ async function _executarEmbarque(ids,chaves,placa,transp,motor){
     ids.forEach(function(id){
       upsertPedidoLocal({id:id,status:'em_entrega',pendente_desde:agora,chave_nfe:idChaveMap[id]||'',placa_veiculo:placa,transportadora:transp,motorista:motor||''});
     });
+    // Fix 4: persiste dados de embarque na NF individual (última NF aberta do pedido)
+    try{
+      var nfPromises=ids.map(async function(id){
+        var p=getPedidoById(id);
+        var chave=idChaveMap[id]||'';
+        var numBusca=(p&&p.num_nota)?p.num_nota:null;
+        // Busca NF aberta (sem canhoto_at) do pedido, priorizando a última (mais recente)
+        var qb=sb.from('notas_fiscais').select('*').eq('pedido_id',id).is('canhoto_at',null).order('registrado_at',{ascending:false}).limit(1);
+        var r=await qb;
+        var nf=(r.data||[])[0];
+        if(nf){
+          await sb.from('notas_fiscais').update({
+            chave_nfe:chave||nf.chave_nfe||'',
+            placa_veiculo:placa,
+            transportadora:transp,
+            motorista:motor||'',
+            status:'em_entrega'
+          }).eq('id',nf.id);
+        }
+      });
+      await Promise.all(nfPromises);
+    }catch(e){console.warn('update notas_fiscais embarque:',e);}
     _embarqueSelecionados=[];
     _lastPainelSnap='';
     atualizarTelasAtivas();
@@ -5400,7 +5596,7 @@ function renderPendencias() {
       '<td><input type="text" data-id="'+o.id+'" value="'+(endAloc==='—'?'':endAloc)+'" placeholder="—" style="padding:3px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-mono);font-size:11px;width:110px;outline:none" onblur="salvarEnderecoAlocacao(this.dataset.id,this.value)" onkeydown="if(event.key===String.fromCharCode(13))this.blur()"/></td>'+
       '<td style="max-width:110px"><input type="text" data-id="'+o.id+'" data-tag="PEND_SEP" value="'+(itensSep==='—'?'':itensSep)+'" placeholder="—" style="padding:2px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--accent);font-family:var(--font-mono);font-size:11px;width:100%;outline:none" onblur="salvarItemPendencia(this.dataset.id,\'PEND_SEP\',this.value)" onkeydown="if(event.key===String.fromCharCode(13))this.blur()"/></td>'+
       '<td style="max-width:110px"><input type="text" data-id="'+o.id+'" data-tag="PEND_ITEMS" value="'+(itensPend==='—'?'':itensPend)+'" placeholder="—" style="padding:2px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--warn);font-family:var(--font-mono);font-size:11px;width:100%;outline:none" onblur="salvarItemPendencia(this.dataset.id,\'PEND_ITEMS\',this.value)" onkeydown="if(event.key===String.fromCharCode(13))this.blur()"/></td>'+
-      '<td style="font-size:11px;color:var(--sep);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(_getPendObs(obsP,'PEND_FAT')||'—')+'">'+(_getPendObs(obsP,'PEND_FAT')||'—')+'</td>'+
+      '<td style="max-width:110px"><input type="text" data-id="'+o.id+'" data-tag="PEND_FAT" value="'+(_getPendObs(obsP,'PEND_FAT')==='—'?'':_getPendObs(obsP,'PEND_FAT'))+'" placeholder="—" title="Itens já faturados (acumulado entre NFs)" style="padding:2px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--sep);font-family:var(--font-mono);font-size:11px;width:100%;outline:none" onblur="salvarItemPendencia(this.dataset.id,\'PEND_FAT\',this.value)" onkeydown="if(event.key===String.fromCharCode(13))this.blur()"/></td>'+
       '<td style="color:var(--muted)">' + dataFat + '</td>' +
       '<td><div class="act-btns">' +
         '<button class="bmv" style="background:#3b82f6;font-size:11px" onclick="abrirRetornarPendencia(\'' + o.id + '\')">&#8617; Retornar</button>' +
@@ -5663,6 +5859,7 @@ function exportarAgRetiraExcel() {
 // ── Render Ocorrências ──
 // ── Cache de pedidos com ocorrências para o histórico ──
 var _OCC_HIST_PEDIDOS = [];
+var _OCC_HIST_REGISTROS = [];  // FIX 2: registros persistidos na tabela ocorrencias
 
 async function buscarOcorrenciasHist(){
   try{
@@ -5676,15 +5873,35 @@ async function buscarOcorrenciasHist(){
     if(endEl   && !endEl.value)   endEl.value   = endStr;
     var startISO = new Date(startStr+'T00:00:00').toISOString();
     var endISO   = new Date(endStr  +'T23:59:59').toISOString();
-    // Busca pedidos com obs contendo OCORRÊNCIA no intervalo de datas
-    var res = await sb.from('pedidos')
+    // FIX 2: usa a tabela ocorrencias como fonte primária de persistência
+    var occRes = await sb.from('ocorrencias')
+      .select('*')
+      .gte('created_at', startISO)
+      .lte('created_at', endISO)
+      .order('created_at',{ascending:false});
+    _OCC_HIST_REGISTROS = (occRes.data||[]);
+    // Busca dados dos pedidos relacionados para complementar os registros
+    var pedidoIds = [];
+    _OCC_HIST_REGISTROS.forEach(function(r){ if(r.pedido_id && pedidoIds.indexOf(r.pedido_id)<0) pedidoIds.push(r.pedido_id); });
+    if(pedidoIds.length>0){
+      var pedRes = await sb.from('pedidos')
+        .select('id,numero,nome_cliente,vendedor,num_nota,obs,entrada_at,setor,setor_pendente,status')
+        .in('id', pedidoIds);
+      _OCC_HIST_PEDIDOS = (pedRes.data||[]);
+    } else {
+      _OCC_HIST_PEDIDOS = [];
+    }
+    // Também busca pedidos com OCORRÊNCIA/RETORNO no obs para registros legados
+    var obsRes = await sb.from('pedidos')
       .select('id,numero,nome_cliente,vendedor,num_nota,obs,entrada_at,setor,setor_pendente,status')
       .gte('entrada_at', startISO)
       .lte('entrada_at', endISO)
       .order('entrada_at',{ascending:false});
-    if(res.error) throw res.error;
-    // Filtra apenas os que têm OCORRÊNCIA no obs
-    _OCC_HIST_PEDIDOS = (res.data||[]).filter(function(o){ return (o.obs||'').indexOf('OCORRÊNCIA')>=0; });
+    (obsRes.data||[]).forEach(function(o){
+      if((o.obs||'').indexOf('OCORRÊNCIA')>=0 && !_OCC_HIST_PEDIDOS.find(function(h){return h.id===o.id;})){
+        _OCC_HIST_PEDIDOS.push(o);
+      }
+    });
     filtrarHistOcorr();
   }catch(e){ console.warn('buscarOcorrenciasHist:',e); }
 }
@@ -5696,8 +5913,50 @@ function filtrarHistOcorr(){
 
   // Extrai todas as ocorrências de cada pedido
   var allRows = [];
+  var pedidosByIdMap = {};
+  _OCC_HIST_PEDIDOS.forEach(function(o){pedidosByIdMap[o.id]=o;});
+  PEDIDOS.forEach(function(o){if(!pedidosByIdMap[o.id])pedidosByIdMap[o.id]=o;});
+  // Índice de IDs já tratados via tabela ocorrencias (para evitar duplicação com o fallback de obs)
+  var occByPedido = {};
+  // FIX 2: prioriza registros persistidos na tabela ocorrencias
+  (_OCC_HIST_REGISTROS||[]).forEach(function(r){
+    var o = pedidosByIdMap[r.pedido_id] || {id:r.pedido_id, numero:r.numero, nome_cliente:r.nome_cliente, num_nota:r.num_nota, vendedor:'', obs:'', status:''};
+    if(fVend && (o.vendedor||'').toLowerCase().indexOf(fVend)<0) return;
+    if(fPed  && ((r.numero||o.numero||'').indexOf(fPed)<0)) return;
+    var t = r.created_at ? new Date(r.created_at).getTime() : 0;
+    if(!t) return;
+    var tipo = (r.tipo||'').toUpperCase();
+    var isRetorno = tipo==='RETORNO' || tipo==='RETORNO_OCORRÊNCIA';
+    var setorOcc = (o.setor_pendente?(SL[o.setor_pendente]||o.setor_pendente):(SL[o.setor]||o.setor||'—'));
+    if(!isRetorno){
+      occByPedido[o.id] = occByPedido[o.id]||[];
+      occByPedido[o.id].push({t:t, m:(r.descricao||tipo||'—'), setor:setorOcc, resolvida:false});
+      allRows.push({t:t, m:(r.descricao||tipo||'—'), rd:'Ainda ativa', rs:'—', ms:now()-t, o:o, setor:setorOcc, _reg:true});
+    } else {
+      // Retorno: tenta correlacionar com a última ocorrência ativa do pedido
+      var lista = occByPedido[o.id]||[];
+      var pend = null;
+      for(var j=lista.length-1;j>=0;j--){ if(!lista[j].resolvida){ pend=lista[j]; break; } }
+      if(pend){
+        pend.resolvida=true;
+        // Atualiza a linha já criada
+        for(var k=allRows.length-1;k>=0;k--){
+          if(allRows[k].o && allRows[k].o.id===o.id && allRows[k].t===pend.t && allRows[k].rd==='Ainda ativa'){
+            allRows[k].rd = new Date(t).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+            allRows[k].rs = (r.descricao||'—').substring(0,100);
+            allRows[k].ms = t>pend.t?t-pend.t:0;
+            break;
+          }
+        }
+      } else {
+        // Retorno sem ocorrência associada — ainda assim registra
+        allRows.push({t:t, m:'Retorno registrado', rd:new Date(t).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}), rs:(r.descricao||'—').substring(0,100), ms:0, o:o, setor:setorOcc, _reg:true});
+      }
+    }
+  });
+
+  // Fallback: pedidos com ocorrência no obs que NÃO têm registro na tabela ocorrencias
   var hist = _OCC_HIST_PEDIDOS.slice();
-  // Também inclui os pedidos ativos com ocorrência que já estão em PEDIDOS
   PEDIDOS.forEach(function(o){
     if((o.obs||'').indexOf('OCORRÊNCIA')>=0 && !hist.find(function(h){return h.id===o.id;})){
       hist.push(o);
@@ -5705,6 +5964,7 @@ function filtrarHistOcorr(){
   });
 
   hist.forEach(function(o){
+    if(occByPedido[o.id] && occByPedido[o.id].length>0) return; // já coberto via tabela
     if(fVend && (o.vendedor||'').toLowerCase().indexOf(fVend)<0) return;
     if(fPed  && (o.numero||'').indexOf(fPed)<0) return;
     var obs=o.obs||'';
@@ -6090,10 +6350,29 @@ async function confirmarPendenciaAntesNF(){
     if(fat) linhas.push('[PEND_FAT: '+fat+']');
     linhas.push(buildOccurrenceLine('PENDÊNCIA_MANUAL', SL[pedido.setor]||pedido.setor, 'Itens sep: '+(sep||'—')+' | Pend: '+(pend||'—')+(fat?' | Fat: '+fat:'')));
     var novaObs = (obsAtual?obsAtual+'\n':'')+linhas.join('\n');
-    await sb.from('pedidos').update({tem_pendencia:true, pendencia_status:'aberta', obs:novaObs}).eq('id',id);
-    upsertPedidoLocal({id:id, tem_pendencia:true, pendencia_status:'aberta', obs:novaObs});
+    // FIX 1: quando o pedido NÃO tem NF emitida ainda (pré-faturamento), muda para status 'em_pendencia'
+    // para que o card suma das telas operacionais e só retorne quando o operador acionar pelo Pendências.
+    var agora = new Date().toISOString();
+    var ehPreNF = !pedido.num_nota;
+    var updates = {tem_pendencia:true, pendencia_status:'aberta', obs:novaObs};
+    if(ehPreNF){
+      updates.status = 'em_pendencia';
+      updates.setor_pendente = pedido.setor || '';   // guarda setor de origem para retorno
+      updates.pendente_desde = agora;
+    }
+    await sb.from('pedidos').update(updates).eq('id',id);
+    upsertPedidoLocal(Object.assign({id:id}, updates));
+    // Log na tabela ocorrencias para persistência em histórico
+    try{
+      await sb.from('ocorrencias').insert({
+        pedido_id:id, numero:pedido.numero, nome_cliente:pedido.nome_cliente||'',
+        num_nota:pedido.num_nota||'', tipo:'PENDÊNCIA',
+        descricao:'Itens sep: '+(sep||'—')+' | Pend: '+(pend||'—')+(fat?' | Fat: '+fat:''),
+        usuario:ME?ME.login:'', created_at:agora
+      });
+    }catch(e){console.warn('ocorrencias log pendência:',e);}
     _lastPainelSnap='';atualizarTelasAtivas();renderPendencias();renderPendenciasBadge();
-    toast('Pendência registrada para pedido #'+pedido.numero+'.','ok');
+    toast('Pendência registrada para pedido #'+pedido.numero+(ehPreNF?' — card removido do fluxo. Retorne pela aba Pendências.':'.'),'ok',6000);
   }catch(e){toast(e.message,'err');}
   finally{ov(false);_pendAntesNFId=null;}
 }
@@ -6289,29 +6568,53 @@ window.confirmarNota = async function(){
   // Save itens context before closing modal
   var itensFat = window._pfItensFat || '';
   var itensPend = window._pfItensPend || '';
+  var preTargetId = _notaTarget || _preFaturaId;
+  // Snapshot previous PEND_FAT so we can accumulate (multiple NFs = cumulative billed items)
+  var _prevPendFat = '';
+  if(preTargetId){
+    var _prevPed = getPedidoById(preTargetId);
+    if(_prevPed){
+      var _pf = _getPendObs(_prevPed.obs||'', 'PEND_FAT');
+      if(_pf && _pf !== '—') _prevPendFat = _pf;
+    }
+  }
   window._pfItensFat = '';
   window._pfItensPend = '';
   // Call original
   await _confirmarNotaBase.apply(this, arguments);
-  // After billing: update obs with items log, and pre-fill pendência items if partial
-  var id = _notaTarget || _preFaturaId;
+  // After billing: update obs with items log, PEND_FAT accumulator, and pre-fill pendência items if partial
+  var id = preTargetId;
   _preFaturaId = null;
   if(!id) return;
   var pedido = getPedidoById(id);
   if(!pedido) return;
   var obsAtual = pedido.obs || '';
+  // Accumulate PEND_FAT: existing + items just billed on this NF
+  var pendFatAcumulado = '';
+  if(_prevPendFat && itensFat){
+    pendFatAcumulado = _prevPendFat + ' + ' + itensFat;
+  } else if(_prevPendFat){
+    pendFatAcumulado = _prevPendFat;
+  } else if(itensFat){
+    pendFatAcumulado = itensFat;
+  }
+  // Remove old PEND_FAT tag (we'll re-insert accumulated)
+  obsAtual = obsAtual.replace(/\[PEND_FAT:[^\]]*\]/g,'').trim();
   var linhas = [];
-  if(itensFat) linhas.push(buildOccurrenceLine('ITENS_FATURADOS', SL[pedido.setor]||pedido.setor, 'Faturados: ' + itensFat));
+  if(pendFatAcumulado) linhas.push('[PEND_FAT: ' + pendFatAcumulado + ']');
+  if(itensFat) linhas.push(buildOccurrenceLine('ITENS_FATURADOS', SL[pedido.setor]||pedido.setor, 'Faturados: ' + itensFat + (pedido.num_nota ? ' (NF '+pedido.num_nota+')' : '')));
   if(itensPend){
     // Mark pending items in obs so they appear pre-filled in Pendências
     obsAtual = obsAtual.replace(/\[PEND_ITEMS:[^\]]*\]/g,'').trim();
     linhas.push('[PEND_ITEMS: ' + itensPend + ']');
     linhas.push(buildOccurrenceLine('ITENS_PENDENTES', SL[pedido.setor]||pedido.setor, 'Pendentes: ' + itensPend));
   }
-  if(linhas.length){
-    var novaObs = (obsAtual ? obsAtual + '\n' : '') + linhas.join('\n');
-    await sb.from('pedidos').update({obs: novaObs}).eq('id', id);
+  // Sempre gravamos pelo menos o PEND_FAT atualizado (remoção + reinserção)
+  var novaObs = (obsAtual ? obsAtual + (linhas.length?'\n':'') : '') + linhas.join('\n');
+  if(novaObs !== (pedido.obs||'')){
+    await sb.from('pedidos').update({obs: novaObs || null}).eq('id', id);
     if(pedido) pedido.obs = novaObs;
+    upsertPedidoLocal({id:id, obs: novaObs});
   }
 };
 
