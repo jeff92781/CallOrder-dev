@@ -2473,6 +2473,8 @@ function playSectorArrivalSound(){
 }
 
 function pushSectorNotif(pedidoNum,setor){
+  // Só exibe para usuários que pertencem ao setor destino (ou admin/global)
+  if(typeof podeAtuarNoSetor==='function' && !podeAtuarNoSetor(setor)) return;
   // Áudio de chegada
   playSectorArrivalSound();
   // Vibração de tela
@@ -3143,21 +3145,19 @@ function startClock(){
 }
 function isOperacionalVisivel(o){
   if(o.status==='em_pendencia')return false;
-  // FIX 1: pendência registrada sem NF emitida (pré-faturamento) retira o card do fluxo operacional
   if(o.tem_pendencia && o.pendencia_status==='aberta' && !o.num_nota)return false;
-  return o.status!=='finalizado' && o.status!=='cancelado' && o.status!=='balcao_chamado' && o.status!=='ag_retira' && o.status!=='em_ocorrencia' && o.status!=='ag_embarque' && o.status!=='em_entrega' && o.status!=='aguard_canhoto' && o.status!=='ag_faturamento';
+  return !statusOculto(o.status);
 }
 function isTVVisivel(o){
-  // TV mostra APENAS pedidos balcão em andamento — sai quando aguard_canhoto
-  if(o.status==='cancelado'||o.status==='finalizado'||o.status==='balcao_chamado'||o.status==='ag_retira'||o.status==='em_ocorrencia'||o.status==='em_pendencia'||o.status==='ag_embarque'||o.status==='aguard_canhoto')return false;
+  if(statusOculto(o.status)||o.status==='em_pendencia')return false;
   if(o.tem_pendencia && o.pendencia_status==='aberta' && !o.num_nota)return false;
   if(o.prioridade==='retira'||o.prioridade==='entrega')return false;
   return true;
 }
 function getTempoTotalPedido(o){
-  var congelar=o.finalizado_at && (o.status==='pronto_balcao' || o.status==='balcao_chamado' || o.status==='finalizado' || o.status==='cancelado' || o.status==='ag_retira');
+  var congelar=o.finalizado_at && statusCongelado(o.status);
   var fim=congelar?tsMs(o.finalizado_at):now();
-    return Math.max(0,fim-tsMs(o.entrada_at));
+  return Math.max(0,fim-tsMs(o.entrada_at));
 }
 
 // ── Toggle prioridade (Retira ↔ Balcão) ──
@@ -3642,10 +3642,12 @@ async function enviar(id,destino){
     var agora=new Date().toISOString();
     var res=await sb.from('pedidos').update({setor_pendente:destino,status:'aguardando',pendente_desde:agora}).eq('id',id);
     if(res.error)throw res.error;
+    var ped=PEDIDOS.find(function(p){return p.id===id;});
     upsertPedidoLocal({id:id,setor_pendente:destino,status:'aguardando',pendente_desde:agora});
     _lastPainelSnap='';
     atualizarTelasAtivas();
     refreshPedidosSoon(500);
+    pushSectorNotif(ped?ped.numero:id, destino);
     toast('Pedido enviado para '+(SL[destino]||destino)+'. Aguardando confirmação.','move');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
@@ -3865,10 +3867,12 @@ async function confirmarNota(){
     }).then(function(){}).catch(function(e){console.warn('notas_fiscais:',e);});
     refreshPedidosSoon(500);
     if(isEntrega){
+      pushSectorNotif(o.numero,'expedicao');
       toast('Faturado! NF emitida. Pedido retornou para Expedição.','move');
     }else if(temPendencia){
       toast('Faturado! Saldo de '+fmtBRL(saldo)+' registrado em Pendências.','warn',5000);
     }else{
+      pushSectorNotif(o.numero,'balcao_op');
       toast('Faturado! Pedido enviado para Balcão.','move');
     }
   }catch(e){toast(e.message,'err');}
@@ -3903,7 +3907,9 @@ async function confirmarSeparador() {
       var agora=new Date().toISOString();
       var r2=await sb.from('pedidos').update({setor_pendente:destino,status:'aguardando',pendente_desde:agora}).eq('id',id);
       if(r2.error)throw r2.error;
+      var ped2=PEDIDOS.find(function(p){return p.id===id;});
       upsertPedidoLocal({id:id,setor_pendente:destino,status:'aguardando',pendente_desde:agora});
+      pushSectorNotif(ped2?ped2.numero:id, destino);
       toast('Pedido enviado para '+(SL[destino]||destino)+'. Aguardando confirmação.','move');
     }else{
       toast('Separador registrado: '+sep,'ok');
@@ -3942,6 +3948,7 @@ async function enviarAgEmbarque(id){
     upsertPedidoLocal({id:id,status:'ag_embarque',pendente_desde:agora});
     _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(500);
     renderAgEmbarqueBadge();
+    pushSectorNotif(pedido.numero,'expedicao');
     toast('Pedido #'+pedido.numero+' enviado para Ag. Embarque.','ok');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
@@ -7981,6 +7988,7 @@ async function confirmarPreFatura(){
       confirmado_por:ME?ME.login:'', confirmado_at:agora, tempo_confirmacao_ms:0
     });
     _lastPainelSnap='';atualizarTelasAtivas();refreshPedidosSoon(300);
+    pushSectorNotif(pedido.numero,'faturamento');
     toast('Pedido #'+pedido.numero+' enviado para Faturamento'+(itensFat?' com itens: '+itensFat.substring(0,40):'')+'.',  'move');
     _preFaturaId = null;
   } catch(e) { toast(e.message, 'err'); }
