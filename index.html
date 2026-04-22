@@ -89,6 +89,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
 .f{margin-bottom:18px}
 .fl{color:var(--muted);font-size:11px;margin-bottom:7px;display:block;letter-spacing:.03em;text-transform:uppercase;font-weight:500}
 .f input,.f select,.f textarea{width:100%;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;transition:all .2s}
+.f input[type="checkbox"]{width:16px;height:16px;padding:0;background:transparent;border:none;box-shadow:none;flex-shrink:0;cursor:pointer}
 .f textarea{min-height:110px;resize:vertical}
 .f input:focus,.f select:focus,.f textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
 .f input::placeholder{color:var(--muted2)}
@@ -1022,18 +1023,25 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
       <span class="pt">Recebimento de Notas Fiscais</span>
       <span style="color:var(--muted);font-size:12px" id="rec-count"></span>
       <button class="bok" style="padding:8px 18px;font-size:12px" onclick="abrirRegistrarNF()">+ Registrar NF</button>
-      <button class="bmv" style="padding:8px 18px;font-size:12px;background:#f59e0b" onclick="abrirRegistrarDevolucaoRec()">↩ Registrar Devolução</button>
     </div>
     <!-- Bipe rápido no topo -->
-    <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-      <span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap">Bipe rápido:</span>
-      <input type="text" id="rec-scan-input" maxlength="44"
-        placeholder="Bipe ou cole a chave NF-e de 44 dígitos..."
-        style="flex:1;min-width:260px;padding:10px 14px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"
-        oninput="recScanCheck(this.value)"
-        onkeydown="if(event.key==='Enter')recScanRegistrar()"/>
-      <button class="bok" style="padding:9px 18px;font-size:12px;white-space:nowrap" onclick="recScanRegistrar()">Registrar</button>
-      <span id="rec-scan-feedback" style="font-size:11px;color:var(--muted);min-width:160px"></span>
+    <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:18px">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Bipe rápido</div>
+      <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div style="flex:2;min-width:260px">
+          <input type="text" id="rec-scan-input" maxlength="44"
+            placeholder="Bipe ou cole a chave NF-e de 44 dígitos..."
+            style="width:100%;padding:10px 14px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;box-sizing:border-box"
+            oninput="recScanCheck(this.value)"/>
+          <div id="rec-scan-feedback" style="font-size:11px;color:var(--muted);margin-top:6px;min-height:16px"></div>
+        </div>
+        <div style="min-width:130px">
+          <input type="number" id="rec-scan-valor" placeholder="Valor R$" step="0.01" min="0"
+            style="width:100%;padding:10px 14px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;box-sizing:border-box"
+            onkeydown="if(event.key==='Enter')recScanRegistrar()"/>
+        </div>
+        <button class="bok" style="padding:9px 18px;font-size:12px;white-space:nowrap;align-self:flex-start" onclick="recScanRegistrar()">Registrar</button>
+      </div>
     </div>
     <!-- Filtros -->
     <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px">
@@ -1631,15 +1639,32 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <div class="f"><label class="fl">Perfil</label>
       <select id="nu-role"><option value="operador">Operador</option><option value="admin">Administrador</option></select>
     </div>
-    <div class="f"><label class="fl">Setores de acesso</label>
-      <div id="nu-setores-wrap" style="display:flex;flex-direction:column;gap:7px;padding:12px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px"><input type="checkbox" id="nu-s-todos" style="accent-color:var(--accent)"> Todos os setores</label>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px"><input type="checkbox" id="nu-s-atendimento" style="accent-color:var(--accent)"> Atendimento</label>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px"><input type="checkbox" id="nu-s-estoque" style="accent-color:var(--accent)"> Estoque</label>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px"><input type="checkbox" id="nu-s-corte" style="accent-color:var(--accent)"> Corte</label>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px"><input type="checkbox" id="nu-s-balcao_op" style="accent-color:var(--accent)"> Balcão</label>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px"><input type="checkbox" id="nu-s-faturamento" style="accent-color:var(--accent)"> Faturamento</label>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px"><input type="checkbox" id="nu-s-expedicao" style="accent-color:var(--accent)"> Expedição</label>
+    <div class="f">
+      <label class="fl">Setores de acesso</label>
+      <div id="nu-setores-wrap" style="padding:14px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--border)">
+          <input type="checkbox" id="nu-s-todos" style="accent-color:var(--accent)"> Todos os setores
+        </label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 12px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px">
+            <input type="checkbox" id="nu-s-atendimento" style="accent-color:var(--accent)"> Atendimento
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px">
+            <input type="checkbox" id="nu-s-estoque" style="accent-color:var(--accent)"> Estoque
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px">
+            <input type="checkbox" id="nu-s-corte" style="accent-color:var(--accent)"> Corte
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px">
+            <input type="checkbox" id="nu-s-balcao_op" style="accent-color:var(--accent)"> Balcão
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px">
+            <input type="checkbox" id="nu-s-faturamento" style="accent-color:var(--accent)"> Faturamento
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px">
+            <input type="checkbox" id="nu-s-expedicao" style="accent-color:var(--accent)"> Expedição
+          </label>
+        </div>
       </div>
     </div>
     <div class="ma"><button class="bcan" onclick="closeM('m-new-user')">Cancelar</button><button class="bok" onclick="createUser()">Criar</button></div>
@@ -5646,45 +5671,35 @@ function recScanCheck(val){
   }
 }
 
-var _recScanPendingChave='';
-var _recScanPendingNum='';
 async function recScanRegistrar(){
   var input=el('rec-scan-input');
   var fb=el('rec-scan-feedback');
   if(!input)return;
   var chave=(input.value||'').replace(/\D/g,'').trim();
   if(chave.length!==44){if(fb){fb.style.color='var(--danger)';fb.textContent='Chave deve ter 44 dígitos.';}return;}
+  var valorStr=(el('rec-scan-valor')?el('rec-scan-valor').value:'').replace(',','.').trim();
+  var valor=parseFloat(valorStr)||0;
+  if(valor<=0){if(fb){fb.style.color='var(--danger)';fb.textContent='Informe o valor da NF.';}return;}
   var num=_extrairNumNotaChave(chave);
   // Duplicate check
   var dupRes=await sb.from('recebimentos').select('id,num_nota,recebido_at,usuario').eq('chave_nfe',chave).limit(1);
   var dup=(dupRes.data||[])[0];
   if(dup){
     var dtDup=dup.recebido_at?new Date(dup.recebido_at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
-    if(fb){fb.style.color='var(--warn)';fb.textContent='⚠ NF '+( num||dup.num_nota)+' já registrada em '+dtDup+' por '+(dup.usuario||'—')+'.';}
+    if(fb){fb.style.color='var(--warn)';fb.textContent='⚠ NF '+(num||dup.num_nota)+' já registrada em '+dtDup+' por '+(dup.usuario||'—')+'.';}
     return;
   }
-  _recScanPendingChave=chave;_recScanPendingNum=num;
-  if(el('rec-valor-preview'))el('rec-valor-preview').textContent='NF: '+(num||'—');
-  if(el('m-rec-valor-nf'))el('m-rec-valor-nf').value='';
-  openM('m-rec-valor');
-}
-async function confirmarRecScanComValor(){
-  var chave=_recScanPendingChave;
-  var num=_recScanPendingNum;
-  var valorStr=(el('m-rec-valor-nf')?el('m-rec-valor-nf').value:'').replace(',','.').trim();
-  var valor=parseFloat(valorStr)||0;
-  closeM('m-rec-valor');
-  var input=el('rec-scan-input');
-  var fb=el('rec-scan-feedback');
   ov(true);
   try{
     var agora=new Date().toISOString();
-    var res=await sb.from('recebimentos').insert({chave_nfe:chave,num_nota:num,usuario:ME?ME.login:'',recebido_at:agora});
+    var res=await sb.from('recebimentos').insert({chave_nfe:chave,num_nota:num,usuario:ME?ME.login:'',recebido_at:agora,valor_nf:valor});
     if(res.error)throw res.error;
     if(input)input.value='';
-    if(fb){fb.style.color='var(--accent)';fb.textContent='✓ NF '+num+' registrada!'+(valor>0?' — '+fmtBRL(valor):'');}
+    if(el('rec-scan-valor'))el('rec-scan-valor').value='';
+    if(fb){fb.style.color='var(--accent)';fb.textContent='✓ NF '+num+' — '+fmtBRL(valor)+' registrada!';}
     await fetchRecebimentos();renderRecebimentos();
-    setTimeout(function(){if(fb)fb.textContent='';},3000);
+    setTimeout(function(){if(fb)fb.textContent='';},4000);
+    toast('NF '+num+' — '+fmtBRL(valor)+' recebida.','ok');
   }catch(e){toast(e.message,'err');}
   finally{ov(false);}
 }
