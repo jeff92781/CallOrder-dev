@@ -2199,6 +2199,13 @@ const SETORES = ['atendimento','estoque','corte','expedicao','balcao_op','fatura
 const PROXIMO_SETOR = {atendimento:'estoque',estoque:'corte',corte:'balcao_op',balcao_op:'faturamento',expedicao:'faturamento'};
 const RETORNO_PADRAO = {estoque:'atendimento',corte:'estoque',balcao_op:'corte',faturamento:'balcao_op',expedicao:'corte'};
 const SL = {atendimento:'Atendimento',estoque:'Estoque',corte:'Corte',balcao_op:'Balcão',separacao:'Balcão',faturamento:'Faturamento',expedicao:'Expedição',finalizado:'Finalizado',cancelado:'Excluído',ag_retira:'Ag. Retira',em_ocorrencia:'Ocorrência',em_pendencia:'Pendência',em_entrega:'Em Trânsito',ag_embarque:'Ag. Embarque',pronto_expedicao:'Pronto p/ Embarque',aguard_canhoto:'Aguardando Canhoto',ag_faturamento:'Ag. Faturamento'};
+// ── Status helpers ──
+const STATUS_TERMINAL = ['finalizado','cancelado'];
+const STATUS_OCULTOS = ['finalizado','cancelado','balcao_chamado','ag_retira','em_ocorrencia','ag_embarque','em_entrega','aguard_canhoto','ag_faturamento'];
+const STATUS_CONGELADOS = ['pronto_balcao','balcao_chamado','finalizado','cancelado','ag_retira','pronto_expedicao','em_entrega','aguard_canhoto','ag_embarque'];
+function statusOculto(s){ return STATUS_OCULTOS.includes(s); }
+function statusCongelado(s){ return STATUS_CONGELADOS.includes(s); }
+function statusTerminal(s){ return STATUS_TERMINAL.includes(s); }
 const SC = {atendimento:'tag-at',estoque:'tag-es',corte:'tag-co',balcao_op:'tag-se',separacao:'tag-se',faturamento:'tag-fa',expedicao:'tag-ex',pronto_balcao:'tag-rd',balcao_chamado:'tag-rd',finalizado:'tag-do'};
 const SD = {atendimento:'#5DCAA5',estoque:'#7AD3C2',corte:'#85B7EB',balcao_op:'#FAC775',separacao:'#FAC775',faturamento:'#ED93B1',expedicao:'#818cf8'};
 const SICONCOLOR = {atendimento:'#a78bfa',estoque:'#c49a6c',corte:'#ef4444',balcao_op:'#f1f5f9',separacao:'#f1f5f9',faturamento:'#22d3a7',expedicao:'#818cf8'};
@@ -2367,7 +2374,6 @@ function fmtBRL(v) {
   return 'R$ ' + n.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
 }
 
-let SEPARADORES = [];
 async function fetchSeparadores(){
   try{var r=await sb.from('separadores').select('*').eq('ativo',true).order('nome');SEPARADORES=r.data||[];}catch(e){SEPARADORES=[];}
 }
@@ -2420,6 +2426,7 @@ function telaAtiva(){
 
 // ── MUDANÇA: atualizarTelasAtivas agora usa debounce ──
 function atualizarTelasAtivas(){
+  renderAllBadges();
   markDirty();
   scheduleRender();
 }
@@ -2520,6 +2527,13 @@ function toast(msg,type,dur){
 function ov(show){el('ov').classList.toggle('h',!show);}
 function openM(id){var n=el(id);if(n)n.classList.add('open');}
 function closeM(id){var n=el(id);if(n)n.classList.remove('open');}
+async function safeFetch(fn,fallback,errMsg){
+  try{ return await fn(); }
+  catch(e){ console.error('[safeFetch]',e); if(errMsg)toast(errMsg,'err'); return fallback!==undefined?fallback:null; }
+}
+function clearInputs(ids){
+  ids.forEach(function(id){ var e=el(id); if(e){ e.value=''; if(e.tagName==='SELECT')e.selectedIndex=0; } });
+}
 function closeOccurrenceModal(){
   el('occ-text').value='';
   _occCtx=null;
@@ -2935,18 +2949,23 @@ function startRealtime(){
     else if(payload.eventType==='DELETE'){PEDIDOS=PEDIDOS.filter(function(p){return p.id!==payload.old.id;});}
     // ── MUDANÇA: marca dirty + invalida snapshot em vez de render direto ──
     _lastPainelSnap = '';
+    renderAllBadges();
     atualizarTelasAtivas();
   }).subscribe();
 }
 async function fetchPedidos(){
-  var hoje=new Date();hoje.setHours(0,0,0,0);
-  var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.em_entrega,status.eq.ag_embarque,status.eq.pronto_expedicao,status.eq.aguard_canhoto').order('entrada_at',{ascending:false});
-  PEDIDOS=res.data||[];
+  try{
+    var hoje=new Date();hoje.setHours(0,0,0,0);
+    var res=await sb.from('pedidos').select('*').or('entrada_at.gte.'+hoje.toISOString()+',status.eq.em_andamento,status.eq.aguardando,status.eq.pronto_balcao,status.eq.balcao_chamado,status.eq.ag_retira,status.eq.em_ocorrencia,status.eq.em_entrega,status.eq.ag_embarque,status.eq.pronto_expedicao,status.eq.aguard_canhoto').order('entrada_at',{ascending:false});
+    PEDIDOS=res.data||[];
+  }catch(e){ console.error('fetchPedidos:',e); PEDIDOS=[]; }
 }
 async function fetchMovs(){
-  var hoje=new Date();hoje.setHours(0,0,0,0);
-  var res=await sb.from('movimentacoes').select('*').gte('saida_at',hoje.toISOString());
-  MOVS=res.data||[];
+  try{
+    var hoje=new Date();hoje.setHours(0,0,0,0);
+    var res=await sb.from('movimentacoes').select('*').gte('saida_at',hoje.toISOString());
+    MOVS=res.data||[];
+  }catch(e){ console.error('fetchMovs:',e); MOVS=[]; }
 }
 var _canhotosConfirmados=[];
 var _canhotosNFs=[]; // Fix 4: NFs individuais para exibição por nota
@@ -3111,12 +3130,6 @@ function startClock(){
     // Check Ag. Retira 15-day alerts
     checkAgRetiraAlerts();
     checkOcorrencias48h();
-    renderOcorrenciasBadge();
-    renderPendenciasBadge();
-    renderAgEmbarqueBadge();
-    renderEmTransitoBadge();
-    renderCanhotosBadge();
-    renderAgendamentosBadge();
     checkAgendamentosAlerts();
 
     // Alertas de 10min (raro, não causa render)
@@ -4248,13 +4261,17 @@ function buildTVRows(pedidos) {
   return { html: html, avgMs: avgMs, doneCount: done.length, activeCount: active.length };
 }
 
+function renderTVGeneric(prefix, data){
+  var r = buildTVRows(data);
+  if(el(prefix+'-body'))el(prefix+'-body').innerHTML = r.html;
+  if(el(prefix+'-avg'))el(prefix+'-avg').textContent = r.doneCount ? fmtTs(r.avgMs) : '--:--';
+  if(el(prefix+'-done'))el(prefix+'-done').textContent = r.doneCount;
+  if(el(prefix+'-active'))el(prefix+'-active').textContent = r.activeCount;
+  if(el(prefix+'-clock'))el(prefix+'-clock').textContent = fmtClock(new Date());
+}
+
 function renderTV(){
-  var r = buildTVRows(PEDIDOS);
-  el('tv-body').innerHTML = r.html;
-  el('tv-avg').textContent = r.doneCount ? fmtTs(r.avgMs) : '--:--';
-  el('tv-done').textContent = r.doneCount;
-  el('tv-active').textContent = r.activeCount;
-  el('tv-clock').textContent = fmtClock(new Date());
+  renderTVGeneric('tv', PEDIDOS);
 }
 
 
@@ -5079,12 +5096,7 @@ async function iniciarTVPublica(){
 
 // ── MUDANÇA: renderTVPub reutiliza buildTVRows ──
 function renderTVPub(){
-  if(!el('tvp-body'))return;
-  var r = buildTVRows(_tvPub);
-  el('tvp-body').innerHTML = r.html;
-  if(el('tvp-avg'))el('tvp-avg').textContent=r.doneCount?fmtTs(r.avgMs):'--:--';
-  if(el('tvp-done'))el('tvp-done').textContent=r.doneCount;
-  if(el('tvp-active'))el('tvp-active').textContent=r.activeCount;
+  renderTVGeneric('tvp', _tvPub);
 }
 if(window.location.search.indexOf('rastreamento=1')>=0){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
@@ -5694,15 +5706,17 @@ async function confirmarDevolverAgRetira(){
 var RECEBIMENTOS = [];
 
 async function fetchRecebimentos(){
-  var hoje=new Date();hoje.setHours(0,0,0,0);
-  var startRec=el('rec-date-start')&&el('rec-date-start').value?el('rec-date-start').value:fmtDateInput(hoje);
-  var endRec=el('rec-date-end')&&el('rec-date-end').value?el('rec-date-end').value:fmtDateInput(hoje);
-  var r=getPeriodRange(startRec,endRec);
-  var res=await sb.from('recebimentos').select('*').gte('recebido_at',r.startIso).lte('recebido_at',r.endIso).order('recebido_at',{ascending:false});
-  RECEBIMENTOS=res.data||[];
-  // Also fetch devolucoes for unified view
-  var devRes=await sb.from('devolucoes').select('*').gte('recebido_at',r.startIso).lte('recebido_at',r.endIso).order('recebido_at',{ascending:false});
-  REC_DEVOLUCOES=devRes.data||[];
+  try{
+    var hoje=new Date();hoje.setHours(0,0,0,0);
+    var startRec=el('rec-date-start')&&el('rec-date-start').value?el('rec-date-start').value:fmtDateInput(hoje);
+    var endRec=el('rec-date-end')&&el('rec-date-end').value?el('rec-date-end').value:fmtDateInput(hoje);
+    var r=getPeriodRange(startRec,endRec);
+    var res=await sb.from('recebimentos').select('*').gte('recebido_at',r.startIso).lte('recebido_at',r.endIso).order('recebido_at',{ascending:false});
+    RECEBIMENTOS=res.data||[];
+    // Also fetch devolucoes for unified view
+    var devRes=await sb.from('devolucoes').select('*').gte('recebido_at',r.startIso).lte('recebido_at',r.endIso).order('recebido_at',{ascending:false});
+    REC_DEVOLUCOES=devRes.data||[];
+  }catch(e){ console.error('fetchRecebimentos:',e); RECEBIMENTOS=[]; REC_DEVOLUCOES=[]; }
 }
 
 function renderRecebimentos(){
@@ -5866,12 +5880,14 @@ var DEVOLUCOES = [];
 var _devEntradaTarget = null;
 
 async function fetchDevolucoes(){
-  var r=getPeriodRange(
-    el('dev-date-start')&&el('dev-date-start').value?el('dev-date-start').value:fmtDateInput(new Date()),
-    el('dev-date-end')&&el('dev-date-end').value?el('dev-date-end').value:fmtDateInput(new Date())
-  );
-  var res=await sb.from('devolucoes').select('*').gte('recebido_at',r.startIso).lte('recebido_at',r.endIso).order('recebido_at',{ascending:false});
-  DEVOLUCOES=res.data||[];
+  try{
+    var r=getPeriodRange(
+      el('dev-date-start')&&el('dev-date-start').value?el('dev-date-start').value:fmtDateInput(new Date()),
+      el('dev-date-end')&&el('dev-date-end').value?el('dev-date-end').value:fmtDateInput(new Date())
+    );
+    var res=await sb.from('devolucoes').select('*').gte('recebido_at',r.startIso).lte('recebido_at',r.endIso).order('recebido_at',{ascending:false});
+    DEVOLUCOES=res.data||[];
+  }catch(e){ console.error('fetchDevolucoes:',e); DEVOLUCOES=[]; }
 }
 
 function renderDevolucoesBadge(){
@@ -7436,6 +7452,16 @@ function renderOcorrenciasBadge() {
       badge.style.display = 'none';
     }
   }
+}
+
+function renderAllBadges(){
+  renderOcorrenciasBadge();
+  renderPendenciasBadge();
+  renderAgEmbarqueBadge();
+  renderEmTransitoBadge();
+  renderCanhotosBadge();
+  renderAgendamentosBadge();
+  renderDevolucoesBadge();
 }
 
 // Fix 6: Regra 48h REMOVIDA — ocorrências contam tempo normalmente como qualquer setor
