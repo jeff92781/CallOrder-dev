@@ -666,6 +666,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <button class="tab adm-only" onclick="go('pesquisa-avancada')" style="display:none">🔍 Pesquisa</button>
     <button class="tab adm-only" onclick="go('relatorios')" style="display:none">Relatórios</button>
     <button class="tab adm-only" onclick="go('usuarios')" style="display:none">Usuários</button>
+    <button class="tab adm-only" onclick="go('separadores')" style="display:none">Separadores</button>
     <button class="tab" onclick="go('senha')">Minha Senha</button>
 
     <div class="tab-drop" id="drop-faturamento">
@@ -893,6 +894,74 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     </table>
   </main>
 </div>
+<!-- ╔══════════════════════════════════════════╗ -->
+<!-- ║       TELA — CADASTRO DE SEPARADORES     ║ -->
+<!-- ╚══════════════════════════════════════════╝ -->
+<div class="screen adm-only" id="screen-separadores" style="display:none">
+  <main>
+    <div class="uh">
+      <span class="utit">Separadores</span>
+      <span style="color:var(--muted);font-size:12px;margin-left:8px" id="sep-admin-count"></span>
+      <button class="btnn" style="display:flex" onclick="openM('m-new-separador')">+ Novo Separador</button>
+    </div>
+    <!-- Filtro rápido -->
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+      <input type="text" id="sep-admin-busca" placeholder="Buscar por nome..." oninput="renderSeparadoresAdmin()"
+        style="padding:9px 14px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;min-width:220px"/>
+      <select id="sep-admin-filtro-status" onchange="renderSeparadoresAdmin()"
+        style="padding:9px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none">
+        <option value="todos">Todos</option>
+        <option value="ativo" selected>Ativos</option>
+        <option value="inativo">Inativos</option>
+      </select>
+    </div>
+    <table class="utbl" id="sep-admin-table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Status</th>
+          <th>Cadastrado em</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="sep-admin-tbody"></tbody>
+    </table>
+    <div id="sep-admin-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;display:none">Nenhum separador encontrado.</div>
+  </main>
+</div>
+
+<!-- Modal: novo separador -->
+<div class="mb" id="m-new-separador">
+  <div class="mo" style="max-width:420px">
+    <div class="mt">Novo Separador</div>
+    <div class="f">
+      <label class="fl">Nome *</label>
+      <input type="text" id="new-sep-nome" placeholder="Nome completo do separador" maxlength="80"
+        onkeydown="if(event.key==='Enter')criarSeparador()"/>
+    </div>
+    <div class="ma">
+      <button class="bcan" onclick="closeM('m-new-separador')">Cancelar</button>
+      <button class="bok" onclick="criarSeparador()">✓ Cadastrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: editar separador -->
+<div class="mb" id="m-edit-separador">
+  <div class="mo" style="max-width:420px">
+    <div class="mt">Editar Separador</div>
+    <div class="f">
+      <label class="fl">Nome *</label>
+      <input type="text" id="edit-sep-nome" placeholder="Nome completo" maxlength="80"
+        onkeydown="if(event.key==='Enter')confirmarEditarSeparador()"/>
+    </div>
+    <div class="ma">
+      <button class="bcan" onclick="closeM('m-edit-separador')">Cancelar</button>
+      <button class="bok" onclick="confirmarEditarSeparador()">✓ Salvar</button>
+    </div>
+  </div>
+</div>
+
 <div class="screen" id="screen-senha">
   <main>
     <div class="rt">Alterar Senha</div>
@@ -2865,6 +2934,7 @@ async function go(name){
     ov(true);await Promise.all([fetchPedidosRelatorio(REPORT_DATE_START,REPORT_DATE_END),fetchMovsRelatorio(REPORT_DATE_START,REPORT_DATE_END),fetchDevolucoesRelatorio(REPORT_DATE_START,REPORT_DATE_END)]);ov(false);renderRelatorios();
   }
   if(name==='usuarios'){ov(true);var u=await fetchUsuarios();ov(false);renderUsers(u);}
+  if(name==='separadores'){ov(true);await fetchSeparadoresAdmin();ov(false);renderSeparadoresAdmin();}
   if(name==='config'){setTimeout(carregarVozes,100);}
   if(name==='agretira'){ov(true);await fetchPedidos();ov(false);renderAgRetira();}
   if(name==='recebimento'){ov(true);await fetchRecebimentos();ov(false);renderRecebimentos();}
@@ -4570,6 +4640,116 @@ function renderUsers(users){
   }).join('');
 }
 async function toggleUser(id,ativo,login){if(login==='admin'){toast('Não é possível desativar o admin principal.','err');return;}ov(true);try{await sb.from('usuarios').update({ativo:!ativo}).eq('id',id);var u=await fetchUsuarios();renderUsers(u);toast('Usuário atualizado.','ok');}catch(e){toast(e.message,'err');}finally{ov(false);}}
+
+// ── Cadastro de Separadores ──
+var _SEPARADORES_ADMIN = [];
+var _editSepId = null;
+
+async function fetchSeparadoresAdmin(){
+  try{
+    var res = await sb.from('separadores').select('*').order('nome');
+    _SEPARADORES_ADMIN = res.data || [];
+  }catch(e){ _SEPARADORES_ADMIN = []; }
+}
+
+function renderSeparadoresAdmin(){
+  var busca = (el('sep-admin-busca') ? el('sep-admin-busca').value : '').trim().toLowerCase();
+  var filtroStatus = el('sep-admin-filtro-status') ? el('sep-admin-filtro-status').value : 'todos';
+
+  var items = _SEPARADORES_ADMIN.slice();
+  if(busca) items = items.filter(function(s){ return (s.nome||'').toLowerCase().indexOf(busca) >= 0; });
+  if(filtroStatus === 'ativo')   items = items.filter(function(s){ return s.ativo; });
+  if(filtroStatus === 'inativo') items = items.filter(function(s){ return !s.ativo; });
+
+  if(el('sep-admin-count')) el('sep-admin-count').textContent = items.length + ' separador(es)';
+  if(el('sep-admin-empty')) el('sep-admin-empty').style.display = items.length ? 'none' : 'block';
+  if(el('sep-admin-table')) el('sep-admin-table').style.display = items.length ? '' : 'none';
+  if(!el('sep-admin-tbody')) return;
+
+  el('sep-admin-tbody').innerHTML = items.map(function(s){
+    var dt = s.created_at
+      ? new Date(s.created_at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})
+      : '—';
+    var statusBadge = s.ativo
+      ? '<span style="color:var(--accent);font-size:11px;font-weight:700;background:rgba(34,211,167,.12);padding:3px 10px;border-radius:10px">● Ativo</span>'
+      : '<span style="color:var(--muted);font-size:11px;font-weight:700;background:var(--bg4);padding:3px 10px;border-radius:10px">○ Inativo</span>';
+    var toggleLabel = s.ativo ? 'Desativar' : 'Ativar';
+    var toggleStyle = s.ativo
+      ? 'font-size:11px;padding:5px 12px;background:rgba(239,68,68,.12);color:var(--danger);border:1px solid rgba(239,68,68,.3);border-radius:var(--radius);cursor:pointer;font-family:var(--font-mono)'
+      : 'font-size:11px;padding:5px 12px;background:rgba(34,211,167,.12);color:var(--accent);border:1px solid rgba(34,211,167,.3);border-radius:var(--radius);cursor:pointer;font-family:var(--font-mono)';
+    return '<tr>' +
+      '<td style="font-weight:600">' + (s.nome||'—') + '</td>' +
+      '<td>' + statusBadge + '</td>' +
+      '<td style="color:var(--muted)">' + dt + '</td>' +
+      '<td style="display:flex;gap:8px;align-items:center">' +
+        '<button class="bok" style="font-size:11px;padding:5px 12px" onclick="abrirEditarSeparador(\'' + s.id + '\',\'' + (s.nome||'').replace(/'/g,"\\'") + '\')">✏ Editar</button>' +
+        '<button style="' + toggleStyle + '" onclick="toggleSeparador(\'' + s.id + '\',' + s.ativo + ')">' + toggleLabel + '</button>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+async function criarSeparador(){
+  var nome = (el('new-sep-nome') ? el('new-sep-nome').value : '').trim();
+  if(!nome){ toast('Informe o nome do separador.','warn'); return; }
+  // Verifica duplicata
+  var dup = _SEPARADORES_ADMIN.find(function(s){ return (s.nome||'').toLowerCase() === nome.toLowerCase(); });
+  if(dup){ toast('Já existe um separador com esse nome.','warn'); return; }
+  closeM('m-new-separador');
+  ov(true);
+  try{
+    var res = await sb.from('separadores').insert({ nome: nome, ativo: true });
+    if(res.error) throw res.error;
+    if(el('new-sep-nome')) el('new-sep-nome').value = '';
+    await fetchSeparadoresAdmin();
+    renderSeparadoresAdmin();
+    // Atualiza também o SEPARADORES operacional
+    await fetchSeparadores();
+    toast('Separador "' + nome + '" cadastrado com sucesso!', 'ok');
+  }catch(e){ toast(e.message,'err'); }
+  finally{ ov(false); }
+}
+
+function abrirEditarSeparador(id, nome){
+  _editSepId = id;
+  if(el('edit-sep-nome')) el('edit-sep-nome').value = nome;
+  openM('m-edit-separador');
+  setTimeout(function(){ if(el('edit-sep-nome')) el('edit-sep-nome').focus(); }, 200);
+}
+
+async function confirmarEditarSeparador(){
+  var nome = (el('edit-sep-nome') ? el('edit-sep-nome').value : '').trim();
+  if(!nome){ toast('Informe o nome.','warn'); return; }
+  if(!_editSepId){ closeM('m-edit-separador'); return; }
+  // Verifica duplicata (exceto o próprio)
+  var dup = _SEPARADORES_ADMIN.find(function(s){ return s.id !== _editSepId && (s.nome||'').toLowerCase() === nome.toLowerCase(); });
+  if(dup){ toast('Já existe outro separador com esse nome.','warn'); return; }
+  closeM('m-edit-separador');
+  ov(true);
+  try{
+    var res = await sb.from('separadores').update({ nome: nome }).eq('id', _editSepId);
+    if(res.error) throw res.error;
+    _editSepId = null;
+    await fetchSeparadoresAdmin();
+    renderSeparadoresAdmin();
+    await fetchSeparadores();
+    toast('Nome atualizado com sucesso!','ok');
+  }catch(e){ toast(e.message,'err'); }
+  finally{ ov(false); }
+}
+
+async function toggleSeparador(id, ativo){
+  ov(true);
+  try{
+    var res = await sb.from('separadores').update({ ativo: !ativo }).eq('id', id);
+    if(res.error) throw res.error;
+    await fetchSeparadoresAdmin();
+    renderSeparadoresAdmin();
+    await fetchSeparadores();
+    toast(ativo ? 'Separador desativado.' : 'Separador ativado.', ativo ? 'warn' : 'ok');
+  }catch(e){ toast(e.message,'err'); }
+  finally{ ov(false); }
+}
 
 function _getSetoresCheckados(){
   var TODOS_SETORES=['atendimento','estoque','corte','expedicao','balcao_op','faturamento'];
