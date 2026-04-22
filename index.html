@@ -663,26 +663,21 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
 <nav id="main-nav" style="display:none">
   <span class="logo" onclick="go('painel')" style="cursor:pointer">Call <span>Order</span></span>
   <div class="nav-tabs">
+    <!-- Pesquisa — adm only -->
     <button class="tab adm-only" onclick="go('pesquisa-avancada')" style="display:none">🔍 Pesquisa</button>
+    <!-- Relatórios — adm only -->
     <button class="tab adm-only" onclick="go('relatorios')" style="display:none">Relatórios</button>
-    <button class="tab adm-only" onclick="go('usuarios')" style="display:none">Usuários</button>
-    <button class="tab adm-only" onclick="go('separadores')" style="display:none">Separadores</button>
-    <button class="tab" onclick="go('senha')">Minha Senha</button>
-
-    <div class="tab-drop" id="drop-faturamento">
-      <button class="tab" id="tab-faturamento-drop" onclick="toggleFaturamentoMenu(event)">Faturamento <span class="tab-drop-arrow">▾</span></button>
-      <div class="tab-drop-menu" id="faturamento-menu">
-        <button class="tab-drop-item" id="di-devolucoes" onclick="go('devolucoes');closeFaturamentoMenu()">Devoluções <span id="devolucoes-badge" style="display:none;background:rgba(245,158,11,.2);color:var(--warn);padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
-        <button class="tab-drop-item" id="di-agendamentos" onclick="go('agendamentos');closeFaturamentoMenu()">Agendamentos <span id="agendamentos-badge" style="display:none;background:rgba(236,72,153,.2);color:var(--fat);padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
+    <!-- Cadastros dropdown — adm only -->
+    <div class="tab-drop adm-only" id="drop-cadastros" style="display:none">
+      <button class="tab" id="tab-cadastros-drop" onclick="toggleCadastrosMenu(event)">Cadastros <span class="tab-drop-arrow">▾</span></button>
+      <div class="tab-drop-menu" id="cadastros-menu">
+        <button class="tab-drop-item" id="di-usuarios" onclick="go('usuarios');closeCadastrosMenu()">Usuários</button>
+        <button class="tab-drop-item" id="di-separadores" onclick="go('separadores');closeCadastrosMenu()">Separadores</button>
       </div>
     </div>
-    <button class="tab" onclick="go('agretira')" id="tab-agretira" style="display:none">Ag. Retira <span id="agretira-badge" style="display:none;background:rgba(226,75,74,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
-    <button class="tab" onclick="go('agEmbarque')" id="tab-agembarque" style="display:none">Ag. Embarque <span id="agembarque-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
-    <button class="tab" onclick="go('emTransito')" id="tab-emtransito" style="display:none">Em Trânsito <span id="emtransito-badge" style="display:none;background:rgba(129,140,248,.2);color:#818cf8;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
-    <button class="tab" onclick="go('canhotos')" id="tab-canhotos">Canhotos <span id="canhotos-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
-    <button class="tab" onclick="go('pendencias')" id="tab-pendencias-top">Pendências <span id="pendencias-badge" style="display:none;background:rgba(239,68,68,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
-    <button class="tab" onclick="go('ocorrencias')" id="tab-ocorrencias">Ocorrências <span id="ocorrencias-badge" style="display:none;background:rgba(239,159,39,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
-    <button class="tab" onclick="go('pendencias')" id="tab-pendencias" style="display:none">Pendências <span id="pendencias-badge" style="display:none;background:rgba(239,68,68,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <!-- Minha Senha -->
+    <button class="tab" onclick="go('senha')">Minha Senha</button>
+    <!-- Expedição dropdown -->
     <div class="tab-drop" id="drop-expedicao">
       <button class="tab" id="tab-expedicao-drop" onclick="toggleExpedicaoMenu(event)">Expedição <span class="tab-drop-arrow">▾</span></button>
       <div class="tab-drop-menu" id="expedicao-menu">
@@ -693,6 +688,20 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
         <button class="tab-drop-item" id="di-reg-devolucao" onclick="go('reg-devolucao');closeExpedicaoMenu()">Registrar Devolução <span id="dregdev-badge" style="display:none;background:rgba(245,158,11,.2);color:var(--warn);padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
       </div>
     </div>
+    <!-- Faturamento dropdown -->
+    <div class="tab-drop" id="drop-faturamento">
+      <button class="tab" id="tab-faturamento-drop" onclick="toggleFaturamentoMenu(event)">Faturamento <span class="tab-drop-arrow">▾</span></button>
+      <div class="tab-drop-menu" id="faturamento-menu">
+        <button class="tab-drop-item" id="di-devolucoes" onclick="go('devolucoes');closeFaturamentoMenu()">Devoluções <span id="devolucoes-badge" style="display:none;background:rgba(245,158,11,.2);color:var(--warn);padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
+        <button class="tab-drop-item" id="di-agendamentos" onclick="go('agendamentos');closeFaturamentoMenu()">Agendamentos <span id="agendamentos-badge" style="display:none;background:rgba(236,72,153,.2);color:var(--fat);padding:1px 5px;border-radius:8px;font-size:10px;margin-left:auto">0</span></button>
+      </div>
+    </div>
+    <!-- Canhotos -->
+    <button class="tab" onclick="go('canhotos')" id="tab-canhotos">Canhotos <span id="canhotos-badge" style="display:none;background:rgba(34,211,167,.2);color:var(--accent);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <!-- Pendências -->
+    <button class="tab" onclick="go('pendencias')" id="tab-pendencias-top">Pendências <span id="pendencias-badge" style="display:none;background:rgba(239,68,68,.2);color:var(--danger);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
+    <!-- Ocorrências -->
+    <button class="tab" onclick="go('ocorrencias')" id="tab-ocorrencias">Ocorrências <span id="ocorrencias-badge" style="display:none;background:rgba(239,159,39,.2);color:var(--warn);padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px">0</span></button>
   </div>
   <div class="nav-right">
     <span id="nav-nome" style="font-size:13px;font-weight:600;color:var(--text)">—</span>
@@ -897,7 +906,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
 <!-- ╔══════════════════════════════════════════╗ -->
 <!-- ║       TELA — CADASTRO DE SEPARADORES     ║ -->
 <!-- ╚══════════════════════════════════════════╝ -->
-<div class="screen adm-only" id="screen-separadores" style="display:none">
+<div class="screen" id="screen-separadores">
   <main>
     <div class="uh">
       <span class="utit">Separadores</span>
@@ -1091,7 +1100,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <!-- Tabela -->
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
       <table class="utbl" id="rdv-table">
-        <thead><tr><th>Recebimento</th><th>Usuário</th><th>NF Origem</th><th>Pedido</th><th>Vendedor</th><th>Status</th><th>NF Entrada</th><th>Valor Entrada</th><th>Ações</th></tr></thead>
+        <thead><tr><th>Recebimento</th><th>Usuário</th><th>NF Origem</th><th>Pedido</th><th>Vendedor</th><th>Status</th><th>NF Entrada</th><th>Valor Entrada</th><th>Tipo</th></tr></thead>
         <tbody id="rdv-tbody"></tbody>
       </table>
     </div>
@@ -1183,6 +1192,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <div class="ph">
       <span class="pt">Agendamentos de Faturamento</span>
       <span style="color:var(--muted);font-size:12px" id="agend-count"></span>
+      <div id="agend-valor-total" style="display:none;font-size:12px;color:var(--fat);font-weight:700;background:rgba(236,72,153,.08);padding:5px 14px;border-radius:20px;border:1px solid rgba(236,72,153,.25)"></div>
     </div>
     <!-- Info box -->
     <div style="background:rgba(236,72,153,.06);border:1px solid rgba(236,72,153,.25);border-radius:var(--radius-lg);padding:10px 16px;margin-bottom:14px;font-size:12px;color:var(--muted)">
@@ -1203,7 +1213,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
       <table class="utbl" id="agend-table" style="min-width:900px">
         <thead>
           <tr>
-            <th>Pedido</th><th>Cliente</th><th>Vendedor</th><th>Data Agendada</th><th>Motivo</th><th>Status</th><th>Ações</th>
+            <th>Pedido</th><th>Cliente</th><th>Vendedor</th><th>Valor Pedido</th><th>Data Agendada</th><th>Motivo</th><th>Status</th><th>Ações</th>
           </tr>
         </thead>
         <tbody id="agend-tbody"></tbody>
@@ -1346,7 +1356,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <div id="lote-notas-lista" style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:14px;background:var(--bg3);font-size:12px;color:var(--muted)">Nenhuma nota selecionada</div>
     <div class="f"><label class="fl">Chave(s) NF-e * <span style="color:var(--muted)">(uma por linha)</span></label><textarea id="lote-chaves" style="width:100%;min-height:80px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font-mono);font-size:12px;outline:none;resize:vertical" placeholder="44 dígitos por linha..."></textarea></div>
     <div class="f"><label class="fl">Placa do veículo *</label><input type="text" id="lote-placa" placeholder="AAA-0000" style="text-transform:uppercase"/></div>
-    <div class="f"><label class="fl">Transportadora *</label><input type="text" id="lote-transportadora" placeholder="Nome da transportadora"/></div>
+    <div class="f"><label class="fl">Transportadora <span style="color:var(--muted);font-size:10px">(opcional)</span></label><input type="text" id="lote-transportadora" placeholder="Nome da transportadora"/></div>
     <div class="f"><label class="fl">Motorista (opcional)</label><input type="text" id="lote-motorista" placeholder="Nome do motorista"/></div>
     <div class="ma"><button class="bcan" onclick="closeM('m-embarque-lote')">Cancelar</button><button class="bok" style="background:#818cf8" onclick="confirmarEmbarqueLote()">🚚 Embarcar</button></div>
   </div>
@@ -1358,8 +1368,8 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <p id="emb-uni-desc" style="color:var(--muted);font-size:12px;margin-bottom:14px"></p>
     <div class="f"><label class="fl">Chave NF-e *</label><input type="text" id="emb-uni-chave" placeholder="44 dígitos"/></div>
     <div class="f"><label class="fl">Placa do veículo *</label><input type="text" id="emb-uni-placa" placeholder="AAA-0000" style="text-transform:uppercase"/></div>
-    <div class="f"><label class="fl">Transportadora *</label><input type="text" id="emb-uni-transportadora" placeholder="Nome da transportadora"/></div>
-    <div class="f"><label class="fl">Motorista (opcional)</label><input type="text" id="emb-uni-motorista" placeholder="Nome do motorista"/></div>
+    <div class="f"><label class="fl">Transportadora <span style="color:var(--muted);font-size:10px">(opcional)</span></label><input type="text" id="emb-uni-transportadora" placeholder="Nome da transportadora"/></div>
+    <div class="f"><label class="fl">Motorista <span style="color:var(--muted);font-size:10px">(opcional)</span></label><input type="text" id="emb-uni-motorista" placeholder="Nome do motorista"/></div>
     <div class="ma"><button class="bcan" onclick="closeM('m-embarque-unitario')">Cancelar</button><button class="bok" style="background:#818cf8" onclick="confirmarEmbarqueUnitario()">🚚 Embarcar</button></div>
   </div>
 </div>
@@ -1988,22 +1998,30 @@ function renderAgendamentos(){
   });
   if(countEl)countEl.textContent=filtrados.length+' agendamento(s)';
   if(empty)empty.style.display=filtrados.length?'none':'block';
+  // Total de valores
+  var totalVal=filtrados.reduce(function(s,it){return s+(parseFloat(it.o.valor_pedido)||0);},0);
+  var totalEl=document.getElementById('agend-valor-total');
+  if(totalEl){
+    if(totalVal>0){totalEl.textContent='Total em agendamento: '+fmtBRL(totalVal);totalEl.style.display='';}
+    else{totalEl.style.display='none';}
+  }
   tbody.innerHTML=filtrados.map(function(it){
     var o=it.o;
     var dataStr=it.dataAgend?it.dataAgend.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'}):'—';
     var statusHtml=it.vencido
       ?'<span style="background:rgba(239,68,68,.15);color:var(--danger);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">⚠ Vencido</span>'
       :'<span style="background:rgba(236,72,153,.1);color:var(--fat);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">🗓 Pendente</span>';
+    var valorPed=parseFloat(o.valor_pedido)||0;
     var podeFat=typeof podeFaturar==='function'&&podeFaturar();
     var acoes='';
     if(podeFat){
-      acoes+='<button class="bfin" style="font-size:10px;padding:4px 10px" onclick="abrirFaturarAgendado(\''+o.id+'\')">Faturar agora</button> ';
+      acoes+='<button class="bfin" style="font-size:10px;padding:4px 10px" onclick="abrirFaturarAgendado(\''+o.id+'\')">Faturar agora</button>';
     }
-    acoes+='<button class="bcan" style="font-size:10px;padding:4px 10px;cursor:pointer" onclick="cancelarAgendamento(\''+o.id+'\')">Cancelar agend.</button>';
     return '<tr>'+
       '<td style="font-weight:700">'+o.numero+'</td>'+
       '<td>'+( o.nome_cliente||'—')+'</td>'+
       '<td style="color:var(--cyan)">'+( o.vendedor||'—')+'</td>'+
+      '<td style="color:var(--accent);font-weight:600">'+(valorPed>0?fmtBRL(valorPed):'—')+'</td>'+
       '<td style="font-weight:700;color:'+(it.vencido?'var(--danger)':'var(--fat)')+'">'+dataStr+'</td>'+
       '<td style="font-size:11px;color:var(--muted)">'+( it.inf.motivo||'—')+'</td>'+
       '<td>'+statusHtml+'</td>'+
@@ -3694,6 +3712,7 @@ async function confirmarNota(){
     sb.from('notas_fiscais').insert({
       pedido_id:_notaTarget,
       numero_nf:nota,
+      chave_nfe:chaveNFe,
       valor_total:valorNota,
       valor_pago:valorNota,
       tipo:isEntrega?'entrega':(temPendencia?'parcial':'total'),
@@ -5819,6 +5838,14 @@ async function confirmarRegistrarDevolucaoRec(){
   var valorDevStr=(el('dev-rec-valor')?el('dev-rec-valor').value:'').replace(',','.').trim();
   var valorDev=parseFloat(valorDevStr)||0;
   if(valorDev<=0){toast('Informe o valor da nota devolvida.','warn');return;}
+  // Bloquear chave duplicada
+  var dupCheck2=await sb.from('devolucoes').select('id,num_nota_origem,recebido_at,usuario').eq('chave_nfe_origem',chave).limit(1);
+  var dup2=dupCheck2.data&&dupCheck2.data[0];
+  if(dup2){
+    var dtDup2=dup2.recebido_at?new Date(dup2.recebido_at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    toast('⚠ Esta chave já foi registrada como devolução (NF '+(dup2.num_nota_origem||'—')+' em '+dtDup2+' por '+(dup2.usuario||'—')+').','err',7000);
+    return;
+  }
   var numOrigem=_extrairNumNotaChave(chave);
   var pedRes=await sb.from('pedidos').select('numero,vendedor,num_nota,valor_nota_fat').eq('chave_nfe',chave).limit(1);
   var ped=pedRes.data&&pedRes.data[0];
@@ -5945,9 +5972,16 @@ function renderRegDevolucoes(){
     var statusBadge=d.status==='confirmado'
       ?'<span style="color:var(--accent);font-size:11px;font-weight:700">✓ Confirmado</span>'
       :'<span style="color:var(--warn);font-size:11px;font-weight:700">Pendente</span>';
-    var acoes=d.status==='pendente'
-      ?'<button class="bok" style="font-size:11px;padding:5px 12px" onclick="abrirConfirmarEntradaDev(\''+d.id+'\')">✓ Confirmar entrada</button>'
-      :'<span style="font-size:11px;color:var(--muted)">Encerrado</span>';
+    var valEntr=parseFloat(d.valor_entrada)||0;
+    var valOrig=parseFloat(d.valor_original)||0;
+    var tipo='—';
+    if(valEntr>0){
+      if(valOrig>0&&valEntr<valOrig){
+        tipo='<span style="color:var(--warn);font-size:11px;font-weight:700">Parcial</span>';
+      }else{
+        tipo='<span style="color:var(--accent);font-size:11px;font-weight:700">Total</span>';
+      }
+    }
     return '<tr>'+
       '<td style="color:var(--muted)">'+dt+'</td>'+
       '<td>'+(d.usuario||'—')+'</td>'+
@@ -5956,8 +5990,8 @@ function renderRegDevolucoes(){
       '<td>'+(d.vendedor||'—')+'</td>'+
       '<td>'+statusBadge+'</td>'+
       '<td style="color:var(--sep)">'+(d.num_nota_entrada||'—')+'</td>'+
-      '<td style="color:var(--warn);font-weight:600">'+(parseFloat(d.valor_entrada)>0?fmtBRL(d.valor_entrada):'—')+'</td>'+
-      '<td>'+acoes+'</td>'+
+      '<td style="color:var(--warn);font-weight:600">'+(valEntr>0?fmtBRL(valEntr):'—')+'</td>'+
+      '<td>'+tipo+'</td>'+
     '</tr>';
   }).join('');
 }
@@ -6004,6 +6038,14 @@ async function rdvScanRegistrar(){
   var valor=parseFloat(valorStr)||0;
   if(valor<=0){if(fb){fb.style.color='var(--danger)';fb.textContent='Informe o valor da NF devolvida.';}return;}
   var num=_extrairNumNotaChave(v);
+  // Bloquear chave duplicada
+  var dupCheck=await sb.from('devolucoes').select('id,num_nota_origem,recebido_at,usuario').eq('chave_nfe_origem',v).limit(1);
+  var dup=dupCheck.data&&dupCheck.data[0];
+  if(dup){
+    var dtDup=dup.recebido_at?new Date(dup.recebido_at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    if(fb){fb.style.color='var(--danger)';fb.textContent='⚠ Esta chave já foi registrada como devolução (NF '+(dup.num_nota_origem||'—')+' em '+dtDup+' por '+(dup.usuario||'—')+').';}
+    return;
+  }
   var pedRes=await sb.from('pedidos').select('numero,vendedor,num_nota,valor_nota_fat').eq('chave_nfe',v).limit(1);
   var ped=pedRes.data&&pedRes.data[0];
   var valorOriginal=ped&&ped.valor_nota_fat?parseFloat(ped.valor_nota_fat)||0:0;
@@ -6444,7 +6486,7 @@ async function confirmarEmbarqueUnitario(){
   var placa=(el('emb-uni-placa').value||'').trim().toUpperCase();
   var transp=(el('emb-uni-transportadora').value||'').trim();
   var motor=(el('emb-uni-motorista').value||'').trim();
-  if(!chave||!placa||!transp){toast('Preencha chave NF-e, placa e transportadora.','err');return;}
+  if(!chave||!placa){toast('Preencha a chave NF-e e a placa do veículo.','err');return;}
   closeM('m-embarque-unitario');
   await _executarEmbarque(_embarqueSelecionados,[chave],placa,transp,motor);
 }
@@ -6455,7 +6497,7 @@ async function confirmarEmbarqueLote(){
   var transp=(el('lote-transportadora').value||'').trim();
   var motor=(el('lote-motorista').value||'').trim();
   if(_embarqueSelecionados.length===0){toast('Selecione pelo menos um pedido.','warn');return;}
-  if(chaves.length===0||!placa||!transp){toast('Preencha as chaves NF-e, placa e transportadora.','err');return;}
+  if(chaves.length===0||!placa){toast('Preencha as chaves NF-e e a placa do veículo.','err');return;}
   closeM('m-embarque-lote');
   await _executarEmbarque(_embarqueSelecionados,chaves,placa,transp,motor);
 }
@@ -7430,13 +7472,34 @@ function renderAgRetiraBadge() {
   </div>
 </div>
 <script>
+// ── Cadastros dropdown ──
+function toggleCadastrosMenu(e){
+  e.stopPropagation();
+  var menu=document.getElementById('cadastros-menu');
+  var drop=document.getElementById('drop-cadastros');
+  var isOpen=menu.classList.contains('open');
+  document.querySelectorAll('.tab-drop-menu.open').forEach(function(m){m.classList.remove('open');});
+  document.querySelectorAll('.tab-drop.open').forEach(function(d){d.classList.remove('open');});
+  if(!isOpen){menu.classList.add('open');drop.classList.add('open');}
+}
+function closeCadastrosMenu(){
+  var menu=document.getElementById('cadastros-menu');
+  var drop=document.getElementById('drop-cadastros');
+  if(menu)menu.classList.remove('open');
+  if(drop)drop.classList.remove('open');
+}
+document.addEventListener('click',function(e){
+  if(!e.target.closest('#drop-cadastros'))closeCadastrosMenu();
+});
+
 // ── Expedição dropdown ──
 function toggleExpedicaoMenu(e){
   e.stopPropagation();
   var menu=document.getElementById('expedicao-menu');
   var drop=document.getElementById('drop-expedicao');
   var isOpen=menu.classList.contains('open');
-  closeExpedicaoMenu();
+  document.querySelectorAll('.tab-drop-menu.open').forEach(function(m){m.classList.remove('open');});
+  document.querySelectorAll('.tab-drop.open').forEach(function(d){d.classList.remove('open');});
   if(!isOpen){menu.classList.add('open');drop.classList.add('open');}
 }
 function closeExpedicaoMenu(){
@@ -7447,25 +7510,42 @@ function closeExpedicaoMenu(){
 }
 document.addEventListener('click',function(){closeExpedicaoMenu();});
 
-// Highlight Expedição tab when sub-screen is active
-var EXPEDICAO_SCREENS=['agretira','agEmbarque','emTransito','recebimento','reg-devolucao','pendencias'];
+// Highlight dropdowns when sub-screen is active
+var EXPEDICAO_SCREENS=['agretira','agEmbarque','emTransito','recebimento','reg-devolucao'];
+var CADASTROS_SCREENS=['usuarios','separadores'];
+var FATURAMENTO_SCREENS=['devolucoes','agendamentos'];
 var _goOrig=window.go;
 window.go=async function(name){
   await _goOrig(name);
+  // Expedição
   var expTab=document.getElementById('tab-expedicao-drop');
   if(expTab){
-    if(EXPEDICAO_SCREENS.indexOf(name)>=0){
-      expTab.classList.add('active');
-    } else {
-      expTab.classList.remove('active');
-    }
+    if(EXPEDICAO_SCREENS.indexOf(name)>=0){expTab.classList.add('active');}
+    else{expTab.classList.remove('active');}
   }
-  // highlight dropdown item
-  ['agretira','agembarque','emtransito','recebimento','pendencias'].forEach(function(k){
+  // Cadastros
+  var cadTab=document.getElementById('tab-cadastros-drop');
+  if(cadTab){
+    if(CADASTROS_SCREENS.indexOf(name)>=0){cadTab.classList.add('active');}
+    else{cadTab.classList.remove('active');}
+  }
+  // Faturamento
+  var fatTabDrop=document.getElementById('tab-faturamento-drop');
+  if(fatTabDrop){
+    if(FATURAMENTO_SCREENS.indexOf(name)>=0){fatTabDrop.classList.add('active');}
+    else{fatTabDrop.classList.remove('active');}
+  }
+  // highlight itens dropdown
+  ['agretira','agembarque','emtransito','recebimento','reg-devolucao','usuarios','separadores','devolucoes','agendamentos'].forEach(function(k){
     var el=document.getElementById('di-'+k);
     if(el)el.classList.remove('active');
   });
-  var keyMap={agretira:'agretira',agEmbarque:'agembarque',emTransito:'emtransito',recebimento:'recebimento',pendencias:'pendencias'};
+  var keyMap={
+    agretira:'agretira',agEmbarque:'agembarque',emTransito:'emtransito',
+    recebimento:'recebimento','reg-devolucao':'reg-devolucao',
+    usuarios:'usuarios',separadores:'separadores',
+    devolucoes:'devolucoes',agendamentos:'agendamentos'
+  };
   if(keyMap[name]){
     var item=document.getElementById('di-'+keyMap[name]);
     if(item)item.classList.add('active');
