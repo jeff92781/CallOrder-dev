@@ -1100,7 +1100,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     <!-- Tabela -->
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
       <table class="utbl" id="rdv-table">
-        <thead><tr><th>Recebimento</th><th>Usuário</th><th>NF Origem</th><th>Pedido</th><th>Vendedor</th><th>Status</th><th>NF Entrada</th><th>Valor Entrada</th><th>Tipo</th></tr></thead>
+        <thead><tr><th>Recebimento</th><th>Usuário</th><th>NF Origem</th><th>Pedido</th><th>Vendedor</th><th>Status</th><th>NF Entrada</th><th>Valor da Nota</th></tr></thead>
         <tbody id="rdv-tbody"></tbody>
       </table>
     </div>
@@ -1176,7 +1176,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
       <table class="utbl" id="dev-table">
-        <thead><tr><th>Recebimento</th><th>Usuário</th><th>NF Origem</th><th>Pedido</th><th>Vendedor</th><th>Status</th><th>NF Entrada</th><th>Valor Entrada</th><th>Ações</th></tr></thead>
+        <thead><tr><th>Recebimento</th><th>Usuário</th><th>NF Origem</th><th>Pedido</th><th>Vendedor</th><th>Status</th><th>NF Entrada</th><th>Valor Entrada</th><th>Tipo</th><th>Ações</th></tr></thead>
         <tbody id="dev-tbody"></tbody>
       </table>
     </div>
@@ -5781,6 +5781,16 @@ function renderDevolucoes(){
     var acoes=d.status==='pendente'
       ?'<button class="bok" style="font-size:11px;padding:5px 12px" onclick="abrirConfirmarEntradaDev(\''+d.id+'\')">✓ Confirmar entrada</button>'
       :'<span style="font-size:11px;color:var(--muted)">Encerrado</span>';
+    var valEntr=parseFloat(d.valor_entrada)||0;
+    var valOrig=parseFloat(d.valor_original)||0;
+    var tipo='—';
+    if(valEntr>0){
+      if(valOrig>0&&valEntr<valOrig){
+        tipo='<span style="color:var(--warn);font-size:11px;font-weight:700">Parcial</span>';
+      }else{
+        tipo='<span style="color:var(--accent);font-size:11px;font-weight:700">Total</span>';
+      }
+    }
     return '<tr>'+
       '<td style="color:var(--muted)">'+dt+'</td>'+
       '<td>'+(d.usuario||'—')+'</td>'+
@@ -5789,7 +5799,8 @@ function renderDevolucoes(){
       '<td>'+(d.vendedor||'—')+'</td>'+
       '<td>'+statusBadge+'</td>'+
       '<td style="color:var(--sep)">'+(d.num_nota_entrada||'—')+'</td>'+
-      '<td style="color:var(--warn);font-weight:600">'+(parseFloat(d.valor_entrada)>0?fmtBRL(d.valor_entrada):'—')+'</td>'+
+      '<td style="color:var(--warn);font-weight:600">'+(valEntr>0?fmtBRL(valEntr):'—')+'</td>'+
+      '<td>'+tipo+'</td>'+
       '<td>'+acoes+'</td>'+
     '</tr>';
   }).join('');
@@ -5973,15 +5984,6 @@ function renderRegDevolucoes(){
       ?'<span style="color:var(--accent);font-size:11px;font-weight:700">✓ Confirmado</span>'
       :'<span style="color:var(--warn);font-size:11px;font-weight:700">Pendente</span>';
     var valEntr=parseFloat(d.valor_entrada)||0;
-    var valOrig=parseFloat(d.valor_original)||0;
-    var tipo='—';
-    if(valEntr>0){
-      if(valOrig>0&&valEntr<valOrig){
-        tipo='<span style="color:var(--warn);font-size:11px;font-weight:700">Parcial</span>';
-      }else{
-        tipo='<span style="color:var(--accent);font-size:11px;font-weight:700">Total</span>';
-      }
-    }
     return '<tr>'+
       '<td style="color:var(--muted)">'+dt+'</td>'+
       '<td>'+(d.usuario||'—')+'</td>'+
@@ -5991,7 +5993,6 @@ function renderRegDevolucoes(){
       '<td>'+statusBadge+'</td>'+
       '<td style="color:var(--sep)">'+(d.num_nota_entrada||'—')+'</td>'+
       '<td style="color:var(--warn);font-weight:600">'+(valEntr>0?fmtBRL(valEntr):'—')+'</td>'+
-      '<td>'+tipo+'</td>'+
     '</tr>';
   }).join('');
 }
