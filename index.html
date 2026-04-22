@@ -73,6 +73,16 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
 .toast.t-warn{border-color:rgba(245,158,11,.4);color:var(--warn)}
 .toast.t-err{border-color:rgba(239,68,68,.4);color:var(--danger)}
 .toast.t-ok{border-color:rgba(34,211,167,.3);color:var(--accent)}
+/* ── Sector arrival notifications ── */
+#snp{position:fixed;top:72px;right:16px;z-index:9998;display:flex;flex-direction:column;gap:8px;max-width:300px;pointer-events:none}
+.snotif{background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(245,158,11,.06));border:2px solid var(--warn);border-radius:var(--radius-lg);padding:13px 15px;color:var(--text);font-family:var(--font-mono);font-size:12px;cursor:pointer;pointer-events:all;box-shadow:0 6px 24px rgba(245,158,11,.35),0 0 0 1px rgba(245,158,11,.15);animation:snotif-in .35s cubic-bezier(.34,1.56,.64,1);backdrop-filter:blur(12px);user-select:none}
+.snotif:hover{background:rgba(245,158,11,.28);transform:scale(1.02);transition:all .15s}
+.snotif:active{transform:scale(.98)}
+@keyframes snotif-in{from{transform:translateX(130%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes snotif-out{from{transform:translateX(0);opacity:1;max-height:120px;margin-bottom:0}to{transform:translateX(130%);opacity:0;max-height:0;margin-bottom:-8px}}
+/* Screen shake */
+@keyframes shake{0%,100%{transform:translate(0)}8%{transform:translate(-5px,-2px)}16%{transform:translate(5px,2px)}24%{transform:translate(-4px,2px)}32%{transform:translate(4px,-2px)}40%{transform:translate(-3px,1px)}48%{transform:translate(3px,-1px)}56%{transform:translate(-2px,1px)}64%{transform:translate(2px,-1px)}72%{transform:translate(-1px,0)}80%{transform:translate(1px,0)}88%{transform:translate(-1px,0)}}
+body.snshake{animation:shake .55s ease}
 .lw{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative}
 .lw::before{content:'';position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(34,211,167,0.08),transparent 70%);top:20%;left:10%;pointer-events:none}
 .lw::after{content:'';position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(59,130,246,0.06),transparent 70%);bottom:10%;right:15%;pointer-events:none}
@@ -661,6 +671,7 @@ main{padding:14px 20px;width:100%;position:relative;z-index:1}
 
 <div id="ov" class="h">Carregando...</div>
 <div id="tw"></div>
+<div id="snp"></div>
 <nav id="main-nav" style="display:none">
   <span class="logo" onclick="go('painel')" style="cursor:pointer">Call <span>Order</span></span>
   <div class="nav-tabs">
@@ -2402,6 +2413,62 @@ function playNotificationBeep(){
     osc.stop(_audioCtx.currentTime+0.13);
   }catch(e){}
 }
+function playSectorArrivalSound(){
+  try{
+    var AudioCtx=window.AudioContext||window.webkitAudioContext;
+    if(!AudioCtx)return;
+    if(!_audioCtx)_audioCtx=new AudioCtx();
+    if(_audioCtx.state==='suspended')_audioCtx.resume();
+    // 3 tons ascendentes: ding-ding-ding
+    [[0,880],[0.20,1100],[0.40,1320]].forEach(function(item){
+      var delay=item[0],freq=item[1];
+      var osc=_audioCtx.createOscillator();
+      var gain=_audioCtx.createGain();
+      osc.type='sine';
+      osc.frequency.value=freq;
+      gain.gain.setValueAtTime(0.0001,_audioCtx.currentTime+delay);
+      gain.gain.exponentialRampToValueAtTime(0.10,_audioCtx.currentTime+delay+0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001,_audioCtx.currentTime+delay+0.22);
+      osc.connect(gain);gain.connect(_audioCtx.destination);
+      osc.start(_audioCtx.currentTime+delay);
+      osc.stop(_audioCtx.currentTime+delay+0.25);
+    });
+  }catch(e){}
+}
+
+function pushSectorNotif(pedidoNum,setor){
+  // Áudio de chegada
+  playSectorArrivalSound();
+  // Vibração de tela
+  document.body.classList.remove('snshake');
+  void document.body.offsetWidth;
+  document.body.classList.add('snshake');
+  setTimeout(function(){document.body.classList.remove('snshake');},600);
+  // Painel
+  var panel=el('snp');
+  if(!panel)return;
+  var setorNome=SL[setor]||setor;
+  var agora=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  var notif=document.createElement('div');
+  notif.className='snotif';
+  notif.title='Clique para dispensar';
+  notif.innerHTML=
+    '<div style="display:flex;align-items:flex-start;gap:10px">'+
+      '<span style="font-size:22px;line-height:1">📦</span>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-weight:700;font-size:13px;color:var(--warn)">Pedido #'+pedidoNum+'</div>'+
+        '<div style="font-size:11px;margin-top:3px">chegou em <strong>'+setorNome+'</strong></div>'+
+        '<div style="font-size:10px;color:var(--muted);margin-top:5px">'+agora+' · toque para dispensar</div>'+
+      '</div>'+
+      '<span style="font-size:16px;color:var(--muted);line-height:1;margin-left:4px">×</span>'+
+    '</div>';
+  notif.addEventListener('click',function(){
+    notif.style.animation='snotif-out .28s forwards';
+    setTimeout(function(){notif.remove();},290);
+  });
+  panel.appendChild(notif);
+}
+
 function toast(msg,type,dur){
   type=type||'ok';dur=dur||3500;
   playNotificationBeep();
@@ -2824,7 +2891,7 @@ function startRealtime(){
       if(payload.new.status==='aguardando'&&(!old||old.status!=='aguardando')){
         var dest=payload.new.setor_pendente;
         var ehReceptor=podeAtuarNoSetor(dest);
-        if(ehReceptor)toast('Pedido #'+payload.new.numero+' chegou em '+(SL[dest]||dest)+'!','warn',6000);
+        if(ehReceptor) pushSectorNotif(payload.new.numero,dest);
       }
     }
     else if(payload.eventType==='DELETE'){PEDIDOS=PEDIDOS.filter(function(p){return p.id!==payload.old.id;});}
@@ -5658,16 +5725,28 @@ function _extrairNumNotaChave(chave){
   return String(parseInt(nums.substring(25,34),10)); // remove zeros à esquerda
 }
 
-function recScanCheck(val){
+async function recScanCheck(val){
   var fb=el('rec-scan-feedback');
   if(!fb)return;
   var v=val.replace(/\D/g,'');
   if(v.length===0){fb.style.color='var(--muted)';fb.textContent='';return;}
   if(v.length<44){fb.style.color='var(--muted)';fb.textContent=v.length+'/44';return;}
-  if(v.length>=44){
-    var num=_extrairNumNotaChave(v);
+  var num=_extrairNumNotaChave(v);
+  fb.style.color='var(--muted)';fb.textContent='Verificando...';
+  try{
+    var dupRes=await sb.from('recebimentos').select('id,num_nota,recebido_at,usuario').eq('chave_nfe',v).limit(1);
+    var dup=(dupRes.data||[])[0];
+    if(dup){
+      var dtDup=dup.recebido_at?new Date(dup.recebido_at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+      fb.style.color='var(--danger)';
+      fb.textContent='⚠ NF '+(num||dup.num_nota)+' já registrada em '+dtDup+' por '+(dup.usuario||'—')+'.';
+    }else{
+      fb.style.color='var(--accent)';
+      fb.textContent=num?'✓ NF: '+num+' — OK para registrar':'✓ Chave válida';
+    }
+  }catch(e){
     fb.style.color='var(--accent)';
-    fb.textContent=num?'NF: '+num:' Chave válida';
+    fb.textContent=num?'NF: '+num:'Chave válida';
   }
 }
 
