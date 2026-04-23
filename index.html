@@ -2475,6 +2475,19 @@ function playSectorArrivalSound(){
 function pushSectorNotif(pedidoNum,setor){
   // Só exibe para usuários que pertencem ao setor destino (ou admin/global)
   if(typeof podeAtuarNoSetor==='function' && !podeAtuarNoSetor(setor)) return;
+  var setorNomeLabel=(typeof SL!=='undefined'&&SL[setor])||setor||'Setor';
+  // Notificação do sistema (funciona com aba minimizada)
+  if('Notification' in window && Notification.permission==='granted'){
+    try{
+      var sysNotif=new Notification('📦 Pedido #'+pedidoNum+' chegou!',{
+        body:'Setor: '+setorNomeLabel,
+        icon:'https://lpjyrmkgjgehfaosagxl.supabase.co/storage/v1/object/public/assets/icon.png',
+        tag:'pedido-'+pedidoNum+'-'+setor,
+        requireInteraction:true
+      });
+      sysNotif.onclick=function(){window.focus();sysNotif.close();};
+    }catch(e){}
+  }
   // Áudio de chegada
   playSectorArrivalSound();
   // Vibração de tela
@@ -2493,7 +2506,7 @@ function pushSectorNotif(pedidoNum,setor){
   // Banner
   var panel=document.getElementById('snp');
   if(!panel){panel=document.createElement('div');panel.id='snp';document.body.appendChild(panel);}
-  var setorNome=(typeof SL!=='undefined'&&SL[setor])||setor||'Setor';
+  var setorNome=setorNomeLabel;
   var agora=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
   var notif=document.createElement('div');
   notif.className='snotif';
@@ -2917,6 +2930,9 @@ async function doLogin(){
     startRealtime();
     startClock();
     startPolling();
+    if('Notification' in window && Notification.permission==='default'){
+      Notification.requestPermission();
+    }
   }catch(e){
     el('lerr').textContent=e.message;
   }finally{
@@ -3672,7 +3688,6 @@ async function confirmarRec(id){
       sb.from('confirmacoes').insert({pedido_id:id,setor_origem:o.setor,setor_destino:dest,enviado_at:o.pendente_desde,confirmado_at:agora,tempo_confirmacao_ms:tempoConf,confirmado_por:ME.login})
     ]);
     refreshPedidosSoon(500);
-    toast('Recebimento confirmado em '+(SL[dest]||dest),'ok');
     // Fix 7: pede separador ao CONFIRMAR chegada no balcão ou expedição
     if((dest==='balcao_op'||dest==='expedicao') && SEPARADORES.length>0){
       setTimeout(function(){abrirSelecionarSeparador(id,'');},400);
